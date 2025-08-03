@@ -3,9 +3,8 @@
 
 #include <stdexcept>
 #include <type_traits>
+#include <utility>
 
-#include "Vector3.hpp"
-#include "HVector.hpp"
 
 template <typename T> requires std::is_arithmetic_v<T>
 class Vector3;
@@ -24,6 +23,16 @@ public:
 
 	Vector2(T xPos, T yPos);
 
+	Vector2(const Vector2<T>& vecToCopy);
+
+	Vector2(Vector2<T>&& source) noexcept;
+
+	Vector2<T>& operator=(Vector2<T>&& other) noexcept;
+
+	const bool operator==(const Vector2<T>& other) const;
+
+	Vector2<T>& operator=(const Vector2<T>& other);
+
 	Vector2<T> operator+(const Vector2<T>& other) const;
 
 	Vector2<T> operator-(const Vector2<T>& other) const;
@@ -40,9 +49,8 @@ public:
 	
 	T dotProduct(const Vector2<T>& other)const;
 
-	T& operator[](size_t index);
+	const T& operator[](size_t index);
 
-	
 	operator Vector3<T>() const;
 
 	Vector3<T> toVector3(const T z={}) const;

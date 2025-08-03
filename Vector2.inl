@@ -7,12 +7,37 @@
 
 
 
+
 template <typename T> requires std::is_arithmetic_v<T>
-Vector2<T>::Vector2(T xPos, T yPos) {
-	x = xPos;
-	y = yPos;
+Vector2<T>::Vector2(T xPos, T yPos) : array{ xPos,yPos } {}
+
+template <typename T> requires std::is_arithmetic_v<T>
+Vector2<T>::Vector2(const Vector2<T>& vecToCopy) : Vector2<T>(vecToCopy.x,vecToCopy.y) {}
+
+
+template <typename T> requires std::is_arithmetic_v<T>
+Vector2<T>::Vector2(Vector2<T>&& other) noexcept : array{ std::move(other.x), std::move(other.y) } {}
+
+
+template <typename T> requires std::is_arithmetic_v<T>
+Vector2<T>& Vector2<T>::operator=(Vector2<T>&& other) noexcept {
+	x = std::move(other.x);
+	y = std::move(other.y);
+	return *this;
 }
 
+template <typename T> requires std::is_arithmetic_v<T>
+Vector2<T>& Vector2<T>::operator=(const Vector2<T>& other) {
+	x = other.x;
+	y = other.y;
+	return *this;
+}
+template <typename T> requires std::is_arithmetic_v<T>
+const bool Vector2<T>::operator==(const Vector2<T>& other)const{
+
+	return x == other.x && y == other.y;
+
+}
 
 template <typename T> requires std::is_arithmetic_v<T>
 Vector2<T> Vector2<T>::operator+(const Vector2<T>& other) const {
@@ -81,6 +106,16 @@ T Vector2<T>::crossProduct(const Vector2<T>& other) const {
 }
 
 template <typename T> requires std::is_arithmetic_v<T>
+const T& Vector2<T>::operator[](size_t index) const{
+	if (index < 2) {
+		return array[index];
+	}
+	else {
+		throw std::out_of_range("Index out of range");
+	}
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
 T& Vector2<T>::operator[](size_t index) {
 	if (index < 2) {
 		return array[index];
@@ -99,26 +134,19 @@ Vector2<T>::operator Vector3<T>() const {
 
 template <typename T> requires std::is_arithmetic_v<T>
 Vector3<T> Vector2<T>::toVector3(const T z) const {
-
 	return Vector3<T>(x, y, z);
-
 }
 
 
 template <typename T> requires std::is_arithmetic_v<T>
 Vector2<T>::operator HVector<T>() const {
 	return HVector<T>(x, y, 0, 1);
-
 }
 
 template <typename T> requires std::is_arithmetic_v<T>
 HVector<T> Vector2<T>::toHVector(T z, T w) const {
 	return HVector<T>(x, y, z, w);
 }
-
-
-
-
 
 
 
