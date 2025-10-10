@@ -1,5 +1,5 @@
-#ifndef VECTOR2
-#define VECTOR2
+#pragma once
+
 
 #include <stdexcept>
 #include <type_traits>
@@ -28,10 +28,10 @@ public:
 	Vector2(Vector2<T>&& source) noexcept;
 
 	Vector2<T>& operator=(Vector2<T>&& other) noexcept;
+	
+	Vector2<T>& operator=(const Vector2<T>& other);
 
 	const bool operator==(const Vector2<T>& other) const;
-
-	Vector2<T>& operator=(const Vector2<T>& other);
 
 	Vector2<T> operator+(const Vector2<T>& other) const;
 
@@ -49,7 +49,9 @@ public:
 	
 	T dotProduct(const Vector2<T>& other)const;
 
-	const T& operator[](size_t index);
+	const T& operator[](size_t index) const;
+
+	T& operator[](size_t index);
 
 	operator Vector3<T>() const;
 
@@ -64,6 +66,3 @@ public:
 };
 
 #include "Vector2.inl"
-
-
-#endif

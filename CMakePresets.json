@@ -2,27 +2,27 @@
     "version": 3,
     "configurePresets": [
         {
-            "name": "windows-base",
+            "name": "linux-base",
             "hidden": true,
             "generator": "Ninja",
             "binaryDir": "${sourceDir}/out/build/${presetName}",
             "installDir": "${sourceDir}/out/install/${presetName}",
             "cacheVariables": {
-                "CMAKE_C_COMPILER": "cl.exe",
-                "CMAKE_CXX_COMPILER": "cl.exe"
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++"
             },
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
-                "rhs": "Windows"
+                "rhs": "Linux"
             }
         },
         {
             "name": "x64-debug",
             "displayName": "x64 Debug",
-            "inherits": "windows-base",
+            "inherits": "linux-base",
             "architecture": {
-                "value": "x64",
+                "value": "x86_64",
                 "strategy": "external"
             },
             "cacheVariables": {
@@ -40,9 +40,9 @@
         {
             "name": "x86-debug",
             "displayName": "x86 Debug",
-            "inherits": "windows-base",
+            "inherits": "linux-base",
             "architecture": {
-                "value": "x86",
+                "value": "i386",
                 "strategy": "external"
             },
             "cacheVariables": {

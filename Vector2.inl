@@ -1,5 +1,4 @@
-#ifndef VECTOR2_INL
-#define VECTOR2_INL
+#pragma once
 #include "Vector2.hpp"
 
 
@@ -125,6 +124,7 @@ T& Vector2<T>::operator[](size_t index) {
 	}
 }
 
+
 template <typename T> requires std::is_arithmetic_v<T>
 Vector2<T>::operator Vector3<T>() const {
 	
@@ -148,6 +148,3 @@ HVector<T> Vector2<T>::toHVector(T z, T w) const {
 	return HVector<T>(x, y, z, w);
 }
 
-
-
-#endif

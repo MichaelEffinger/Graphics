@@ -1,5 +1,4 @@
-#ifndef VECTOR3_INL
-#define VECTOR3_INL
+#pragma once
 #include "Vector3.hpp"
 
 
@@ -10,12 +9,28 @@
 
 
 template <typename T> requires std::is_arithmetic_v<T>
-Vector3<T>::Vector3(T xPos, T yPos, T zPos) {
-	x = xPos;
-	y = yPos;
-	z = zPos;
+Vector3<T>::Vector3(T xPos, T yPos, T zPos) : array{ xPos, yPos, zPos}{}
+
+template <typename T> requires std::is_arithmetic_v<T>
+Vector3<T>::Vector3(const Vector3<T> &vecToCopy) : Vector3<T>(vecToCopy.x,vecToCopy.y,vecToCopy.z){}
+
+template <typename T> requires std::is_arithmetic_v<T>
+Vector3<T>::Vector3(Vector3<T>&& other) noexcept : array {std::move(other.x),std::move(other.y), std::move(other.z)}{}
+
+template <typename T> requires std::is_arithmetic_v<T>
+Vector3<T>& Vector3<T>::operator=(Vector3<T>&& other) noexcept{
+
+	x = std::move(other.x);
+	y = std::move(other.y);
+	z = std::move(other.z);
+	return *this;
+
 }
 
+template <typename T> requires std::is_arithmetic_v<T>
+const bool Vector3<T>::operator==(const Vector3<T>& other)const{
+	return x == other.x && y == other.y && z == other.z;
+}
 
 template <typename T> requires std::is_arithmetic_v<T>
 Vector3<T> Vector3<T>::operator+(const Vector3<T>& other) const {
@@ -68,7 +83,6 @@ Vector3<T> Vector3<T>::hadamardDivide(const Vector3<T>& other) const {
 
 }
 
-
 template <typename T> requires std::is_arithmetic_v<T>
 Vector3<T> Vector3<T>::operator/(const T scalar)const {
 	if (scalar == 0) {
@@ -79,6 +93,13 @@ Vector3<T> Vector3<T>::operator/(const T scalar)const {
 		return Vector3<T>(x / scalar, y / scalar, z / scalar);
 	}
 }
+
+
+
+
+
+
+
 
 template <typename T> requires std::is_arithmetic_v<T>
 T Vector3<T>::dotProduct(const Vector3<T>& other) const {
@@ -103,6 +124,3 @@ T& Vector3<T>::operator[](size_t index) {
 		throw std::out_of_range("Index out of range");
 	}
 }
-
-
-#endif

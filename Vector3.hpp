@@ -1,5 +1,4 @@
-#ifndef VECTOR3
-#define VECTOR3
+#pragma once
 
 #include <type_traits>
 #include "Vector2.hpp"
@@ -25,6 +24,16 @@ public:
 	T& z = array[2];
 
 	Vector3(T xPos, T yPos, T zPos);
+	
+	Vector3(const Vector3<T>& vecToCopy);
+
+	Vector3(Vector3<T>&& source) noexcept;
+
+	const bool operator==(const Vector3<T>& other) const;
+
+	Vector3<T>& operator=(Vector3<T>&& other) noexcept;
+
+	Vector3<T>& operator=(const Vector3<T>& other);
 
 	Vector3<T> operator+(const Vector3<T>& other) const;
 
@@ -42,11 +51,14 @@ public:
 
 	T dotProduct(const Vector3<T>& other) const;
 
+	const T& operator[](size_t index) const;
+
 	T& operator[](size_t index);
-
-
+	
 	Vector2<T> toVector2() const;
 
+	explicit operator Vector2<T>() const;
+	
 	operator HVector<T>() const;
 
 	HVector<T> toHVector(const T w = {}) const;
@@ -55,5 +67,3 @@ public:
 
 
 #include "Vector3.inl"
-
-#endif
