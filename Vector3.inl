@@ -28,6 +28,14 @@ Vector3<T>& Vector3<T>::operator=(Vector3<T>&& other) noexcept{
 }
 
 template <typename T> requires std::is_arithmetic_v<T>
+Vector3<T>& Vector3<T>::operator=(const Vector3<T> & other){
+	x = other.x;
+	y = other.y;
+	z = other.z;
+	return *this;
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
 const bool Vector3<T>::operator==(const Vector3<T>& other)const{
 	return x == other.x && y == other.y && z == other.z;
 }
@@ -94,13 +102,6 @@ Vector3<T> Vector3<T>::operator/(const T scalar)const {
 	}
 }
 
-
-
-
-
-
-
-
 template <typename T> requires std::is_arithmetic_v<T>
 T Vector3<T>::dotProduct(const Vector3<T>& other) const {
 
@@ -124,3 +125,33 @@ T& Vector3<T>::operator[](size_t index) {
 		throw std::out_of_range("Index out of range");
 	}
 }
+
+
+
+template <typename T> requires std::is_arithmetic_v<T>
+const T& Vector3<T>::operator[](size_t index)const{
+
+	if(index <3){
+		return array[index];
+	}
+	else{
+		throw std::out_of_range("Index out of range");
+	}
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
+HVector<T> Vector3<T>::toHVector(const T w)const{
+
+	return HVector<T>(x,y,z,w);
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
+Vector3<T>::operator Vector2<T>() const{
+	return Vector2<T>(x,y);
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
+Vector3<T>::operator HVector<T>() const{
+	return HVector<T>(x,y,z,1);
+}
+

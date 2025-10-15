@@ -55,8 +55,6 @@ public:
 
 	T& operator[](size_t index);
 	
-	Vector2<T> toVector2() const;
-
 	explicit operator Vector2<T>() const;
 	
 	operator HVector<T>() const;

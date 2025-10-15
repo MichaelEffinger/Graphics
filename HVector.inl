@@ -1,6 +1,7 @@
 #pragma once
 
 #include "HVector.hpp"
+#include "iostream"
 #include <stdexcept>
 
 template <typename T> requires std::is_arithmetic_v<T>
@@ -82,9 +83,48 @@ HVector<T> HVector<T>::operator/(const T scalar) const{
 
 template <typename T> requires std::is_arithmetic_v<T>
 HVector<T> HVector<T>::hadamardProduct(const HVector<T>& other) const{
-
-
+	
+	return HVector<T>(x*other.x,y*other.y,z*other.z,w*other.w);
 
 }
+
+template <typename T> requires std::is_arithmetic_v<T>
+HVector<T> HVector<T>::hadamardDivide(const HVector<T>& other)const{
+	
+
+	HVector<T> myVector = Hvector<T>(0,0,0,0);
+	for(int i: array){
+		if(other.array[i] == 0){
+			#ifdef DEBUG 
+			std::cout << "Hadamard Divide by zero error";
+			#endif
+			myVector.array[i] = std::numeric_limits<T>::max();
+		}
+		else{
+			myVector.array[i] = array[i]/other.array[i];
+		}
+	}
+	return myVector;
+
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
+HVector<T> HVector<T>::crossProduct(const HVector<T>& other) const{
+
+	#ifdef DEBUG
+	if(w == 1 || other.w ==1){
+		std::cout << "you are doing a cross product on a point be careful";
+	}
+	#endif
+	return HVector((y * other.z) - (z * other.y), (z * other.x) - (x * other.z), (x * other.y) - (y * other.x),0);
+
+}
+
+
+template <typename T> requires std::is_arithmetic_v<T>
+T HVector<T>::dotProduct(const HVector<T>& other) const{
+	return (x * other.x) + (y * other.y) + (z*other.z);
+} 
+
 
 

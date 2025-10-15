@@ -51,7 +51,7 @@ public:
 	
 	const T& operator[](size_t index) const;
 	
-	T& operator[](size_t index);
+	HVector<T> operator[](size_t index);
 	
 	explicit operator Vector2<T>() const;
 	
