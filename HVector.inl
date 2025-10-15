@@ -92,8 +92,8 @@ template <typename T> requires std::is_arithmetic_v<T>
 HVector<T> HVector<T>::hadamardDivide(const HVector<T>& other)const{
 	
 
-	HVector<T> myVector = Hvector<T>(0,0,0,0);
-	for(int i: array){
+	HVector<T> myVector = HVector<T>(0,0,0,0);
+	for(int i =0; i<4; i++){
 		if(other.array[i] == 0){
 			#ifdef DEBUG 
 			std::cout << "Hadamard Divide by zero error";
@@ -126,5 +126,47 @@ T HVector<T>::dotProduct(const HVector<T>& other) const{
 	return (x * other.x) + (y * other.y) + (z*other.z);
 } 
 
+template <typename T> requires std::is_arithmetic_v<T>
+T& HVector<T>::operator[](size_t index) {
+    if (index < 4) {
+        return array[index];
+    }
+    else {
+        throw std::out_of_range("Index out of range");
+    }
+}
+template <typename T> requires std::is_arithmetic_v<T>
+const T& HVector<T>::operator[](size_t index) const {
+    if (index < 4) {
+        return array[index];
+    }
+    else {
+        throw std::out_of_range("Index out of range");
+    }
+}
 
 
+template <typename T> requires std::is_arithmetic_v<T>
+HVector<T>::operator Vector3<T>() const{
+	return Vector3<T>(x,y,z);
+}
+
+template <typename T> requires std::is_arithmetic_v<T>
+HVector<T>::operator Vector2<T>() const{
+	return Vector2<T>(x,y);
+}
+
+
+
+template <typename T> requires std::is_arithmetic_v<T>
+void HVector<T>::homogenize(){
+	x =  x/w;
+	y = y/w;
+	z = z/w;
+	w = 1;
+}
+
+template <typename T>requires std::is_arithmetic_v<T>
+HVector<T> HVector<T>::homogenized() const{
+	return HVector<T>(x/w,y/w,z/w,1);
+}

@@ -5,6 +5,8 @@
 #include <type_traits>
 #include <utility>
 
+#include "Vector3.hpp"
+#include "HVector.hpp"
 
 template <typename T> requires std::is_arithmetic_v<T>
 class Vector3;

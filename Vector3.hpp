@@ -1,8 +1,8 @@
 #pragma once
 
 #include <type_traits>
-#include "Vector2.hpp"
 
+#include "Vector2.hpp"
 #include "HVector.hpp"
 
 

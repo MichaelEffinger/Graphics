@@ -1,8 +1,10 @@
-#ifndef HVECTOR
-#define HVECTOR
-
+#pragma once
 #include <type_traits>
 #include <stdexcept>
+
+#include "Vector2.hpp"
+#include "Vector3.hpp"
+
 
 template <typename T> requires std::is_arithmetic_v<T>
 class Vector2;
@@ -51,7 +53,7 @@ public:
 	
 	const T& operator[](size_t index) const;
 	
-	HVector<T> operator[](size_t index);
+	T& operator[](size_t index);
 	
 	explicit operator Vector2<T>() const;
 	
@@ -62,22 +64,7 @@ public:
 	HVector<T> homogenized() const;
 	
 
-// addition: ignore W  (add x/y/z, leave w as-is; enforce point+point invalid)
-// subtraction: ignore W  (subtract x/y/z, leave w as-is; point-point → direction)
-// division: include W  (divide all components by scalar, then renormalize if w ≠ 0)
-// multiplication: include W  (multiply all components by scalar, then renormalize if w ≠ 0)
-// hamamard multiplication: include W  (multiply x/y/z/w component-wise, then renormalize if w ≠ 0)
-// hamamard division: include W  (divide x/y/z/w component-wise, then renormalize if w ≠ 0)
-// dot product: ignore W  (use only x/y/z)
-// cross product: ignore W  (use only x/y/z, result w=0)
-
-
-
-
-
 };
 
 
 #include "HVector.inl"
-
-#endif
