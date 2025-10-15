@@ -12,8 +12,7 @@ class VectorN{
     
     std::array<T,N> array{};
 
-    template <typename... Args> requires (sizeof...(Args) == N) &&(std::conjunction_v<std::is_convertible<Args,T>...>)
-    
+    template <typename... Args> requires (sizeof...(Args) == N) &&(std::conjunction_v<std::is_convertible<Args,T>...>) 
     constexpr VectorN(Args... args);
 
     T& operator[](int index);
@@ -35,6 +34,8 @@ class VectorN{
     VectorN<T,N> hadamardDivide(const VectorN<T,N>&other)const;
 
     T length();
+
+    T lengthSquared();
 
     const T angle(const VectorN<T,N>&other)const;
 
