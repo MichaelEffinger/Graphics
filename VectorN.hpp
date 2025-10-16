@@ -3,44 +3,35 @@
 #include <type_traits>
 #include <array>
 
-
-
-
-
 template <typename T, int N> requires std::is_arithmetic_v<T>
 class VectorN{
-    
-    std::array<T,N> array{};
+    std::array<T, N> array{};
 
-    template <typename... Args> requires (sizeof...(Args) == N) &&(std::conjunction_v<std::is_convertible<Args,T>...>) 
+    template <typename... Args>
+    requires (sizeof...(Args) == N) && (std::conjunction_v<std::is_convertible<Args,T>...>)
     constexpr VectorN(Args... args);
 
-    T& operator[](int index);
 
-    const T& operator[](int index) const;
+    template <typename Self>
+    decltype(auto) operator[](this Self&& self, std::size_t index);
+    constexpr T& operator[](int index);
+    constexpr const T& operator[](int index) const;
 
-    const bool operator==(const VectorN<T, N>& other)const;
+    constexpr bool operator==(const VectorN<T, N>& other) const;
 
-    VectorN<T,N> operator+(const VectorN<T,N>&other)const;
+    constexpr VectorN<T, N> operator+(const VectorN<T, N>& other) const;
+    constexpr VectorN<T, N> operator-(const VectorN<T, N>& other) const;
+    constexpr VectorN<T, N> operator/(const T& scalar) const;
+    constexpr VectorN<T, N> operator*(const T& scalar) const;
 
-    VectorN<T,N> operator-(const VectorN<T,N>&other)const;
+    constexpr VectorN<T, N> hadamardProduct(const VectorN<T, N>& other) const;
+    constexpr VectorN<T, N> hadamardDivide(const VectorN<T, N>& other) const;
 
-    VectorN<T,N> operator/(const T scalar)const;
+    T length() const;
+    T lengthSquared() const;
+    constexpr T angle(const VectorN<T, N>& other) const;
 
-    VectorN<T,N> operator*(const T scalar)const;
-
-    VectorN<T,N> hadamardProduct(const VectorN<T,N>&other)const;
-
-    VectorN<T,N> hadamardDivide(const VectorN<T,N>&other)const;
-
-    T length();
-
-    T lengthSquared();
-
-    const T angle(const VectorN<T,N>&other)const;
-
-    VectorN<T,N> normalized();
-
+    VectorN<T, N> normalized() const;
     void normalize();
 
     template<int M, std::enable_if_t<(M < N), int> = 0>
@@ -48,11 +39,4 @@ class VectorN{
 
     template<int M, std::enable_if_t<(M > N), int> = 0>
     explicit constexpr VectorN(const VectorN<T, M>& other);
-
-
-
-
-
 };
-
-#include "VectorN.inl"
