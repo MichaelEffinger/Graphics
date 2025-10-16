@@ -16,7 +16,7 @@ add_executable(ComputerGraphics "ComputerGraphics.cpp" "ComputerGraphics.h")
 
 # Set C++20 standard if supported
 if (CMAKE_VERSION VERSION_GREATER 3.12)
-  set_property(TARGET ComputerGraphics PROPERTY CXX_STANDARD 20)
+  set_property(TARGET ComputerGraphics PROPERTY CXX_STANDARD 23)
 endif()
 
 # Example: You can add platform-specific includes or libraries here
