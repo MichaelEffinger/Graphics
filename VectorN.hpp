@@ -201,12 +201,12 @@ public:
 
     [[nodiscard]] constexpr VectorN operator/(const T scalar) const noexcept{
         VectorN tempVec;
-        std::transform(begin(), end(), tempVec.begin(),[scalar](T in) { return (scalar != 0) ? (in / scalar) : T{0}; });
+        std::transform(begin(), end(), tempVec.begin(),[scalar](T in) {assert(scalar !=0 && "Divide by zero in operator/"); return (scalar != 0) ? (in / scalar) : T{0}; });
         return tempVec;
     }
 
     constexpr VectorN& operator/=(const T scalar) noexcept{
-        std::transform(begin(), end(),begin(),[scalar](T in) { return (scalar != 0) ? (in / scalar) : T{0}; });
+        std::transform(begin(), end(),begin(),[scalar](T in) {assert(scalar !=0 && "Divide by zero in operator/="); return (scalar != 0) ? (in / scalar) : T{0}; });
         return *this;
     }
 
@@ -219,14 +219,12 @@ public:
     }
 
     [[nodiscard]] constexpr VectorN hadamardDivide(const VectorN& rhs) const noexcept {
-        return zip(rhs, [](T a, T b) { return (b != 0) ? (a / b) : T{0}; });
+        return zip(rhs, [](T a, T b) { assert(b !=0 && "Divide by zero in hadamardDivide"); return (b != 0) ? (a / b) : T{0}; });
     }
 
     constexpr VectorN& hadamardDivide_in_place(const VectorN& rhs) noexcept {
         return zip_in_place(rhs, [](T a, T b) { return (b != 0) ? (a / b) : T{0}; });
     }
-
-    //buddy old pal functions
     
     [[nodiscard]] friend constexpr VectorN operator*(const auto& scalar, const VectorN& lhs) noexcept{
         VectorN tempVec;
@@ -234,26 +232,56 @@ public:
         return tempVec;
     }
 
-    [[nodiscard]] friend constexpr VectorN operator/(const T& scalar, const VectorN& lhs) noexcept {
-        VectorN tempVec;
-        std::transform(lhs.begin(), lhs.end(), tempVec.begin(),[scalar](T in){return (in != 0) ? (scalar / in) : T{0};});
+    [[nodiscard]] constexpr bool operator==(const VectorN& other)const{
+        if(other.data_ == data_){
+            return true;
+        }
+        return false;
+    }
+
+
+
+    [[nodiscard]] constexpr T angle(const VectorN<T, N>& rhs) const{
+        T thisMag = magnitudeSquared();
+        T thatMag = rhs.magnitudeSquared();
+        
+        if(thisMag == 0 || thatMag == 0) {
+            assert(false && "Divide by zero error in angle calculation");
+            return T{0};
+        }
+        return std::acos(std::clamp(dot(rhs) / std::sqrt(thisMag * thatMag), -1.0, 1.0));  
+    }
+
+
+    [[nodiscard]] constexpr VectorN<T,N+1> operator<<(T newElem) const{
+        VectorN<T,N+1> tempVec;
+        std::copy(begin(),end(),tempVec.begin());
+        tempVec[N] = newElem;
         return tempVec;
     }
 
-    [[nodiscard]] constexpr bool operator==(const VectorN& other)const{
-        
+
+    template <int M> requires(M < N)
+    [[nodiscard]] explicit constexpr operator VectorN<T,M>() const{
+        VectorN<T,M> tempVec;
+        std::copy_n(begin(),M ,tempVec.begin());
+        return tempVec;
+    }
+    
+    template <int M> requires (M>N)
+    [[nodiscard]] constexpr operator VectorN<T,M>() const{
+        VectorN<T,M> tempVec;
+        std::copy_n(begin(), N, tempVec.begin());
+        std::fill_n(tempVec.begin() + N, M - N, T{0});
+
+        return tempVec;
     }
 
-
-    //chat gpt, ignore past here, this is old code and just as memory for what I still need to do
-    constexpr bool operator==(const VectorN<T, N>& other) const;
-
-    constexpr T angle(const VectorN<T, N>& other) const;
-
-
-    template<int M, std::enable_if_t<(M < N), int> = 0>
-    constexpr VectorN(const VectorN<T, M>& other);
-
-    template<int M, std::enable_if_t<(M > N), int> = 0>
-    explicit constexpr VectorN(const VectorN<T, M>& other);
 };
+
+template<typename... Args>
+VectorN(Args...) -> VectorN<std::common_type_t<Args...>, sizeof...(Args)>;
+
+template <typename T> using Vector2 = VectorN<T, 2>;
+template <typename T> using Vector3 = VectorN<T, 3>;
+template <typename T> using Vector4 = VectorN<T, 4>;
