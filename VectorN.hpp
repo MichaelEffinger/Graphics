@@ -145,12 +145,9 @@ public:
         return std::sqrt(std::abs(dot(*this)));
     }
     [[nodiscard]] constexpr T magnitudeSquared() const noexcept{
-        //Yes dot product should always be positive but floating point erros can make tiny negative: so I check it 
         return dot(*this);
     }
 
-    [[nodiscard]]
-    
     constexpr VectorN& normalize() noexcept{
         T mag = magnitude();
         if(mag == 0){
@@ -165,7 +162,6 @@ public:
     [[nodiscard]] constexpr VectorN normalized() const noexcept{
         return VectorN(*this).normalize();
     }
-
 
 
     [[nodiscard]] constexpr VectorN operator+(const VectorN& rhs)const{
@@ -209,7 +205,7 @@ public:
         return tempVec;
     }
 
-    constexpr VectorN operator/=(const T scalar) noexcept{
+    constexpr VectorN& operator/=(const T scalar) noexcept{
         std::transform(begin(), end(),begin(),[scalar](T in) { return (scalar != 0) ? (in / scalar) : T{0}; });
         return *this;
     }
@@ -244,8 +240,9 @@ public:
         return tempVec;
     }
 
-
-
+    [[nodiscard]] constexpr bool operator==(const VectorN& other)const{
+        
+    }
 
 
     //chat gpt, ignore past here, this is old code and just as memory for what I still need to do

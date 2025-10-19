@@ -223,6 +223,12 @@ public:
         return *this;
     }
 
+    template<int M> requires (M < N)
+    constexpr VectorN(const VectorN<T, M>& other);
+
+    template<int M> requires (M > N)
+    explicit constexpr VectorN(const VectorN<T, M>& other);
+
 };
 
 template<typename... Args>
@@ -231,6 +237,8 @@ VectorN(Args...) -> VectorN<std::common_type_t<Args...>, sizeof...(Args)>;
 template <typename T> using Vector2 = VectorN<T, 2>;
 template <typename T> using Vector3 = VectorN<T, 3>;
 template <typename T> using Vector4 = VectorN<T, 4>;
+
+
 
 #ifdef GODBOLT
 int main(){
