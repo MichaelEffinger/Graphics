@@ -3,8 +3,6 @@
 #include "VectorN.hpp"
 #include "VectorH.hpp"
 
-// GPU-safe padded vec3 (16-byte aligned)
-
 
 struct alignas(8) Vector2P: public VectorN<float,2>{};
 
