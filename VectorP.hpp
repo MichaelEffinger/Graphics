@@ -2,9 +2,8 @@
 
 #include "VectorN.hpp"
 #include "VectorH.hpp"
-#include <memory>
 
-// GPU-safe padded vec3 (16-byte aligned)
+#include <cstring>
 
 
 
@@ -18,25 +17,14 @@ struct alignas(16) Vector3P : public VectorN<float, 3> {
 
     constexpr Vector3P(float x, float y, float z) : VectorN<float, 3>({x, y, z}), pad_(1.0f) {}
 
-
     constexpr Vector3P(VectorN<float,3>);
 
     VectorH toVectorH(float W) const noexcept {
-        VectorH h = *reinterpret_cast<const VectorH*>(this);
+        VectorH h;
+        std::memcpy(&h, this, sizeof(Vector3P));
         h.w() = W;
         return h;
     }
-
-    VectorH toVectorH_In_Place(float W) const noexcept {
-        VectorH h = *reinterpret_cast<const VectorH*>(this);
-        h.w() = W;
-        return h;
-    }
-
-    VectorH& toVectorH_In_Place() noexcept {
-        return *reinterpret_cast<VectorH*>(this);
-    }
-
 
 
 };

@@ -18,107 +18,118 @@ public:
 
     constexpr VectorH() noexcept = default;
 
-    constexpr VectorH(float x, float y, float z, float w) noexcept
-        : xyz_(x, y, z), w_(w) {}
+    constexpr VectorH(float X, float Y, float Z, float W) noexcept : xyz_(X, Y, Z), w_(W) {}
 
-    constexpr VectorH(const VectorN<float,3>& vec3, float w) noexcept
-        : xyz_(vec3), w_(w) {}
+    constexpr VectorH(const VectorN<float,3>& vec3, float W) noexcept : xyz_(vec3), w_(W) {}
 
+    [[nodiscard]] constexpr auto&& x(this auto&& self) noexcept{
+        return std::forward_like<decltype(self)>(self.xyz_[0]);
+    }
 
+    [[nodiscard]] constexpr auto&& y(this auto&& self) noexcept{
+        return std::forward_like<decltype(self)>(self.xyz_[1]);
+    }
 
-    [[nodiscard]] constexpr auto& x() noexcept { return xyz_.x(); }
-    [[nodiscard]] constexpr auto& y() noexcept { return xyz_.y(); }
-    [[nodiscard]] constexpr auto& z() noexcept { return xyz_.z(); }
-    [[nodiscard]] constexpr auto& w() noexcept { return w_; }
+    [[nodiscard]] constexpr auto&& z(this auto&& self) noexcept {
+        return std::forward_like<decltype(self)>(self.xyz_[2]);
+    }
 
-    [[nodiscard]] constexpr const auto& x() const noexcept { return xyz_.x(); }
-    [[nodiscard]] constexpr const auto& y() const noexcept { return xyz_.y(); }
-    [[nodiscard]] constexpr const auto& z() const noexcept { return xyz_.z(); }
-    [[nodiscard]] constexpr const auto& w() const noexcept { return w_; }
+    [[nodiscard]] constexpr auto&& w(this auto&& self) noexcept{
+        return std::forward_like<decltype(self)>(self.w_);
+    }
 
 
     [[nodiscard]] constexpr VectorH operator+(const VectorH& rhs) const noexcept {
-        assert(w_ == rhs.w_ && "Cannot add point to direction or different w");
-        return VectorH(xyz_ + rhs.xyz_, w_);
+        assert(w_ !=0.0f && rhs.w_ !=0.0f && "Cannot add point to point");
+        return VectorH(xyz_ + rhs.xyz_, rhs.w_+w_);
     }
 
     constexpr VectorH& operator+=(const VectorH& rhs) noexcept {
-        assert(w_ == rhs.w_ && "Cannot add point to direction or different w");
+        assert(w_ !=0.0f && rhs.w_ !=0.0f && "Cannot add point to point");
         xyz_ += rhs.xyz_;
         return *this;
     }
 
     [[nodiscard]] constexpr VectorH operator-(const VectorH& rhs) const noexcept {
-        assert(w_ == rhs.w_ && "Cannot subtract point from direction or mismatched w");
+        assert(w_ ==0.0f && rhs.w_!=0.0f && "Cannot subtract point from direction");
         return VectorH(xyz_ - rhs.xyz_, w_);
     }
 
     constexpr VectorH& operator-=(const VectorH& rhs) noexcept {
-        assert(w_ == rhs.w_ && "Cannot subtract point from direction or mismatched w");
+        assert(w_ ==0.0f && rhs.w_!=0.0f&& "Cannot subtract point from direction");
         xyz_ -= rhs.xyz_;
         return *this;
     }
 
     [[nodiscard]] constexpr VectorH operator*(float scalar) const noexcept {
-        return VectorH(xyz_ * scalar, w_);
+        return VectorH(xyz_ * scalar, w_*scalar);
     }
 
     constexpr VectorH& operator*=(float scalar) noexcept {
         xyz_ *= scalar;
+        w_ *= scalar;
         return *this;
     }
 
     [[nodiscard]] constexpr VectorH operator/(float scalar) const noexcept {
         assert(scalar != 0.0f);
-        return VectorH(xyz_ / scalar, w_);
+        if(scalar == 0.0f){
+            return VectorH(0.0f,0.0f,0.0f,0.0f);
+        }
+        return VectorH(xyz_ / scalar,w_/scalar);
     }
 
     constexpr VectorH& operator/=(float scalar) noexcept {
         assert(scalar != 0.0f);
+        if(scalar == 0.0f){
+            *this = {0,0,0,0};
+        }
         xyz_ /= scalar;
+        w_ /= scalar;
         return *this;
     }
 
     
     [[nodiscard]] constexpr VectorH hadamardProduct(const VectorH& rhs) const noexcept {
-        assert(w_ == rhs.w_ && "Hadamard product requires matching w");
+        assert((w_ == 0 && rhs.w_ == 0 || w_ !=0 && rhs.w_ !=0)  && "Hadamard product requires matching w");
         return VectorH(xyz_.hadamardProduct(rhs.xyz_), w_);
     }
 
     constexpr VectorH& hadamardProduct_in_place(const VectorH& rhs) noexcept {
-        assert(w_ == rhs.w_ && "Hadamard product requires matching w");
+        assert((w_ == 0 && rhs.w_ == 0 || w_ !=0 && rhs.w_ !=0)  && "Hadamard product requires matching w");
         xyz_.hadamardProduct_in_place(rhs.xyz_);
         return *this;
     }
 
     [[nodiscard]] constexpr VectorH hadamardDivide(const VectorH& rhs) const noexcept {
-        assert(w_ == rhs.w_ && "Hadamard divide requires matching w");
+        assert((w_ == 0 && rhs.w_ == 0 || w_ !=0 && rhs.w_ !=0) && "Hadamard divide requires matching w");
         return VectorH(xyz_.hadamardDivide(rhs.xyz_), w_);
     }
 
     constexpr VectorH& hadamardDivide_in_place(const VectorH& rhs) noexcept {
-        assert(w_ == rhs.w_ && "Hadamard divide requires matching w");
+        assert((w_ == 0 && rhs.w_ == 0 || w_ !=0 && rhs.w_ !=0) && "Hadamard divide requires matching w");
         xyz_.hadamardDivide_in_place(rhs.xyz_);
         return *this;
     }
 
-    // Dot and cross
+
     [[nodiscard]] constexpr float dot(const VectorH& rhs) const noexcept {
+        assert((w_ ==0 && rhs.w_ == 0) && "Dot product requires two directions" );
         return xyz_.dot(rhs.xyz_);
     }
 
     [[nodiscard]] constexpr VectorH cross(const VectorH& rhs) const noexcept {
-        assert(w_ == Type::DIRECTION && rhs.w_ == Type::DIRECTION);
-        return VectorH(xyz_.cross(rhs.xyz_), Type::DIRECTION);
+        assert((w_ == 0 && rhs.w_ == 0) && "Cross product requires two directions" );
+        return VectorH(xyz_.cross(rhs.xyz_), 0);
     }
 
     constexpr VectorH& cross_in_place(const VectorH& rhs) noexcept {
-        assert(w_ == Type::DIRECTION && rhs.w_ == Type::DIRECTION);
+        assert((w_ == 0 && rhs.w_ == 0) && "Cross product requires two directions" );
         xyz_.cross_in_place(rhs.xyz_);
         return *this;
     }
 
-    // Magnitude and normalization
+
     [[nodiscard]] constexpr float magnitude() const noexcept {
         return xyz_.magnitude();
     }
@@ -136,7 +147,7 @@ public:
         return VectorH(xyz_.normalized(), w_);
     }
 
-    // Equality
+
     [[nodiscard]] constexpr bool operator==(const VectorH& rhs) const noexcept {
         return w_ == rhs.w_ && xyz_ == rhs.xyz_;
     }
@@ -144,4 +155,27 @@ public:
     [[nodiscard]] constexpr bool operator!=(const VectorH& rhs) const noexcept {
         return !(*this == rhs);
     }
+
+
+
+ [[nodiscard]] constexpr VectorH homogenize() const noexcept {
+    if (w_ == 0) {
+        return *this;
+    }
+    return VectorH(xyz_/w_,1);
+}
+
+constexpr VectorH& homogenized() noexcept {
+    if (w_ == 0) {
+        return *this;
+    }
+    xyz_/= w_;
+    w_ = 1;
+    return *this;
+}
+
+
+
+
+
 };

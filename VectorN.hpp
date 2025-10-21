@@ -17,6 +17,7 @@ concept FoldExpr = requires(Op op, T accum, T l, T r){
 
 template <typename T, std::size_t N> requires std::is_arithmetic_v<T>
 class VectorN{
+protected:
     std::array<T, N> data_;
 public:
     using VectorThis = VectorN<T, N>;
@@ -91,7 +92,8 @@ public:
     template<typename BinaryOp>
     [[nodiscard]] constexpr VectorN zip(const VectorN& rhs, BinaryOp op) const noexcept{
         VectorN resultant;
-        auto liter = cbegin(), riter = rhs.cbegin(), oiter = resultant.begin();
+        auto liter = cbegin(), riter = rhs.cbegin();
+        auto oiter = resultant.begin();
         while(liter != cend()){
             *oiter = op(*liter, *riter);
             ++liter, ++riter, ++oiter;
@@ -101,7 +103,8 @@ public:
 
     template<typename BinaryOp>
     constexpr VectorN& zip_in_place(const VectorN& rhs, BinaryOp op) noexcept{
-        auto liter = begin(), riter = rhs.cbegin();
+        auto liter = begin();
+        auto riter = rhs.cbegin();
         while(liter != end()){
             *liter = op(*liter, *riter);
             ++liter, ++riter;
