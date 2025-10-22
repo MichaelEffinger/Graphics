@@ -4,13 +4,15 @@
 #include "VectorH.hpp"
 
 #include <cstring>
+#include "config.hpp"
 
 
+namespace ES{
 
-struct alignas(8) Vector2P: public VectorN<float,2>{};
+struct alignas(sizeof(Real)*4) Vector2P: public VectorN<float,2>{};
 
 
-struct alignas(16) Vector3P : public VectorN<float, 3> {
+struct alignas(sizeof(Real)*4) Vector3P : public VectorN<float, 3> {
     float pad_ = 1.0f;
 
     constexpr Vector3P() = default;
@@ -28,5 +30,6 @@ struct alignas(16) Vector3P : public VectorN<float, 3> {
 
 
 };
-struct alignas(16) Vector4P: public VectorN<float,4>{};
+struct alignas(sizeof(Real)*4) Vector4P: public VectorN<float,4>{};
 
+}

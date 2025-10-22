@@ -10,6 +10,9 @@
 #include <algorithm>
 #include <functional>
 
+
+namespace EF {
+
 template<typename Op, typename T>
 concept FoldExpr = requires(Op op, T accum, T l, T r){
     { op(accum, l, r) } -> std::convertible_to<T>;
@@ -288,3 +291,5 @@ VectorN(Args...) -> VectorN<std::common_type_t<Args...>, sizeof...(Args)>;
 template <typename T> using Vector2 = VectorN<T, 2>;
 template <typename T> using Vector3 = VectorN<T, 3>;
 template <typename T> using Vector4 = VectorN<T, 4>;
+
+}

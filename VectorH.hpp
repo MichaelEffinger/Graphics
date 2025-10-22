@@ -5,6 +5,9 @@
 #include <algorithm>
 #include <cassert>
 
+
+namespace ES{
+
 struct Type {
     static constexpr float DIRECTION = 0.0f;
     static constexpr float POINT = 1.0f;
@@ -179,3 +182,5 @@ constexpr VectorH& homogenized() noexcept {
 
 
 };
+
+}
