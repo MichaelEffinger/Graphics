@@ -9,10 +9,10 @@
 
 namespace ES{
 
-struct alignas(sizeof(Real)*4) Vector2P: public VectorN<float,2>{};
+struct alignas(sizeof(real)*2) Vector2P: public ES::VectorN<float,2>{};
 
 
-struct alignas(sizeof(Real)*4) Vector3P : public VectorN<float, 3> {
+struct alignas(sizeof(real)*4) Vector3P : public ES::VectorN<float, 3> {
     float pad_ = 1.0f;
 
     constexpr Vector3P() = default;
@@ -30,6 +30,6 @@ struct alignas(sizeof(Real)*4) Vector3P : public VectorN<float, 3> {
 
 
 };
-struct alignas(sizeof(Real)*4) Vector4P: public VectorN<float,4>{};
+struct alignas(sizeof(real)*4) Vector4P: public ES::VectorN<float,4>{};
 
 }

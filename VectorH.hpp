@@ -14,7 +14,7 @@ struct Type {
 };
 
 class VectorH {
-    VectorN<float,3> xyz_;
+    ES::VectorN<float,3> xyz_;
     float w_ = Type::POINT;
 
 public:
@@ -23,7 +23,7 @@ public:
 
     constexpr VectorH(float X, float Y, float Z, float W) noexcept : xyz_(X, Y, Z), w_(W) {}
 
-    constexpr VectorH(const VectorN<float,3>& vec3, float W) noexcept : xyz_(vec3), w_(W) {}
+    constexpr VectorH(const ES::VectorN<float,3>& vec3, float W) noexcept : xyz_(vec3), w_(W) {}
 
     [[nodiscard]] constexpr auto&& x(this auto&& self) noexcept{
         return std::forward_like<decltype(self)>(self.xyz_[0]);
@@ -95,23 +95,23 @@ public:
     
     [[nodiscard]] constexpr VectorH hadamardProduct(const VectorH& rhs) const noexcept {
         assert((w_ == 0 && rhs.w_ == 0 || w_ !=0 && rhs.w_ !=0)  && "Hadamard product requires matching w");
-        return VectorH(xyz_.hadamardProduct(rhs.xyz_), w_);
+        return VectorH(xyz_.hadamard_product(rhs.xyz_), w_);
     }
 
     constexpr VectorH& hadamardProduct_in_place(const VectorH& rhs) noexcept {
         assert((w_ == 0 && rhs.w_ == 0 || w_ !=0 && rhs.w_ !=0)  && "Hadamard product requires matching w");
-        xyz_.hadamardProduct_in_place(rhs.xyz_);
+        xyz_.hadamard_product_in_place(rhs.xyz_);
         return *this;
     }
 
     [[nodiscard]] constexpr VectorH hadamardDivide(const VectorH& rhs) const noexcept {
         assert((w_ == 0 && rhs.w_ == 0 || w_ !=0 && rhs.w_ !=0) && "Hadamard divide requires matching w");
-        return VectorH(xyz_.hadamardDivide(rhs.xyz_), w_);
+        return VectorH(xyz_.hadamard_divide(rhs.xyz_), w_);
     }
 
     constexpr VectorH& hadamardDivide_in_place(const VectorH& rhs) noexcept {
         assert((w_ == 0 && rhs.w_ == 0 || w_ !=0 && rhs.w_ !=0) && "Hadamard divide requires matching w");
-        xyz_.hadamardDivide_in_place(rhs.xyz_);
+        xyz_.hadamard_divide_in_place(rhs.xyz_);
         return *this;
     }
 
@@ -138,7 +138,7 @@ public:
     }
 
     [[nodiscard]] constexpr float magnitudeSquared() const noexcept {
-        return xyz_.magnitudeSquared();
+        return xyz_.magnitude_squared();
     }
 
     constexpr VectorH& normalize() noexcept {
