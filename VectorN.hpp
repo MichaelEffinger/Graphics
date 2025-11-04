@@ -38,18 +38,25 @@ public:
 
     constexpr VectorN() noexcept = default;
 
-    template <typename... Args>
-    requires (sizeof...(Args) == N) && (std::conjunction_v<std::is_convertible<Args, T>...>)
-    constexpr VectorN(Args&&... args) noexcept((std::is_nothrow_constructible_v<T, Args&&> && ...))
-    : data_{std::forward<Args>(args)...} {}
+
+    template <typename... Args> requires (sizeof...(Args) == N)
+    constexpr VectorN(Args&&... args) noexcept((std::is_nothrow_constructible_v<T, Args&&> && ...)) : data_{static_cast<T>(Args(args))...} {}
+
+    template<size_t M, typename... U> requires (sizeof...(U) == N - M)
+    constexpr VectorN(const VectorN<T, M>& smaller, U... extras) noexcept((std::is_nothrow_constructible_v<T,U&&>&&...)): data_{} {      
+        std::copy(smaller.cbegin(), smaller.cend(), data_.begin());
+        size_t index = M;
+        ((data_[index++] = T(static_cast<T>(extras))), ...);
+    }
 
 
-    [[nodiscard]] constexpr auto operator[](this auto&& self, std::size_t index)noexcept{
+
+    [[nodiscard]] constexpr auto&& operator[](this auto&& self, std::size_t index)noexcept{
         assert(index < N && "Vector index out of range");
         return std::forward_like<decltype(self)>(self.data_[index]);
     }
 
-    [[nodiscard]] constexpr auto at(this auto&& self, std::size_t index){
+    [[nodiscard]] constexpr auto&& at(this auto&& self, std::size_t index){
         assert(index < N && "Vector index out of range");
         if(index >=N){
             index = N-1;
@@ -77,11 +84,11 @@ public:
     }
 
     [[nodiscard]] constexpr auto&& head(this auto&& self) noexcept requires (N > 0) {
-    return std::forward_like<decltype(self)>(self[0]);
+        return std::forward_like<decltype(self)>(self[0]);
     }
 
     [[nodiscard]] constexpr auto&& tail(this auto&& self) noexcept requires (N > 0) {
-    return std::forward_like<decltype(self)>(self[N-1]);
+        return std::forward_like<decltype(self)>(self[N-1]);
     }
 
     [[nodiscard]] constexpr auto begin() noexcept{return data_.begin();}
@@ -93,7 +100,7 @@ public:
 
 
     template<typename BinaryOp>
-    [[nodiscard]] constexpr VectorN zip(const VectorN& rhs, BinaryOp op) const noexcept{
+    [[nodiscard]] constexpr VectorN zip(VectorN rhs, BinaryOp op) const noexcept{
         VectorN resultant;
         auto liter = cbegin(), riter = rhs.cbegin();
         auto oiter = resultant.begin();
@@ -105,7 +112,7 @@ public:
     }
 
     template<typename BinaryOp>
-    constexpr VectorN& zip_in_place(const VectorN& rhs, BinaryOp op) noexcept{
+    constexpr VectorN& zip_in_place(const VectorN rhs, BinaryOp op) noexcept{
         auto liter = begin();
         auto riter = rhs.cbegin();
         while(liter != end()){
@@ -115,7 +122,7 @@ public:
         return *this;
     }
 
-    [[nodiscard]] constexpr T zip_reduce(const VectorN& rhs, T initial, FoldExpr<T> auto&& exp) const {
+    [[nodiscard]] constexpr T zip_reduce(const VectorN rhs, T initial, FoldExpr<T> auto&& exp) const {
         auto liter = cbegin(), riter = rhs.cbegin();
         while(liter != cend()){
             initial = exp(initial, *liter, *riter);
@@ -125,12 +132,12 @@ public:
     }
 
 
-    [[nodiscard]] constexpr T dot(const VectorN& rhs) const noexcept{
+    [[nodiscard]] constexpr T dot(const VectorN rhs) const noexcept{
         return zip_reduce(rhs, 0,[](T accum, T l, T r){return accum+(l*r);});
     }
     
 
-    [[nodiscard]] constexpr VectorN cross(const VectorN& rhs) const noexcept requires (N == 3){
+    [[nodiscard]] constexpr VectorN cross(const VectorN rhs) const noexcept requires (N == 3){
         return VectorN{
         data_[1] * rhs.data_[2] - data_[2] * rhs.data_[1],
         data_[2] * rhs.data_[0] - data_[0] * rhs.data_[2],
@@ -138,7 +145,7 @@ public:
         };
     }
 
-     constexpr VectorN& cross_in_place(const VectorN& rhs) noexcept requires (N == 3){
+     constexpr VectorN& cross_in_place(const VectorN rhs) noexcept requires (N == 3){
       T xt = data_[1] * rhs.data_[2] - data_[2] * rhs.data_[1],
         yt = data_[2] * rhs.data_[0] - data_[0] * rhs.data_[2],
         zt = data_[0] * rhs.data_[1] - data_[1] * rhs.data_[0];
@@ -148,7 +155,7 @@ public:
 
     [[nodiscard]] constexpr T magnitude() const noexcept{
         //Yes dot product should always be positive but floating point erros can make tiny negative: so I check it 
-        return std::sqrt(std::abs(dot(*this)));
+        return std::sqrt(std::fabs(dot(*this)));
     }
     [[nodiscard]] constexpr T magnitude_squared() const noexcept{
         return dot(*this);
@@ -170,15 +177,15 @@ public:
     }
 
 
-    [[nodiscard]] constexpr VectorN operator+(const VectorN& rhs)const{
+    [[nodiscard]] constexpr VectorN operator+(const VectorN rhs)const{
         return zip(rhs,std::plus{});
     }
 
-    constexpr VectorN& operator+=(const VectorN& rhs) noexcept{
+    constexpr VectorN& operator+=(const VectorN rhs) noexcept{
         return zip_in_place(rhs, std::plus{});
     }
 
-    [[nodiscard]] constexpr VectorN operator-(const VectorN& rhs) const noexcept{
+    [[nodiscard]] constexpr VectorN operator-(const VectorN rhs) const noexcept{
         return zip(rhs, std::minus{});
     }
 
@@ -190,7 +197,7 @@ public:
         return self;
     }
 
-    constexpr VectorN& operator-=(const VectorN& rhs) noexcept{
+    constexpr VectorN& operator-=(const VectorN rhs) noexcept{
         return zip_in_place(rhs, std::minus{});
     }
 
@@ -216,29 +223,29 @@ public:
         return *this;
     }
 
-    [[nodiscard]] constexpr VectorN hadamard_product(const VectorN& rhs) const noexcept{
+    [[nodiscard]] constexpr VectorN hadamard_product(const VectorN rhs) const noexcept{
         return zip(rhs, std::multiplies{});
     }
 
-    constexpr VectorN& hadamard_product_in_place(const VectorN& rhs) noexcept{
+    constexpr VectorN& hadamard_product_in_place(const VectorN rhs) noexcept{
         return zip_in_place(rhs, std::multiplies{});
     }
 
-    [[nodiscard]] constexpr VectorN hadamard_divide(const VectorN& rhs) const noexcept {
+    [[nodiscard]] constexpr VectorN hadamard_divide(const VectorN rhs) const noexcept {
         return zip(rhs, [](T a, T b) { assert(b !=0 && "Divide by zero in hadamardDivide"); return (b != 0) ? (a / b) : T{0}; });
     }
 
-    constexpr VectorN& hadamard_divide_in_place(const VectorN& rhs) noexcept {
-        return zip_in_place(rhs, [](T a, T b) { return (b != 0) ? (a / b) : T{0}; });
+    constexpr VectorN& hadamard_divide_in_place(const VectorN rhs) noexcept {
+        return zip_in_place(rhs, [](T a, T b) { assert(b !=0 && "Divide by zero in hadamardDivide"); return (b != 0) ? (a / b) : T{0}; });
     }
     
-    [[nodiscard]] friend constexpr VectorN operator*(const auto& scalar, const VectorN& lhs) noexcept{
+    [[nodiscard]] friend constexpr VectorN operator*(const auto& scalar, const VectorN lhs) noexcept{
         VectorN tempVec;
         std::transform(lhs.begin(),lhs.end(),tempVec.begin(),[scalar](T in){return in * scalar;});
         return tempVec;
     }
 
-    [[nodiscard]] constexpr bool operator==(const VectorN& other)const noexcept{
+    [[nodiscard]] constexpr bool operator==(const VectorN other)const noexcept{
         if(other.data_ == data_){
             return true;
         }
@@ -247,7 +254,7 @@ public:
 
 
 
-    [[nodiscard]] constexpr T angle(const VectorN<T, N>& rhs) const noexcept{
+    [[nodiscard]] constexpr T angle(const VectorN<T, N> rhs) const noexcept{
         T thisMag = magnitude_squared();
         T thatMag = rhs.magnitude_squared();
         
@@ -258,7 +265,6 @@ public:
         return std::acos(std::clamp(dot(rhs) / std::sqrt(thisMag * thatMag), T{-1}, T{1}));  
     }
 
-
     [[nodiscard]] constexpr VectorN<T,N+1>operator<<(T newElem) const noexcept{
         VectorN<T,N+1> tempVec;
         std::copy(begin(),end(),tempVec.begin());
@@ -267,55 +273,55 @@ public:
     }
 
 
-    template <int M> requires(M < N)
+    template <std::size_t M> requires(M < N)
     [[nodiscard]] explicit constexpr operator VectorN<T,M>() const noexcept{
         VectorN<T,M> tempVec;
         std::copy_n(begin(),M ,tempVec.begin());
         return tempVec;
     }
     
-    template <int M> requires (M>N)
-    [[nodiscard]] constexpr operator VectorN<T,M>() const noexcept{
+    template <std::size_t M> requires (M>N)
+    [[nodiscard]] explicit constexpr operator VectorN<T,M>() const noexcept{
         VectorN<T,M> tempVec;
         std::copy_n(begin(), N, tempVec.begin());
         std::fill_n(tempVec.begin() + N, M - N, T{0});
         return tempVec;
     }
 
-    [[nodiscard]] constexpr VectorN lerp(VectorN& rhs, T t) const noexcept{
+    [[nodiscard]] constexpr VectorN lerp(VectorN rhs, T t) const noexcept{
          return zip(rhs,[t](T a, T b) {return a+(b-a)*t;});
     }
 
-    constexpr VectorN& lerp_in_place(const VectorN& rhs, T t) noexcept {
+    constexpr VectorN& lerp_in_place(VectorN rhs, T t) noexcept {
         return zip_in_place(rhs, [t](T a, T b) { return a + (b - a) * t;});
     }
  
-    [[nodiscard]] constexpr VectorN reflect(const VectorN& rhs) const noexcept{
+    [[nodiscard]] constexpr VectorN reflect(VectorN rhs) const noexcept{
         assert(rhs.magnitude() == 1);
         T daught =  dot(rhs);
         return zip(rhs,[daught](T a, T b) {return a - 2 * daught * b;});
     }
     
-    VectorN& reflect_in_place(const VectorN& rhs)noexcept{
+    VectorN& reflect_in_place(VectorN rhs)noexcept{
         assert(rhs.magnitude() == 1);
         T daught =  dot(rhs);
         return zip_in_place(rhs,[daught](T a, T b) {return a - 2 * daught * b;});
     }
     
-    [[nodiscard]] VectorN reflect_safe(const VectorN& rhs)const noexcept{
+    [[nodiscard]] VectorN reflect_safe(VectorN rhs)const noexcept{
         VectorN unitVector = rhs.normalize();
         T  daught = dot(unitVector);
         return zip(unitVector,[daught](T a, T b){return a-2*daught * b;});
     }
     
-    VectorN& reflect_in_place_safe(const VectorN& rhs)noexcept{
+    VectorN& reflect_in_place_safe(VectorN rhs)noexcept{
         VectorN unitVector = rhs.normalize();
         T daught = dot(unitVector);
         return zip_in_place(unitVector,[daught](T a, T b){return a-2 * daught *b;});
     }
 
     
-    [[nodiscard]] constexpr VectorN refract(const VectorN& rhs, T n1, T n2) const noexcept {
+    [[nodiscard]] constexpr VectorN refract(VectorN rhs, T n1, T n2) const noexcept {
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhs));
         T k = 1.0f - refractionRatio * refractionRatio * (1.0f - cosi * cosi);
@@ -330,7 +336,7 @@ public:
     }
 
 
-    [[nodiscard]] constexpr VectorN& refract_in_place(const VectorN& rhs, T n1, T n2) noexcept {
+    [[nodiscard]] constexpr VectorN& refract_in_place(VectorN rhs, T n1, T n2) noexcept {
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhs));
         T k = 1.0f - refractionRatio * refractionRatio * (1.0f - cosi * cosi);
@@ -343,7 +349,7 @@ public:
     }
     
     
-    [[nodiscard]] constexpr VectorN refract_safe(const VectorN& rhs, T n1, T n2) const noexcept {  
+    [[nodiscard]] constexpr VectorN refract_safe(VectorN rhs, T n1, T n2) const noexcept {  
         VectorN thisUnit = normalize();
         VectorN rhsUnit = rhs.normalize();
 
@@ -364,7 +370,7 @@ public:
     }
 
     
-    [[nodiscard]] constexpr VectorN& refract_in_place_safe(const VectorN& rhs, T n1, T n2)noexcept {
+    [[nodiscard]] constexpr VectorN& refract_in_place_safe(VectorN rhs, T n1, T n2)noexcept {
         *this = normalize();
         VectorN rhsUnit = rhs.normalize();
 
@@ -380,7 +386,7 @@ public:
         return zip_in_place(rhsUnit, [refractionRatio, cosi, sqrtK](T i, T n) {return i * refractionRatio + n * (refractionRatio * cosi - sqrtK);});
     }
     
-    [[nodiscard]] constexpr VectorN& clamp_in_place(T minVal, T maxVal) noexcept {
+    constexpr VectorN& clamp_in_place(T minVal, T maxVal) noexcept {
         std::transform(begin(), end(), begin(),[minVal, maxVal](T in) { return std::clamp(in, minVal, maxVal);});
         return *this;
     }
@@ -392,26 +398,26 @@ public:
     }
     
 
-    [[nodiscard]] bool almost_equal(VectorN rhs, T epsilon){
+    [[nodiscard]] bool almost_equal(VectorN rhs, T epsilon = 1e-6f){
         VectorN differenceVector = *this - rhs;
-        return std::all_of(differenceVector.begin(),differenceVector.end(),[epsilon](T in){return std::abs(in) <= epsilon;});
+        return std::all_of(differenceVector.begin(),differenceVector.end(),[epsilon](T in){return std::fabs(in) <= epsilon;});
     }
 
-    [[nodiscard]] constexpr T distance(const VectorN& rhs) const noexcept {
+    [[nodiscard]] constexpr T distance(VectorN rhs) const noexcept {
         return (*this - rhs).magnitude();
     }
 
-    [[nodiscard]] constexpr T distance_squared(const VectorN& rhs) const noexcept {
+    [[nodiscard]] constexpr T distance_squared(VectorN rhs) const noexcept {
         return (*this - rhs).magnitude_squared();
     }
 
 
-    [[nodiscard]] VectorN project_onto(const VectorN& rhs) const noexcept{
+    [[nodiscard]] VectorN project_onto(VectorN rhs) const noexcept{
         assert(rhs.dot(rhs) !=0  && "Divide by zero error in Project onto method");
         return dot(rhs)/rhs.dot(rhs) * rhs;
     }
 
-    [[nodiscard]] VectorN project_onto_in_place(const VectorN& rhs)noexcept{
+    [[nodiscard]] VectorN project_onto_in_place(VectorN rhs)noexcept{
         assert(rhs.dot(rhs)!=0 && "Divide by zero error in Project onto in place method");
         *this = dot(rhs)/rhs.dot(rhs) *rhs;
         return *this;
