@@ -2,7 +2,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include "../VectorN.hpp"
 #include "../math.hpp"
-#include <iostream>
 
 
 using namespace ES;
@@ -13,13 +12,19 @@ TEST_CASE("VectorN constructors", "[VectorN]") {
     REQUIRE(v1[1] == 2.0f);
     REQUIRE(v1[2] == 3.0f);
 
+
+    VectorN<float,4>(5.0f,4.0f,5,4);
+    VectorN<float,3>(5,4,3);
+
+    Vector3<float>(3,2,1);
+
     Vector2<float> v2{4.0f, 5.0f};
     Vector3<float> v3{4.0f,5.0f,6.0f};
     Vector3<float> v3parameter(4.0f,5.0f,3.0f);
     Vector3<float> v3Int(4,5,6); //construct float from ints
 
     REQUIRE(v3 == v3Int);
-    
+
     Vector3<float> v35(v2, 6.0f); // constructor from smaller vector + extra
     VectorN<float,10> v10(v3,4,5,6,7,8,9,10);
 
