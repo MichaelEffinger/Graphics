@@ -12,6 +12,9 @@ add_executable(ComputerGraphics_Tests
     tests/VectorN_test.cpp
 )
 
+add_compile_definitions(NDEBUG)
+
+
 target_link_libraries(ComputerGraphics_Tests PRIVATE Catch2::Catch2WithMain)
 set_property(TARGET ComputerGraphics_Tests PROPERTY CXX_STANDARD 26)
 set_property(TARGET ComputerGraphics_Tests PROPERTY CXX_STANDARD_REQUIRED ON)
