@@ -9,15 +9,10 @@
 #include <cmath>
 #include <algorithm>
 #include <functional>
-#include "math.hpp"
+#include "ES_math.hpp"
+#include "ES_concepts.hpp"
 
 namespace ES {
-
-template<typename Op, typename T>
-concept FoldExpr = requires(Op op, T accum, T l, T r){
-    { op(accum, l, r) } -> std::convertible_to<T>;
-};
-
 
 /**
  * @brief Fixed-size N-dimensional mathematical vector.
@@ -152,6 +147,7 @@ public:
 
     /**
     * @brief Returns the x component of the vector.
+    * @note Vector must be smaller than 5
     * @return Reference to the first element.
     */
     [[nodiscard]] constexpr auto&& x(this auto&& self) noexcept requires (N>0 && N<5) {
@@ -160,6 +156,7 @@ public:
 
     /**
     * @brief Returns the y component of the vector.
+    * @note Vector must be smaller than 5, and bigger than 1
     * @return Reference to the second element.
     */
     [[nodiscard]] constexpr auto&& y(this auto&& self) noexcept requires (N>1 && N<5) {
@@ -168,6 +165,7 @@ public:
 
     /**
     * @brief Returns the z component of the vector.
+    * @note Vector must be smaller than 5, and bigger than 2
     * @return Reference to the third element.
     */
     [[nodiscard]] constexpr auto&& z(this auto&& self) noexcept requires (N>2 && N<5) {
@@ -176,6 +174,7 @@ public:
 
     /**
     * @brief Returns the w component of the vector.
+    * @note Vector must have size exactly 4
     * @return Reference to the fourth element.
     */
     [[nodiscard]] constexpr auto&& w(this auto&& self) noexcept requires (N==4) {
@@ -283,7 +282,7 @@ public:
     * @param exp A callable expression of the form `(T accum, T a, T b) -> T`.
     * @return The final accumulated value.
     */
-    [[nodiscard]] constexpr T zip_reduce(const VectorN rhs, T initial, FoldExpr<T> auto&& exp) const noexcept {
+    [[nodiscard]] constexpr T zip_reduce(const VectorN rhs, T initial, ES::concepts::FoldExpr<T> auto&& exp) const noexcept {
         auto liter = cbegin(), riter = rhs.cbegin();
         while(liter != cend()){
             initial = exp(initial, *liter, *riter);
@@ -428,7 +427,7 @@ public:
 
     /** @brief Component-wise addition. */
     [[nodiscard]] constexpr VectorN operator+(const VectorN rhs)const noexcept{
-     return zip(rhs,std::plus{});
+        return zip(rhs,std::plus{});
     }
     
     /** @brief In-place component-wise addition */
@@ -894,7 +893,7 @@ public:
      * @return true if all values are closer than epsilon
      * @return false if any value is further than epsilon
      */
-    [[nodiscard]] bool almost_equal(VectorN rhs, T epsilon = ES::math::default_epsilon<T>())noexcept{
+    [[nodiscard]] bool almost_equal(VectorN rhs, T epsilon = ES::math::default_epsilon<T>::value)noexcept{
         VectorN differenceVector = *this - rhs;
         return std::all_of(differenceVector.begin(),differenceVector.end(),[epsilon](T in){return std::fabs(in) <= epsilon;});
     }
