@@ -1,8 +1,7 @@
 #define NDEBUG
 #include <catch2/catch_test_macros.hpp>
+#include "../ES_math.hpp"
 #include "../VectorN.hpp"
-#include "../math.hpp"
-
 
 using namespace ES;
 
