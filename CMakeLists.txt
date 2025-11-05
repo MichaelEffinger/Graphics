@@ -1,30 +1,26 @@
 ﻿cmake_minimum_required(VERSION 3.25)
+project(ComputerGraphics LANGUAGES CXX)
 
-project(ComputerGraphics)
-
-# Enable Hot Reload for MSVC compilers if supported (Windows only)
-if (MSVC)
-  if (POLICY CMP0141)
-    cmake_policy(SET CMP0141 NEW)
-  endif()
-  set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT
-          "$<IF:$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>,EditAndContinue,ProgramDatabase>")
-endif()
-
-# Add source files
+# Main executable
 add_executable(ComputerGraphics "ComputerGraphics.cpp" "ComputerGraphics.h")
-
-# Yummy C++26...
 set_property(TARGET ComputerGraphics PROPERTY CXX_STANDARD 26)
+set_property(TARGET ComputerGraphics PROPERTY CXX_STANDARD_REQUIRED ON)
+
+find_package(Catch2 CONFIG REQUIRED)
+
+add_executable(ComputerGraphics_Tests
+    tests/VectorN_test.cpp
+)
+
+add_compile_definitions(NDEBUG)
 
 
-# Example: You can add platform-specific includes or libraries here
-if (WIN32)
-  # Windows-specific settings (if any)
-  # target_link_libraries(ComputerGraphics some_windows_lib)
-elseif(UNIX)
-  # Linux-specific settings (if any)
-  # target_link_libraries(ComputerGraphics some_linux_lib)
-endif()
+target_link_libraries(ComputerGraphics_Tests PRIVATE Catch2::Catch2WithMain)
+set_property(TARGET ComputerGraphics_Tests PROPERTY CXX_STANDARD 26)
+set_property(TARGET ComputerGraphics_Tests PROPERTY CXX_STANDARD_REQUIRED ON)
 
-# TODO: Add tests and install targets if needed.
+# Enable testing & integrate Catch2 with CTest
+enable_testing()
+include(CTest)
+include(Catch)
+catch_discover_tests(ComputerGraphics_Tests)
