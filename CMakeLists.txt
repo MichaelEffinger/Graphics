@@ -1,4 +1,9 @@
 ﻿cmake_minimum_required(VERSION 3.25)
+
+include(CMake/ES_Util.cmake) #yeah, we've includes in CMake now, buckle up.
+
+
+
 project(ComputerGraphics LANGUAGES CXX)
 
 
@@ -11,11 +16,7 @@ option(FETCH_CATCH2 "Download Catch2 if not found" OFF)
 # Main executable
 add_executable(ComputerGraphics "ComputerGraphics.cpp" "ComputerGraphics.h")
 
-if(MSVC)
-    target_compile_options(ComputerGraphics PRIVATE "/std:c++latest") #MSVC does not want to cooperate with the '26 times, man.
-else ()
-    target_compile_features(ComputerGraphics PRIVATE cxx_std_26) #purportedly better than setting CXX_STANDARD as 26, because this instead enforces a minimum version
-endif ()
+ES_enable_CXX26_for_project(ComputerGraphics)
 
 
 #############
