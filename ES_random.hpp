@@ -91,5 +91,4 @@ std::minstd_rand& ES::random::Secret::get_quick_engine() {
 
 
 
-
 #endif //COMPUTERGRAPHICS_ESRANDOM_HPP
