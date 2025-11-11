@@ -84,20 +84,39 @@ public:
 };
 
 namespace ES::math::angle_literals {
-    constexpr angle<in_radians, long double> operator""_rad(long double z) {
+    //LONG DOUBLES
+    constexpr angle<in_radians, long double> operator""_radl(long double z) {
         return angle<Secret::radian, long double>{z};
     }
 
-    constexpr angle<in_degrees, long double> operator""_deg(long double z) {
+    constexpr angle<in_degrees, long double> operator""_degl(long double z) {
         return angle<Secret::degree, long double>{z};
     }
 
-    constexpr angle<in_radians, long double> operator""_rad(unsigned long long z) {
+    constexpr angle<in_radians, long double> operator""_radl(unsigned long long z) {
         return angle<Secret::radian, long double>{static_cast<long double>(z)};
     }
 
-    constexpr angle<in_degrees, long double> operator""_deg(unsigned long long z) {
+    constexpr angle<in_degrees, long double> operator""_degl(unsigned long long z) {
         return angle<Secret::degree, long double>{static_cast<long double>(z)};
+    }
+    //TODO: add double and make this look better. It's assumed that float is normal, so it would take the form _radd (for double).
+
+    //the default floats
+    constexpr angle<in_radians> operator""_radf(long double z) {
+        return angle<Secret::radian>{static_cast<float>(z)};
+    }
+
+    constexpr angle<in_degrees> operator""_deg(long double z) {
+        return angle<Secret::degree>{static_cast<float>(z)};
+    }
+
+    constexpr angle<in_radians> operator""_rad(unsigned long long z) {
+        return angle<Secret::radian>{static_cast<float>(z)};
+    }
+
+    constexpr angle<in_degrees> operator""_deg(unsigned long long z) {
+        return angle<Secret::degree>{static_cast<float>(z)};
     }
 }
 
