@@ -2,6 +2,7 @@
 add_executable(ComputerGraphics_Tests
         VectorN_test.cpp
         PositionN_test.cpp
+        Random_test.cpp
 )
 
 target_compile_definitions(ComputerGraphics_Tests PRIVATE NDEBUG)
