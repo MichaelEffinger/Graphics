@@ -1,5 +1,4 @@
 #include <cmath>
-#include <iterator>
 #include "ES_concepts.hpp"
 #include <type_traits>
 #pragma once
@@ -27,9 +26,9 @@ template <typename T> struct default_epsilon;
         return std::fabs(lhs - static_cast<T>(rhs)) <= epsilon;
     }
 
-    template <typename Container, typename BinaryOp> requires(ES::concepts::Iterable<Container>)
-    [[nodiscard]] constexpr Container zip(Container lhs, Container rhs, BinaryOp op) noexcept {
-        Container resultant;
+    template <typename Container1, typename Container2, typename BinaryOp> requires(concepts::Iterable<Container1> && concepts::Iterable<Container2>)
+    [[nodiscard]] constexpr Container1 zip(Container1 lhs, Container2 rhs, BinaryOp op) noexcept {
+        Container1 resultant;
         auto liter = lhs.cbegin(), riter = rhs.cbegin();
         auto oiter = resultant.begin();
         while (liter != lhs.cend()) {
@@ -39,8 +38,8 @@ template <typename T> struct default_epsilon;
         return resultant;
     }
 
-    template <typename Container, typename BinaryOp>
-        constexpr Container &zip_into(const Container lhs, const Container rhs, Container& dest, BinaryOp op) noexcept {
+    template <typename Container1, typename Container2, typename Container3, typename BinaryOp> requires(concepts::Iterable<Container1> && concepts::Iterable<Container2> && concepts::Iterable<Container3>)
+    constexpr Container3 &zip_into(const Container1 lhs, const Container2 rhs, Container3& dest, BinaryOp op) noexcept {
         auto liter = lhs.cbegin(), riter = rhs.cbegin();
         auto oiter = dest.begin();
         while (liter != lhs.cend()) {
@@ -50,14 +49,27 @@ template <typename T> struct default_epsilon;
         return dest;
     }
 
-    template <typename Container, typename BinaryOp, typename T = typename Container::value_type>
-    [[nodiscard]] constexpr T zip_reduce(const Container lhs, const Container rhs, T initial, ES::concepts::FoldExpr<T> auto&& exp) noexcept {
+    template <typename Container1, typename Container2, typename BinaryOp, typename T = typename Container1::value_type>
+    [[nodiscard]] constexpr T zip_reduce(const Container1 lhs, const Container2 rhs, T initial, concepts::FoldExpr<T> auto&& exp) noexcept {
         auto liter = lhs.cbegin(), riter = rhs.cbegin();
         while(liter != lhs.cend()){
             initial = exp(initial, *liter, *riter);
             ++liter, ++riter;
         }
         return initial;
+    }
+
+
+    template <typename Container1, typename Container2, typename Container3, typename BinaryOp> requires(concepts::Iterable<Container1> && concepts::Iterable<Container2> && concepts::Iterable<Container3>)
+    [[nodiscard]] constexpr Container1 tri_zip(Container1 lhs, Container2 mhs, Container3 rhs, BinaryOp op) noexcept {
+        Container1 resultant;
+        auto liter = lhs.cbegin(), riter = rhs.cbegin(), miter = mhs.cbegin();
+        auto oiter = resultant.begin();
+        while (liter != lhs.cend()) {
+            *oiter = op(*liter, *miter, *riter);
+            ++liter, ++miter, ++riter, ++oiter;
+        }
+        return resultant;
     }
 
 }

@@ -47,8 +47,13 @@ TEST_CASE("VectorN arithmetic operators", "[VectorN]") {
     REQUIRE(c[0] == 4.0f);
     REQUIRE(c[1] == 4.0f);
     REQUIRE(c[2] == 4.0f);
-    
-    
+    REQUIRE(c.at(0) == 4.0f);
+    REQUIRE(c.at(1) == 4.0f);
+    REQUIRE(c.at(2) == 4.0f);
+    REQUIRE(c.x() ==4.0f);
+    REQUIRE(c.y() ==4.0f);
+    REQUIRE(c.z() == 4.0f);
+
     auto d = c - b;
     REQUIRE(a == d);
    
