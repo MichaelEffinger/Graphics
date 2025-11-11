@@ -9,7 +9,8 @@ Utility math header which contains a lot of good stuff.
 - ### `math::angle_literals`
 A cheeky little namespace which adds _deg and _rad as literals for ease of use.
 For example, `auto A = 90_deg * 2` would lend you an angle object of 180°.
-
+### -`Secret`
+This is the detail, impl, priv, or what-have-you of ES. Anything inside here you are ill-advised to call. Abandon all hope, ye who enter here.
 
 
 ---
