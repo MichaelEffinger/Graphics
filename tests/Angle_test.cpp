@@ -7,8 +7,8 @@ constexpr float PINF = std::numeric_limits<float>::infinity();
 
 //This creates a constexpr and a runtime test for that which is expected to work in both!
 #define DOUBLE_REQUIRE(x) \
-    REQUIRE(x); \
-    STATIC_REQUIRE(x);
+    do{ REQUIRE(x); \
+    STATIC_REQUIRE(x); }while(0)
 
 using namespace ES::math::angle_literals;
 
@@ -20,7 +20,6 @@ TEST_CASE("Angle!","[Angle]") {
         DOUBLE_REQUIRE((ES::angle_rad{-200.f} -= ES::angle_deg{3000.f}) < ES::angle_rad{-200.f});
     }
     SECTION("Multiplication") {
-        auto z = ES::angle_rad{10};
         DOUBLE_REQUIRE(ES::angle_rad{10} * 1 == ES::angle_rad{10});
         DOUBLE_REQUIRE(ES::angle_rad{10} * 2 == ES::angle_rad{20});
     }
