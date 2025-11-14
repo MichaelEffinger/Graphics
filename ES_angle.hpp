@@ -4,14 +4,18 @@
 
 #ifndef COMPUTERGRAPHICS_ES_ANGLE_HPP
 #define COMPUTERGRAPHICS_ES_ANGLE_HPP
+#include <cmath>
 #include <type_traits>
 #include <numbers>
 #include <compare>
+#include <utility>
 
 namespace ES {
     namespace Secret {
         class radian{};
         class degree{};
+
+        template <typename T> [[nodiscard]] constexpr T normalize_angle_coeff(T, T) noexcept;
     }
     template <typename T, typename V = float> requires std::is_same_v<T, ES::Secret::degree> || std::is_same_v<T, ES::Secret::radian>
     class angle;
@@ -29,6 +33,9 @@ namespace ES::math {
     template <std::floating_point T> [[nodiscard]] constexpr T c_deg_to_rad(T) noexcept;
     //Numeric only, hence C, function that converts radians into degrees, both represented as plain old floating point types.
     template <std::floating_point T> [[nodiscard]] constexpr T c_rad_to_deg(T) noexcept;
+
+    template <std::floating_point T> [[nodiscard]] constexpr T c_normalize_angle_rad(T) noexcept;
+    template <std::floating_point T> [[nodiscard]] constexpr T c_normalize_angle_deg(T) noexcept;
 }
 
 template<std::floating_point T>
@@ -41,29 +48,51 @@ constexpr T ES::math::c_rad_to_deg(const T z) noexcept {
     return z * T(180) / std::numbers::pi_v<T>; //TODO: decouple it from numbers pi so it works for any arbitrary type that can multiply.
 }
 
+template <std::floating_point T> [[nodiscard]] constexpr T ES::math::c_normalize_angle_deg(T x) noexcept {
+    return ES::Secret::normalize_angle_coeff(x, T{360}); //todo: make less hardcoded.
+}
 
-template <typename T, typename V> requires std::is_same_v<T, ES::Secret::degree> || std::is_same_v<T, ES::Secret::radian>
+template <std::floating_point T> [[nodiscard]] constexpr T ES::math::c_normalize_angle_rad(T x) noexcept {
+    return Secret::normalize_angle_coeff(x, T{std::numbers::pi_v<T> * 2}); //todo: use in-house
+}
+
+template <typename Unit, typename V> requires std::is_same_v<Unit, ES::Secret::degree> || std::is_same_v<Unit, ES::Secret::radian>
 class ES::angle {
+public: //fantastic usings and constants.
+    static constexpr V PI = std::numbers::pi_v<V>; //TODO: use the in-house one
+    static constexpr V TAU = PI*2; ///< Objectively better than pi?
+    static constexpr V COTERMINAL{std::is_same_v<Unit, ES::Secret::degree> ? V{360}: V{TAU}};
+    using value_type = V;
+    using unit_type = Unit;
+    using reference = value_type&;
+    using const_reference = const value_type&;
+    using pointer = value_type*;
+    using const_pointer = const value_type *;
+private:
     V angle_;
 public:
-    constexpr angle() = default;
-    constexpr angle(V v) : angle_(v){}
+    constexpr angle() noexcept = default;
+    constexpr angle(V v) noexcept : angle_(v){}
+
+    [[nodiscard]] constexpr auto&& get(this auto&& me) noexcept {
+        return std::forward_like<decltype(me)>(me.angle_);
+    }
 
     //implicit cast for angles of the same unit, but different type.
     template<typename oV>
-    constexpr operator angle<T, oV>() const noexcept {
-        return angle<T,oV>{angle_}; //ensures narrowing yells at you
+    constexpr operator angle<Unit, oV>() const noexcept {
+        return angle<Unit,oV>{angle_}; //ensures narrowing yells at you
     }
 
     //conversion that takes a radian type and makes it into a degree type!
     template<typename oV>
-    constexpr operator angle<in_degrees, oV>() const noexcept requires (not std::is_same_v<T, in_degrees>){
+    constexpr operator angle<in_degrees, oV>() const noexcept requires (not std::is_same_v<Unit, in_degrees>){
         return angle<in_degrees, oV>(math::c_rad_to_deg(angle_));
     }
 
     //conversion that takes a degree type and makes it into a radian type!
     template<typename oV>
-    constexpr operator angle<in_radians, oV>() const noexcept requires (not std::is_same_v<T, in_radians>){
+    constexpr operator angle<in_radians, oV>() const noexcept requires (not std::is_same_v<Unit, in_radians>){
         return angle<in_radians, oV>(math::c_deg_to_rad(angle_));
     }
 
@@ -73,6 +102,7 @@ public:
     [[nodiscard]] constexpr angle operator*(V scalar) const { return angle{angle_ * scalar}; }
     [[nodiscard]] constexpr angle operator/(V scalar) const { return angle{angle_ / scalar}; }
     [[nodiscard]] constexpr angle operator/(angle rhs) const { return angle{angle_ / rhs.angle_}; }
+    [[nodiscard]] constexpr angle normalize() const { angle_ = std::abs(angle_); while (angle_ > COTERMINAL){}}
     //funky compound assignment operators
     constexpr angle& operator+=(angle rhs) { angle_ += rhs.angle_; return *this; }
     constexpr angle& operator-=(angle rhs) { angle_ -= rhs.angle_; return *this; }
@@ -118,6 +148,14 @@ namespace ES::math::angle_literals {
     constexpr angle<in_degrees> operator""_deg(unsigned long long z) {
         return angle<Secret::degree>{static_cast<float>(z)};
     }
+}
+
+
+
+template <typename T> [[nodiscard]] constexpr T ES::Secret::normalize_angle_coeff(T x, const T COTERM) noexcept {
+    x = std::fmod(x, COTERM);
+    if (x < T{0}) x += COTERM;
+    return x;
 }
 
 #endif //COMPUTERGRAPHICS_ES_ANGLE_HPP
