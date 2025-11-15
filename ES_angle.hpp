@@ -4,11 +4,12 @@
 
 #ifndef COMPUTERGRAPHICS_ES_ANGLE_HPP
 #define COMPUTERGRAPHICS_ES_ANGLE_HPP
-#include <cmath>
 #include <type_traits>
 #include <numbers>
 #include <compare>
 #include <utility>
+
+#include "ES_math.hpp"
 
 namespace ES {
     namespace Secret {
@@ -59,9 +60,10 @@ template <std::floating_point T> [[nodiscard]] constexpr T ES::math::c_normalize
 template <typename Unit, typename V> requires std::is_same_v<Unit, ES::Secret::degree> || std::is_same_v<Unit, ES::Secret::radian>
 class ES::angle {
 public: //fantastic usings and constants.
-    static constexpr V PI = std::numbers::pi_v<V>; //TODO: use the in-house one
-    static constexpr V TAU = PI*2; ///< Objectively better than pi?
-    static constexpr V COTERMINAL{std::is_same_v<Unit, ES::Secret::degree> ? V{360}: V{TAU}};
+    //NONE OF THESE WORK WITH INTEGERS! TODO: FIX THAT!
+    // static constexpr V PI = std::numbers::pi_v<V>; //TODO: use the in-house one
+    // static constexpr V TAU = PI*2; ///< Objectively better than pi?
+    // static constexpr V COTERMINAL{std::is_same_v<Unit, ES::Secret::degree> ? V{360}: V{TAU}};
     using value_type = V;
     using unit_type = Unit;
     using reference = value_type&;
@@ -102,15 +104,25 @@ public:
     [[nodiscard]] constexpr angle operator*(V scalar) const { return angle{angle_ * scalar}; }
     [[nodiscard]] constexpr angle operator/(V scalar) const { return angle{angle_ / scalar}; }
     [[nodiscard]] constexpr angle operator/(angle rhs) const { return angle{angle_ / rhs.angle_}; }
-    [[nodiscard]] constexpr angle normalize() const { angle_ = std::abs(angle_); while (angle_ > COTERMINAL){}}
+    [[nodiscard]] constexpr angle normalize() const { return std::is_same_v<Unit, in_radians> ? math::c_normalize_angle_rad(angle_) : math::c_normalize_angle_deg(angle_); }
     //funky compound assignment operators
     constexpr angle& operator+=(angle rhs) { angle_ += rhs.angle_; return *this; }
     constexpr angle& operator-=(angle rhs) { angle_ -= rhs.angle_; return *this; }
     constexpr angle& operator*=(V scalar) { angle_ *= scalar; return *this; }
     constexpr angle& operator/=(V scalar) { angle_ /= scalar; return *this; }
     constexpr angle& operator/=(angle rhs) const { angle_ /= rhs.angle_; return *this; }
+    [[nodiscard]] constexpr angle& normalize_in_place() { angle_ = std::is_same_v<Unit, in_radians> ? math::c_normalize_angle_rad(angle_) : math::c_normalize_angle_deg(angle_); return *this; }
+
     //everyone's favorite spaceship
-    [[nodiscard]] constexpr auto operator<=>(const angle&) const = default;
+    template<typename oUnit, typename oV>
+    [[nodiscard]] constexpr auto operator<=>(angle<oUnit, oV> const& rhs) const  {
+        return angle_ <=> static_cast<angle<Unit, oV>>(rhs).angle_;
+    }
+
+    template<typename oUnit, typename oV>
+    [[nodiscard]] constexpr auto operator==(angle<oUnit, oV> const& rhs) const  {
+        return angle_ == static_cast<angle<Unit, oV>>(rhs).angle_;
+    }
 };
 
 namespace ES::math::angle_literals {
@@ -153,8 +165,10 @@ namespace ES::math::angle_literals {
 
 
 template <typename T> [[nodiscard]] constexpr T ES::Secret::normalize_angle_coeff(T x, const T COTERM) noexcept {
-    x = std::fmod(x, COTERM);
-    if (x < T{0}) x += COTERM;
+    x = math::modulo(x, COTERM);
+    if (x < T(0)) {
+        x += COTERM;
+    }
     return x;
 }
 

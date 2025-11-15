@@ -1,7 +1,7 @@
+#pragma once
 #include <cmath>
 #include "ES_concepts.hpp"
 #include <type_traits>
-#pragma once
 
 namespace ES::math {
 template <typename T> struct default_epsilon;
@@ -70,6 +70,37 @@ template <typename T> struct default_epsilon;
             ++liter, ++miter, ++riter, ++oiter;
         }
         return resultant;
+    }
+
+    template<typename T> [[nodiscard]] constexpr T absolute_value(const T N) noexcept {
+        if (N == 0) return N; //zero's signedness is important to keep, or so I am told...
+        return N > 0 ? N : N * -1;
+    }
+
+    /**
+     * @brief A VERY well-behaved floating point floor function.
+     * @param[in] N that which shall be floored!
+     */
+    [[nodiscard]] constexpr float floor(const float N) noexcept {
+        //± 2^23 is where decimals die... fun fact: that immediately prior can support ±0.5. Anything above 2^24 jumps by two from then on...
+        static constexpr float NOMORE = 8388608;
+        if (absolute_value(N) >= NOMORE) return N;
+        //positives truncate, which is identical to flooring.
+        //Negatives truncate, so -3.9 becomes -3.0 instead of flooring which goes -3.9 -> -4.0.
+        //This is why we need to subtract that magic one. So it becomes -3.9 -> -3.0 -> -4.0.
+        const float trunk = static_cast<float>(static_cast<long long>(N));
+        if (trunk == N) return N; // if we already were an integer, just return.
+        return N + (N < 0) * 1.f; //cheeky boolean math
+    }
+
+    /**
+     * Well-behaved floating point modulo.
+     * @param N
+     * @param M
+     * @return the real number result of N % M
+     */
+    [[nodiscard]] constexpr float modulo(const float N, const float M) noexcept {
+        return N - M * ES::math::floor(N/M);
     }
 
 }

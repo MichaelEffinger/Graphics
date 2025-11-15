@@ -27,4 +27,7 @@ TEST_CASE("Angle!","[Angle]") {
         //ES::angle_deg{90} / ES::angle_rad{2*PIE} == ES::angle_deg{360};
         DOUBLE_REQUIRE(ES::angle_deg{90.f} / ES::angle_rad{2.f*PIE} == ES::angle_deg{90.f/360.f});
     }
+    SECTION("Coterminals!") {
+        DOUBLE_REQUIRE(ES::angle_deg{360e10f}.normalize() == ES::angle_rad{0.f});
+    }
 }
