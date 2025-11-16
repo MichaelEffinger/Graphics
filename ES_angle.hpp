@@ -6,7 +6,6 @@
 #define COMPUTERGRAPHICS_ES_ANGLE_HPP
 #include <type_traits>
 #include <numbers>
-#include <compare>
 #include <utility>
 
 #include "ES_math.hpp"

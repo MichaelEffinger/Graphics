@@ -2,6 +2,7 @@
 #include <cmath>
 #include "ES_concepts.hpp"
 #include <type_traits>
+#include <limits> //TODO: in house? To what end? I cry.
 
 namespace ES::math {
 template <typename T> struct default_epsilon;
@@ -77,29 +78,34 @@ template <typename T> struct default_epsilon;
         return N > 0 ? N : N * -1;
     }
 
+    template <typename T> concept float_or_double = std::is_same_v<T, float> || std::is_same_v<T, double>;
+
+
     /**
      * @brief A VERY well-behaved floating point floor function.
      * @param[in] N that which shall be floored!
+     * @tparam F a float or a double...
      */
-    [[nodiscard]] constexpr float floor(const float N) noexcept {
+    template <float_or_double F> [[nodiscard]] constexpr F floor(const F N) noexcept {
         //± 2^23 is where decimals die... fun fact: that immediately prior can support ±0.5. Anything above 2^24 jumps by two from then on...
-        static constexpr float NOMORE = 8388608;
-        if (absolute_value(N) >= NOMORE) return N;
+        static constexpr F NOMORE = 1 << std::numeric_limits<F>::digits; //So, 2^Mantissa gives the exact point where decimals die.
+        if (absolute_value(N) >= NOMORE) return N; //long long is 2^64-1, yet the mantissa peters out at 2^23 or 2^52, so anything greater cannot have a decimal so it cannot floor.
         //positives truncate, which is identical to flooring.
         //Negatives truncate, so -3.9 becomes -3.0 instead of flooring which goes -3.9 -> -4.0.
         //This is why we need to subtract that magic one. So it becomes -3.9 -> -3.0 -> -4.0.
-        const float trunk = static_cast<float>(static_cast<long long>(N));
+        const F trunk = static_cast<F>(static_cast<long long>(N)); //since we already removed all N > 2^52 or 2^23, we know it is less than 2^64, meaning we're golden to cast like this.
+                                                                                                    //as casting to an integral type whose limits are smaller than the current value of a floating point type is UB!
         if (trunk == N) return N; // if we already were an integer, just return.
         return N + (N < 0) * 1.f; //cheeky boolean math
     }
 
     /**
-     * Well-behaved floating point modulo.
-     * @param N
-     * @param M
+     * @brief Well-behaved floating point modulo.
+     * @param N Dividend
+     * @param M Divisor
      * @return the real number result of N % M
      */
-    [[nodiscard]] constexpr float modulo(const float N, const float M) noexcept {
+    template <float_or_double F, float_or_double F2> [[nodiscard]] constexpr F modulo(const F N, const F2 M) noexcept {
         return N - M * ES::math::floor(N/M);
     }
 

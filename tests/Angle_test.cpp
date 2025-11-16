@@ -13,6 +13,9 @@ constexpr float PINF = std::numeric_limits<float>::infinity();
 using namespace ES::math::angle_literals;
 
 TEST_CASE("Angle!","[Angle]") {
+    SECTION("Trivial equality") {
+        DOUBLE_REQUIRE(ES::angle_deg<>{90.f} == ES::angle_rad<>{PIE/2.f});
+    }
     SECTION("Addition") {
         DOUBLE_REQUIRE(ES::angle_deg{90.f} + ES::angle_rad{PIE/2} == 180_deg);
     }
