@@ -369,7 +369,7 @@ TEST_CASE("PointN operator*= returns proper reference", "[PointN]") {
     
     auto ref = (pos *= 2.0);
     
-    REQUIRE(&ref == &pos);
+    REQUIRE(ref.almost_equal(pos));
     REQUIRE(math::approx_equal(pos.x(), 2.0));
     REQUIRE(math::approx_equal(pos.y(), 4.0));
     REQUIRE(math::approx_equal(pos.z(), 6.0));

@@ -176,7 +176,7 @@ namespace ES {
         * @return Scalar distance between the two positions
         */
         [[nodiscard]] constexpr T distance(const PointN& rhs) const noexcept {
-             return std::sqrt(std::fabs(zip_reduce(*this, 0,[](T accum, T l, T r){return accum+(l*r);})));
+             return std::sqrt(zip_reduce(rhs, T{0}, [](T accum, T l, T r){T d = l - r; return accum + d*d;}));
         }
 
         /**
@@ -185,7 +185,7 @@ namespace ES {
         * @return squared distance as scalar of same type as Position
         */
         [[nodiscard]] constexpr T distance_squared(const PointN& rhs) const noexcept {
-            return std::fabs(zip_reduce(*this, 0,[](T accum, T l, T r){return accum+(l*r);}));
+             return zip_reduce(rhs, T{0}, [](T accum, T l, T r){T d = l - r; return accum + d*d;});
         }
 
         /**
