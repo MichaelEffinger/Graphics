@@ -88,7 +88,7 @@ template <typename T> struct default_epsilon;
      */
     template <float_or_double F> [[nodiscard]] constexpr F floor(const F N) noexcept {
         //± 2^23 is where decimals die... fun fact: that immediately prior can support ±0.5. Anything above 2^24 jumps by two from then on...
-        static constexpr F NOMORE = 1 << std::numeric_limits<F>::digits; //So, 2^Mantissa gives the exact point where decimals die.
+        static constexpr F NOMORE = 1LL << std::numeric_limits<F>::digits; //So, 2^Mantissa gives the exact point where decimals die.
         if (absolute_value(N) >= NOMORE) return N; //long long is 2^64-1, yet the mantissa peters out at 2^23 or 2^52, so anything greater cannot have a decimal so it cannot floor.
         //positives truncate, which is identical to flooring.
         //Negatives truncate, so -3.9 becomes -3.0 instead of flooring which goes -3.9 -> -4.0.
@@ -96,7 +96,7 @@ template <typename T> struct default_epsilon;
         const F trunk = static_cast<F>(static_cast<long long>(N)); //since we already removed all N > 2^52 or 2^23, we know it is less than 2^64, meaning we're golden to cast like this.
                                                                                                     //as casting to an integral type whose limits are smaller than the current value of a floating point type is UB!
         if (trunk == N) return N; // if we already were an integer, just return.
-        return N + (N < 0) * 1.f; //cheeky boolean math
+        return trunk + (trunk < 0) * 1.f; //cheeky boolean math
     }
 
     /**

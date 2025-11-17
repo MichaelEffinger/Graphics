@@ -1,7 +1,3 @@
-//
-// Created by Comedic Genuis on 10/27/2025.
-//
-
 #ifndef COMPUTERGRAPHICS_ES_ANGLE_HPP
 #define COMPUTERGRAPHICS_ES_ANGLE_HPP
 #include <type_traits>

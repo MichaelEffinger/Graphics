@@ -1,8 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include "../ES_random.hpp"
-
-
-inline constexpr unsigned ENOUGH_ITERATIONS{1000}; ///< Fun fact, 1000 is actually the most magic number, as any tests run exactly 1000 times are certified to be great!
+#include "ES_test_util.hpp"
 
 TEST_CASE("ES::Random::Easy correct period", "[Random][Random::Easy][Unseeded Randomness]") {
     SECTION("Ensure that the period is correct") {

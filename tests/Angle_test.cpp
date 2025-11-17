@@ -1,14 +1,12 @@
 #include "../ES_angle.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include "ES_test_util.hpp"
 
 
 constexpr float PIE = std::numbers::pi_v<float>; //TODO: use the promised in-house ES::math pi.
 constexpr float PINF = std::numeric_limits<float>::infinity();
 
-//This creates a constexpr and a runtime test for that which is expected to work in both!
-#define DOUBLE_REQUIRE(x) \
-    do{ REQUIRE(x); \
-    STATIC_REQUIRE(x); }while(0)
+
 
 using namespace ES::math::angle_literals;
 

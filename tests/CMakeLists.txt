@@ -4,6 +4,8 @@ add_executable(ComputerGraphics_Tests
         PositionN_test.cpp
         Random_test.cpp
         Angle_test.cpp
+        Math_test.cpp
+        ES_test_util.hpp
 )
 
 target_compile_definitions(ComputerGraphics_Tests PRIVATE NDEBUG)
