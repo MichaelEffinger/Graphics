@@ -21,8 +21,7 @@ struct alignas(sizeof(real)*4) Vector3P : public ES::VectorN<float, 3> {
 
     constexpr Vector3P(VectorN<float,3>);
 
-    VectorH toVectorH(float W) const noexcept {
-        VectorH h;
+    VectorH<float> toVectorH(float W) const noexcept {
         std::memcpy(&h, this, sizeof(Vector3P));
         h.w() = W;
         return h;

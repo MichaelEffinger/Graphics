@@ -1,7 +1,7 @@
-#Welcome to the debug CMakeLists
+﻿#Welcome to the debug CMakeLists
 add_executable(ComputerGraphics_Tests
         VectorN_test.cpp
-        PositionN_test.cpp
+        PointN_test.cpp
 )
 
 target_compile_definitions(ComputerGraphics_Tests PRIVATE NDEBUG)

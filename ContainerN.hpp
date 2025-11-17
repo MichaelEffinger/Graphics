@@ -16,6 +16,8 @@ namespace ES{
     template<template<typename, std::size_t> class Child, typename T, std::size_t N>
     class ContainerN{
     protected:
+    
+    
     public:
 
         std::array<T, N> data_ = {};
