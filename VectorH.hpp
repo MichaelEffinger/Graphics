@@ -19,8 +19,6 @@ class VectorH : public ContainerN<VectorH,T,4> {
     static const int N = 4;
     
     public:
-    [[deprecated("This will be completely demolished with refactor, DONT USE")]] ES::VectorN<float,3> xyz_;
-    [[deprecated("This will be iniliated with the refactor, DONT USE")]] float w_ = T{1};
     using ContainerN<VectorH,T,N>::zip_in_place;
     using ContainerN<VectorH,T,N>::zip;
     using ContainerN<VectorH,T,N>::zip_reduce;
@@ -30,6 +28,12 @@ class VectorH : public ContainerN<VectorH,T,4> {
     using ContainerN<VectorH,T,N>::cbegin;
     using ContainerN<VectorH,T,N>::data_;
     using ContainerN<VectorH,T,N>::ContainerN;
+
+    VectorH(PointN<T,3> point, T w = 1){
+        
+    }
+
+    VectorH(VectorN<T,3> smallVec, T w=0){}
 
     [[nodiscard]] constexpr auto&& x(this auto&& self) noexcept{
         return std::forward_like<decltype(self)>(self[0]);
@@ -94,7 +98,7 @@ class VectorH : public ContainerN<VectorH,T,4> {
     constexpr VectorH& operator/=(T scalar) noexcept {
         assert(scalar != T{0} && "divide by zero error in VectorH operator/=");
         if(scalar == T{0}){
-            *this = {0,0,0,w()};
+            return (*this = {T{0},T{0},T{0},w()});
         }
         std::transform(begin(),end(),begin(),[scalar](T in){return in/scalar;});
         return *this;
@@ -122,12 +126,12 @@ class VectorH : public ContainerN<VectorH,T,4> {
     }
 
 
-    constexpr T dot(const VectorH& rhs) const noexcept {
+    constexpr T dot(const VectorH rhs) const noexcept {
         assert((!w() && !rhs.w()) && "Dot product requires two directions");
         return zip_reduce(rhs, 0,[](T accum, T l, T r){return accum+(l*r);});
     }
 
-    [[nodiscard]] constexpr VectorH cross(const VectorH& rhs) const noexcept {
+    [[nodiscard]] constexpr VectorH cross(const VectorH rhs) const noexcept {
         assert((!w() && !rhs.w()) && "Cross product requires two directions" );
         return VectorH{
         data_[1] * rhs.data_[2] - data_[2] * rhs.data_[1],
@@ -136,28 +140,40 @@ class VectorH : public ContainerN<VectorH,T,4> {
         T{0}};
     }
 
-    constexpr VectorH& cross_in_place(const VectorH& rhs) noexcept {
-        assert((w() == 0 && w() == 0) && "Cross product requires two directions" );
-        x() = data_[1] * rhs.data_[2] - data_[2] * rhs.data_[1];
-        y() = data_[2] * rhs.data_[0] - data_[0] * rhs.data_[2];
-        z() = data_[0] * rhs.data_[1] - data_[1] * rhs.data_[0];
+    constexpr VectorH& cross_in_place(const VectorH rhs) noexcept {
+        assert((!w() && !rhs.w()) && "Cross product requires two directions" );
+        T tx = data_[1] * rhs.data_[2] - data_[2] * rhs.data_[1];
+        T ty = data_[2] * rhs.data_[0] - data_[0] * rhs.data_[2];
+        T tz = data_[0] * rhs.data_[1] - data_[1] * rhs.data_[0];
+        *this = {tx,ty,tz, T{0}};
         return *this;
     }
 
-
     [[nodiscard]] constexpr T magnitude() const noexcept {
+        assert((!w()) && "magnitude requires a direction" );
         return std::sqrt(std::fabs(zip_reduce(*this, 0,[](T accum, T l, T r){return accum+(l*r);})));
     }
 
     [[nodiscard]] constexpr T magnitudeSquared() const noexcept {
+        assert((!w()) && "Magnitude requires a direction");
         return std::fabs(zip_reduce(*this, 0,[](T accum, T l, T r){return accum+(l*r);}));
     }
 
-    constexpr VectorH& normalize() noexcept {
-        return VectorN(*this).normalize_in_place();
+    [[nodiscard]] T distance(VectorH rhs) const noexcept{
+        assert((w()&& rhs.w()) && "distance requires two points");
+        return std::sqrt(zip_reduce(rhs, T{0}, [](T accum, T l, T r){T d = l - r; return accum + d*d;}));
     }
 
-    [[nodiscard]] constexpr VectorH normalize_in_place() const noexcept {
+    [[nodiscard]] T distance_squared(VectorH rhs) const noexcept{
+        assert((w() && rhs.w()) && "distance requires two points");
+        return zip_reduce(rhs, T{0}, [](T accum, T l, T r){T d = l - r; return accum + d*d;});
+    }
+
+    [[nodiscard]]constexpr VectorH normalize() const noexcept {
+        return VectorH(*this).normalize_in_place();
+    }
+
+    constexpr VectorH& normalize_in_place() noexcept {
         T mag = magnitude();
         if(mag == 0){
             assert(false && "Divide by zero error in normalize_in_place calculation");
@@ -168,87 +184,96 @@ class VectorH : public ContainerN<VectorH,T,4> {
         return *this;
     }
 
-
-    [[nodiscard]] [[deprecated("Non implemented")]] constexpr bool operator==(const VectorH& rhs) const noexcept {
-        return w_ == rhs.w_ && xyz_ == rhs.xyz_;
-    }
-
-    [[nodiscard]] [[deprecated("Non implemented")]] constexpr bool operator!=(const VectorH& rhs) const noexcept {
-        return !(*this == rhs);
-    }
-
-
-
-    [[nodiscard]] [[deprecated("Non implemented")]] constexpr VectorH homogenize() const noexcept {
-        if (w_ == 0) {
+    [[nodiscard]] constexpr VectorH homogenize() const noexcept {
+        if (w() == 0) {
             return *this;
         }
-        return VectorH(xyz_/w_,1);
+        return operator/(w());
     }
 
-    [[deprecated("Non implemented")]] constexpr VectorH& homogenized() noexcept {
-        if (w_ == 0) {
-            return *this;
+    constexpr VectorH& homogenize_in_place() noexcept {
+        if (w() == 0) {
+            return *this; 
         }
-        xyz_/= w_;
-        w_ = 1;
-        return *this;
+        return operator/=(w());
     }
 
-    [[deprecated("Non implemented")]] [[nodiscard]] T angle(const VectorH){
+    [[deprecated("Non implemented, Waiting for angle to get implemented.. Ryan Seavey.......")]] [[nodiscard]] T angle(const VectorH){
         return T{0};
     }
 
-    [[deprecated("Non implemented")]] [[nodiscard]] VectorH slerp(const VectorH){
-        VectorH myVec;
-        return myVec;
+    [[nodiscard]] VectorH slerp(const VectorH rhs, T t){
+        assert(!w() && !rhs.w() && "slerp needs 2 direction vectors");
+        T daught = dot(rhs);
+
+        T theta = std::acos(daught);
+        if (theta < math::default_epsilon<T>::value) {
+            return *this;
+        }
+
+        T sinTheta = std::sin(theta);
+        T w1 = std::sin((1 - t) * theta) / sinTheta;
+        T w2 = std::sin(t * theta) / sinTheta;
+
+        return zip(rhs, [w1, w2](T a, T b) {return std::fma(w1, a, w2 * b);});
     }
 
-    [[deprecated("Non implemented")]] [[nodiscard]] VectorH reflect(const VectorH){
-        VectorH myVec;
-        return myVec;
+    [[nodiscard]] VectorH reflect(const VectorH rhs){
+        assert(((!w() && !rhs.w())||(w() && rhs.w())) && "reflection must have matching hvector types");
+        assert(rhs.magnitude() == 1 && "parameter vector must be a unit vector");
+        T daught =  dot(rhs);
+        return zip(rhs,[daught](T a, T b) {return a - 2 * daught * b;});
     }
 
-    [[deprecated("Non implemented")]] VectorH reflect_in_place(const VectorH){
-        return *this;
+    VectorH& reflect_in_place(const VectorH rhs){
+        assert(((!w() && !rhs.w())||(w() && rhs.w())) && "reflection must have matching hvector types");
+        assert(rhs.magnitude() == 1 && "parameter vector must be a unit vector");
+        T daught =  dot(rhs);
+        return zip_in_place(rhs,[daught](T a, T b) {return a - 2 * daught * b;});
     }
 
-    [[deprecated("Non implemented")]] [[nodiscard]] VectorH reflect_safe(const VectorH){
-        VectorH myVec;
-        return myVec;
+    [[nodiscard]] VectorH reflect_safe(const VectorH rhs){
+        assert(((!w() && !rhs.w())||(w() && rhs.w())) && "reflection must have matching hvector types");
+        VectorH unitVector = rhs.normalize();
+        T  daught = dot(unitVector);
+        return zip(unitVector,[daught](T a, T b){return a-2*daught * b;});
     }
 
-    [[deprecated("Non implemented")]] VectorH reflect_in_place_safe(const VectorH){
-        return *this;
+    VectorH& reflect_in_place_safe(const VectorH rhs){
+        assert(((!w() && !rhs.w())||(w() && rhs.w())) && "reflection must have matching hvector types");
+        VectorH unitVector = rhs.normalize();
+        T daught = dot(unitVector);
+        return zip_in_place(unitVector,[daught](T a, T b){return a-2 * daught *b;});
     }
 
-    [[deprecated("Non implemented")]] [[nodiscard]] [[deprecated("Non implemented")]] constexpr VectorH lerp(VectorH rhs, T t) const noexcept{
+    constexpr VectorH lerp(VectorH rhs, T t) const noexcept{
+        assert(((!w() && !rhs.w())||(w() && rhs.w())) && "lerp must have matching hvector types");
         return zip(rhs,[t](T a, T b) {return a+(b-a)*t;});
     }
 
-    [[deprecated("Non implemented")]] [[deprecated("Non implemented")]] constexpr VectorH& lerp_in_place(VectorH rhs, T t) noexcept {
+    constexpr VectorH& lerp_in_place(VectorH rhs, T t) noexcept {
+        assert(((!w() && !rhs.w())||(w() && rhs.w())) && "lerp must have matching hvector types");
         return zip_in_place(rhs, [t](T a, T b) { return a + (b - a) * t;});
     }     
 
-    [[nodiscard]] [[deprecated("Non implemented")]] constexpr VectorH clamp(T minVal, T maxVal) noexcept{
+    [[nodiscard]] constexpr VectorH clamp(T minVal, T maxVal) noexcept{
         VectorH tempVec;
         std::transform(begin(),end(), tempVec.begin(),[minVal,maxVal](T in){return std::clamp(in, minVal, maxVal);});
         return tempVec;
     }
     
-    [[deprecated("Non implemented")]] constexpr VectorH& clamp_in_place(T minVal, T maxVal) noexcept {
+    constexpr VectorH& clamp_in_place(T minVal, T maxVal) noexcept {
         std::transform(begin(), end(), begin(),[minVal, maxVal](T in) { return std::clamp(in, minVal, maxVal);});
         return *this;
     }
 
-
-
-    [[deprecated("Non implemented")]] [[nodiscard]] constexpr VectorH refract(VectorH rhs, T n1, T n2) const noexcept {
+    [[nodiscard]] constexpr VectorH refract(VectorH rhs, T n1, T n2) const noexcept {
+        assert(!w() && !rhs.w() && "refract requires two direction vectors");
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhs));
         T k = T{1} - refractionRatio * refractionRatio * (T{1} - cosi * cosi);
         if (k < T{0}){
-            VectorN tempVec;
+            VectorH tempVec;
             std::fill(tempVec.begin(),tempVec.end(),T{0});
             return tempVec;
         }
@@ -257,7 +282,8 @@ class VectorH : public ContainerN<VectorH,T,4> {
         return zip(rhs, [refractionRatio, cosi, sqrtK](T i, T n) {return i * refractionRatio + n * (refractionRatio * cosi - sqrtK);});
     }
 
-    [[deprecated("Non implemented")]] constexpr VectorH& refract_in_place(VectorH rhs, T n1, T n2) noexcept {
+    constexpr VectorH& refract_in_place(VectorH rhs, T n1, T n2) noexcept {
+        assert(!w() && !rhs.w() && "refract requires two direction vectors");
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhs));
         T k = T{1} - refractionRatio * refractionRatio * (T{1}- cosi * cosi);
@@ -269,16 +295,17 @@ class VectorH : public ContainerN<VectorH,T,4> {
         return zip_in_place(rhs, [refractionRatio, cosi, sqrtK](T i, T n) {return i * refractionRatio + n * (refractionRatio * cosi - sqrtK);});
     }
 
-    [[deprecated("Non implemented")]] [[nodiscard]] constexpr VectorH refract_safe(VectorH rhs, T n1, T n2) const noexcept {  
-        VectorN thisUnit = normalize();
-        VectorN rhsUnit = rhs.normalize();
+    [[nodiscard]] constexpr VectorH refract_safe(VectorH rhs, T n1, T n2) const noexcept {
+        assert(!w() && !rhs.w() && "refract requires two direction vectors");  
+        VectorH thisUnit = normalize();
+        VectorH rhsUnit = rhs.normalize();
 
         T refractionRatio = n1 / n2;
         T cosi = -(thisUnit.dot(rhsUnit));
         T k = T{1} - refractionRatio * refractionRatio * (T{1} - cosi * cosi);
 
         if (k < T{0}){
-            VectorN tempVec;
+            VectorH tempVec;
             std::fill(tempVec.begin(),tempVec.end(),T{0});
             return tempVec;
         }
@@ -287,9 +314,10 @@ class VectorH : public ContainerN<VectorH,T,4> {
         return thisUnit.zip(rhsUnit, [refractionRatio, cosi, sqrtK](T i, T n) {return i * refractionRatio + n * (refractionRatio * cosi - sqrtK);});
     }
 
-    [[deprecated("Non implemented")]] constexpr VectorH& refract_in_place_safe(VectorH rhs, T n1, T n2)noexcept {
+    constexpr VectorH& refract_in_place_safe(VectorH rhs, T n1, T n2)noexcept {
+        assert(!w() && !rhs.w() && "refract requires two direction vectors");
         *this = normalize();
-        VectorN rhsUnit = rhs.normalize();
+        VectorH rhsUnit = rhs.normalize();
 
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhsUnit));
@@ -303,23 +331,24 @@ class VectorH : public ContainerN<VectorH,T,4> {
         return zip_in_place(rhsUnit, [refractionRatio, cosi, sqrtK](T i, T n) {return i * refractionRatio + n * (refractionRatio * cosi - sqrtK);});
     }
 
-
-
-    [[deprecated("Non implemented")]] [[nodiscard]] VectorH project_onto(VectorH rhs) const noexcept{
+    [[nodiscard]] VectorH project_onto(VectorH rhs) const noexcept{
         assert(rhs.dot(rhs) !=0  && "Divide by zero error in Project onto method");
+        assert(!w() && !rhs.w() && "Project_onto requires two direction vectors");
         return dot(rhs)/rhs.dot(rhs) * rhs;
     }
 
-    [[deprecated("Non implemented")]] VectorH project_onto_in_place(VectorH rhs)noexcept{
+    VectorH project_onto_in_place(VectorH rhs)noexcept{
         assert(rhs.dot(rhs)!=0 && "Divide by zero error in Project onto in place method");
+        assert(!w() && !rhs.w() && "Project_onto requires two direction vectors");
         *this = dot(rhs)/rhs.dot(rhs) *rhs;
         return *this;
     }
 
-
-
-
-
+    [[nodiscard]] friend constexpr VectorH operator*(const auto scalar, const VectorH lhs) noexcept{
+        VectorH tempVec;
+        std::transform(lhs.cbegin(),lhs.cend(),tempVec.begin(),[scalar](T in){return in * scalar;});
+        return tempVec;
+    }
 
 };
 

@@ -2,6 +2,7 @@
 add_executable(ComputerGraphics_Tests
         VectorN_test.cpp
         PointN_test.cpp
+        VectorH_test.cpp
 )
 
 target_compile_definitions(ComputerGraphics_Tests PRIVATE NDEBUG)

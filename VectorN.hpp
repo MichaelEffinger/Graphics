@@ -341,7 +341,7 @@ public:
     * @param rhs The vector to compute the angle to.
     * @return The angle between the two vectors in radians (for now).
     */
-    [[nodiscard]] constexpr T angle(const VectorN<T, N> rhs) const noexcept{
+    [[deprecated("ryan hasnt implemented angle, grrrrrrrrrr")]] [[nodiscard]] constexpr T angle(const VectorN<T, N> rhs) const noexcept{
         T thisMag = magnitude_squared();
         T thatMag = rhs.magnitude_squared();
         
@@ -481,10 +481,7 @@ public:
     VectorN& reflect_in_place(VectorN rhs)noexcept{
         assert(rhs.magnitude() == 1);
         T daught =  dot(rhs);
-        return zip_in_place(rhs,
-            
-            
-            [daught](T a, T b) {return a - 2 * daught * b;});
+        return zip_in_place(rhs,[daught](T a, T b) {return a - 2 * daught * b;});
     }
 
     /**
