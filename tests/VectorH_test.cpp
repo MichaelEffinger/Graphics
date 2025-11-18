@@ -170,7 +170,7 @@ TEST_CASE("VectorH hadamardProduct with directions", "[VectorH]") {
     VectorH<float> dir1{2.0f, 3.0f, 4.0f, 0.0f};
     VectorH<float> dir2{5.0f, 6.0f, 7.0f, 0.0f};
     
-    auto result = dir1.hadamardProduct(dir2);
+    auto result = dir1.hadamard_product(dir2);
     
     REQUIRE(math::approx_equal(result.x(), 10.0f));
     REQUIRE(math::approx_equal(result.y(), 18.0f));
@@ -182,7 +182,7 @@ TEST_CASE("VectorH hadamardProduct_in_place with directions", "[VectorH]") {
     VectorH<float> dir1{2.0f, 3.0f, 4.0f, 0.0f};
     VectorH<float> dir2{5.0f, 6.0f, 7.0f, 0.0f};
     
-    dir1.hadamardProduct_in_place(dir2);
+    dir1.hadamard_product_in_place(dir2);
     
     REQUIRE(math::approx_equal(dir1.x(), 10.0f));
     REQUIRE(math::approx_equal(dir1.y(), 18.0f));
@@ -195,7 +195,7 @@ TEST_CASE("VectorH hadamardDivide with directions", "[VectorH]") {
     VectorH<float> dir1{10.0f, 18.0f, 28.0f, 0.0f};
     VectorH<float> dir2{2.0f, 3.0f, 4.0f, 0.0f};
     
-    auto result = dir1.hadamardDivide(dir2);
+    auto result = dir1.hadamard_divide(dir2);
     
     REQUIRE(math::approx_equal(result.x(), 5.0f));
     REQUIRE(math::approx_equal(result.y(), 6.0f));
@@ -207,7 +207,7 @@ TEST_CASE("VectorH hadamardDivide_in_place with directions", "[VectorH]") {
     VectorH<float> dir1{10.0f, 18.0f, 28.0f, 0.0f};
     VectorH<float> dir2{2.0f, 3.0f, 4.0f, 0.0f};
     
-    dir1.hadamardDivide_in_place(dir2);
+    dir1.hadamard_divide_in_place(dir2);
     
     REQUIRE(math::approx_equal(dir1.x(), 5.0f));
     REQUIRE(math::approx_equal(dir1.y(), 6.0f));

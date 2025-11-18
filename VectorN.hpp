@@ -341,7 +341,7 @@ public:
     * @param rhs The vector to compute the angle to.
     * @return The angle between the two vectors in radians (for now).
     */
-    [[deprecated("ryan hasnt implemented angle, grrrrrrrrrr")]] [[nodiscard]] constexpr T angle(const VectorN<T, N> rhs) const noexcept{
+    [[deprecated("ryan hasnt implemented angle, grrrrrrrrrr. I hope you are reading this ryan, please implement angle here, and vecH too pretty please")]] [[nodiscard]] constexpr T angle(const VectorN<T, N> rhs) const noexcept{
         T thisMag = magnitude_squared();
         T thatMag = rhs.magnitude_squared();
         

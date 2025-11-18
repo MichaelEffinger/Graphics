@@ -28,13 +28,13 @@ namespace ES {
 
 
         /** @defgroup accessors Accessors
-        *  @brief Convenient element accessors for VectorN (x, y, z, w, head, tail).
+        *  @brief Convenient element accessors for PointN (x, y, z, w, head, tail).
         *  @{
         */
 
         /**
-        * @brief Returns the x component of the vector.
-        * @note Vector must be smaller than 5
+        * @brief Returns the x component of the Point.
+        * @note Point must be smaller than 5
         * @return Reference to the first element.
         */
         [[nodiscard]] constexpr auto&& x(this auto&& self) noexcept requires (N>0 && N<5) {
@@ -42,8 +42,8 @@ namespace ES {
         }
 
         /**
-        * @brief Returns the y component of the vector.
-        * @note Vector must be smaller than 5, and bigger than 1
+        * @brief Returns the y component of the Point.
+        * @note Point must be smaller than 5, and bigger than 1
         * @return Reference to the second element.
         */
         [[nodiscard]] constexpr auto&& y(this auto&& self) noexcept requires (N>1 && N<5) {
@@ -51,8 +51,8 @@ namespace ES {
         }
 
         /**
-        * @brief Returns the z component of the vector.
-        * @note Vector must be smaller than 5, and bigger than 2
+        * @brief Returns the z component of the Point.
+        * @note Point must be smaller than 5, and bigger than 2
         * @return Reference to the third element.
         */
         [[nodiscard]] constexpr auto&& z(this auto&& self) noexcept requires (N>2 && N<5) {
@@ -60,8 +60,8 @@ namespace ES {
         }
 
         /**
-        * @brief Returns the w component of the vector.
-        * @note Vector must have size exactly 4
+        * @brief Returns the w component of the Point.
+        * @note Point must have size exactly 4
         * @return Reference to the fourth element.
         */
         [[nodiscard]] constexpr auto&& w(this auto&& self) noexcept requires (N==4) {
