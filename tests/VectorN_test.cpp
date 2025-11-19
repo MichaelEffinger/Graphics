@@ -182,16 +182,17 @@ TEST_CASE("VectorN angle between vectors", "[VectorN]") {
     Vector3<float> a{1.0f, 0.0f, 0.0f};
     Vector3<float> b{0.0f, 1.0f, 0.0f};
     
-    float angle = a.angle(b);
+    angle_rad angle = a.angle(b);
    // REQUIRE(ES::math::approx_equal(angle, ES::math::pi<float> / 2.0f));
     
     Vector3<float> parallel{2.0f, 0.0f, 0.0f};
     angle = a.angle(parallel);
-    REQUIRE(ES::math::approx_equal(angle, 0.0f));
+    REQUIRE(ES::math::approx_equal(angle.get(), 0.0f));
     
     Vector3<float> opposite{-1.0f, 0.0f, 0.0f};
     angle = a.angle(opposite);
-   // REQUIRE(ES::math::approx_equal(angle, ES::math::pi<float>));
+    static constexpr float pi = ES::angle_rad(ES::angle_deg{180.f}).get();
+   REQUIRE(ES::math::approx_equal(angle.get(), pi));
 }
     
 TEST_CASE("VectorN << operator", "[VectorN]") {
@@ -426,7 +427,7 @@ TEST_CASE("VectorN comprehensive edge cases", "[VectorN]") {
     
     #ifdef NDEBUG
     Vector3<float> a{1.0f, 0.0f, 0.0f};
-    float angle = a.angle(zero);
+    float angle = a.angle(zero).get();
     REQUIRE(angle == 0.0f);
     #endif
 }

@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <functional>
 #include "ContainerN.hpp"
+#include "ES_angle.hpp"
 
 namespace ES {
 
@@ -341,15 +342,15 @@ public:
     * @param rhs The vector to compute the angle to.
     * @return The angle between the two vectors in radians (for now).
     */
-    [[deprecated("ryan hasnt implemented angle, grrrrrrrrrr. I hope you are reading this ryan, please implement angle here, and vecH too pretty please")]] [[nodiscard]] constexpr T angle(const VectorN<T, N> rhs) const noexcept{
+    [[nodiscard]] /* TODO: make constexpr*/ angle_rad angle(const VectorN<T, N> rhs) const noexcept{
         T thisMag = magnitude_squared();
         T thatMag = rhs.magnitude_squared();
         
         if(thisMag == 0 || thatMag == 0) {
             assert(false && "Divide by zero error in angle calculation");
-            return T{0};
+            return {T{0}};
         }
-        return std::acos(std::clamp(dot(rhs) / std::sqrt(thisMag * thatMag), T{-1}, T{1}));  
+        return ES::angle_rad{std::acos(std::clamp(dot(rhs) / std::sqrt(thisMag * thatMag), T{-1}, T{1}))};
     }
 
     /**
