@@ -327,8 +327,10 @@ class VectorH : public ContainerN<VectorH,T,4> {
         return operator/=(w());
     }
 
-    [[deprecated("Non implemented, Waiting for angle to get implemented.. Ryan Seavey......., I am excited to see what you do with this brochacho")]] [[nodiscard]] T angle(const VectorH){
-        return T{0};
+    [[nodiscard]] /*TODO: make constexpr*/ auto angle(const VectorH rhs) noexcept{
+        VectorN thisH = this->homogenize();
+        VectorN thatH = rhs.homogenize();
+        return thisH.angle(thatH);
     }
 
 
