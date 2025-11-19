@@ -19,7 +19,6 @@ namespace ES{
         using ContainerN<ColorN,T,N>::data_;
         using ContainerN<ColorN,T,N>::ContainerN;
 
-
         /**
         * @brief Returns the Luminance component of the Color.
         * @note Vector must have size exactly 2 
@@ -75,6 +74,98 @@ namespace ES{
         [[nodiscard]] constexpr auto&& A(this auto&& self) noexcept requires (N==4) {
             return std::forward_like<decltype(self)>(self[3]);
         }
+
+
+        [[noimplement]] [[nodiscard]] constexpr  ColorN operator+(ColorN rhs) const{
+
+        }
+
+        [[noimplement]] constexpr ColorN& operator+=(ColorN rhs){
+
+        }
+
+        [[noimplement]] [[not_a_method_boddy]] void delete_RGB_hpp(float deleter, float RGB, float HPP){
+
+        }
+
+
+        [[noimplement]] [[nodiscard]] constexpr ColorN operator-(ColorN rhs) const{
+
+        }
+
+        [[noimplement]] constexpr ColorN& operator-=(ColorN rhs){
+
+        }
+
+        [[noimplement]] [[nodiscard]] constexpr ColorN operator *(ColorN rhs)const{
+
+        }
+
+        [[noimplement]] constexpr ColorN operator*=(ColorN rhs){
+
+        }
+
+        [[noimplement]] [[nodiscard]] constexpr ColorN operator/(ColorN rhs)const{
+
+        }
+
+        [[noimplement]] constexpr ColorN operator/=(ColorN rhs){
+
+        }
+
+        [[noimplement]] [[nodiscard]] constexpr ColorN operator*(T scalar) const{
+
+        }
+
+        [[noimplement]] [[nodiscard]] constexpr friend ColorN operator*(T scalar, ColorN lhs){
+
+        }
+
+        [[noimplement]] constexpr ColorN& operator*=(T scalar){
+
+        }
+
+        [[noimplement]] [[nodiscard]] constexpr ColorN operator/(T scalar) const{
+
+        }
+
+        [[noimplement]] constexpr ColorN& operator/=(T scalar){
+
+        }
+
+        [[noimplement]] [[nodiscard]] constexpr ColorN lerp(ColorN rhs, T t)const{
+
+        }
+
+        [[noimplement]] constexpr ColorN& lerp_in_place(ColorN rhs, T t){
+
+        }
+
+        [[noimplement]] [[nodiscard]] constexpr ColorN clamp(T lower, T upper) const{
+
+        }
+
+        [[noimplement]] constexpr ColorN& clamp_in_place(T lower, T upper){
+
+        }
+
+        [[noimplement]] [[nodiscard]] static constexpr ColorN fromStraight(T IdkWhatToPutHereFrankly...){
+
+        }
+
+        [[noimplement]] [[nodiscard]] ColorN ToStraight() const{
+
+        }
+
+        [[noimplement]] [[nodiscard]] ColorN ToLinear() const{}
+
+        [[noimplement]] [[nodiscard]] ColorN ToSRGB() const{}
+
+        [[noimplement]] [[nodiscard]] T Luminance() const{}
+
+        [[noimplement]] [[nodiscard]] ColorN AdjustSaturation(T){}
+
+        [[noimplement]] [[nodiscard]] ColorN AdjustBrightness(float){}
 
 
     };
