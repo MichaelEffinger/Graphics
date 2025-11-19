@@ -13,15 +13,16 @@ namespace ES {
 
         template <typename T> [[nodiscard]] constexpr T normalize_angle_coeff(T, T) noexcept;
     }
-    template <typename T, typename V = float> requires std::is_same_v<T, ES::Secret::degree> || std::is_same_v<T, ES::Secret::radian>
+    template<typename Unit> concept radian_or_degree = std::same_as<Unit,Secret::degree> || std::same_as<Unit,Secret::radian>; //TODO: use this
+    template<typename T, typename U> concept not_same_as = not std::same_as<T,U>;
+    template <radian_or_degree T, typename V = float>
     class angle;
     using in_degrees = Secret::degree;
     using in_radians = Secret::radian;
 
-    template <typename V = float>
-    using angle_deg = angle<in_degrees, V>;
-    template <typename V = float>
-    using angle_rad = angle<in_radians, V>;
+    using angle_deg = angle<in_degrees>;
+    using angle_rad = angle<in_radians>;
+
 }
 
 namespace ES::math {
@@ -52,7 +53,7 @@ template <std::floating_point T> [[nodiscard]] constexpr T ES::math::c_normalize
     return Secret::normalize_angle_coeff(x, T{std::numbers::pi_v<T> * 2}); //todo: use in-house
 }
 
-template <typename Unit, typename V> requires std::is_same_v<Unit, ES::Secret::degree> || std::is_same_v<Unit, ES::Secret::radian>
+template <ES::radian_or_degree Unit, typename V>
 class ES::angle {
 public: //fantastic usings and constants.
     //NONE OF THESE WORK WITH INTEGERS! TODO: FIX THAT!
