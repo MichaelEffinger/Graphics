@@ -1,6 +1,10 @@
 #pragma once
+#include <type_traits>
+#include <cassert>
+#include <cmath>
+#include <algorithm>
+#include <functional>
 #include "ContainerN.hpp"
-
 
 namespace ES{
     
@@ -22,7 +26,7 @@ namespace ES{
         /**
         * @brief Returns the Luminance component of the Color.
         * @note Vector must have size exactly 2 
-        * @return Reference to the fourth element.
+        * @return Reference to the first element.
         */
         [[nodiscard]] constexpr auto&& L(this auto&& self) noexcept requires (N>0 && N<3) {
             return std::forward_like<decltype(self)>(self[0]);
@@ -32,7 +36,7 @@ namespace ES{
         /**
         * @brief Returns the Alpha component of the Color.
         * @note Vector must have size exactly 2 
-        * @return Reference to the fourth element.
+        * @return Reference to the second element.
         */
         [[nodiscard]] constexpr auto&& A(this auto&& self) noexcept requires (N==2) {
             return std::forward_like<decltype(self)>(self[1]);
@@ -76,98 +80,128 @@ namespace ES{
         }
 
 
-        [[noimplement]] [[nodiscard]] constexpr  ColorN operator+(ColorN rhs) const{
-
+        [[nodiscard]] constexpr  ColorN operator+(ColorN rhs) const{
+            return zip(rhs,std::plus{});
         }
 
-        [[noimplement]] constexpr ColorN& operator+=(ColorN rhs){
-
+        constexpr ColorN& operator+=(ColorN rhs){
+            return zip_in_place(rhs,std::plus());
         }
 
-        [[noimplement]] [[not_a_method_boddy]] void delete_RGB_hpp(float deleter, float RGB, float HPP){
-
+        [[nodiscard]] constexpr ColorN operator-(ColorN rhs) const{
+            return zip(rhs, std::minus());
         }
 
-
-        [[noimplement]] [[nodiscard]] constexpr ColorN operator-(ColorN rhs) const{
-
+        constexpr ColorN& operator-=(ColorN rhs){
+            return zip_in_place(rhs,std::minus());
         }
 
-        [[noimplement]] constexpr ColorN& operator-=(ColorN rhs){
-
+        [[nodiscard]] constexpr ColorN operator*(ColorN rhs)const{
+            return zip(rhs,std::multiplies());
         }
 
-        [[noimplement]] [[nodiscard]] constexpr ColorN operator *(ColorN rhs)const{
-
+        constexpr ColorN operator*=(ColorN rhs){
+            return zip_in_place(rhs,std::multiplies());
         }
 
-        [[noimplement]] constexpr ColorN operator*=(ColorN rhs){
-
+        [[nodiscard]] constexpr ColorN operator/(ColorN rhs)const{
+            return zip(rhs, [](T a, T b) { assert(b !=0 && "Divide by zero in component division"); return (b != 0) ? (a / b) : T{0}; });
         }
 
-        [[noimplement]] [[nodiscard]] constexpr ColorN operator/(ColorN rhs)const{
-
+        constexpr ColorN operator/=(ColorN rhs){
+            return zip_in_place(rhs, [](T a, T b) { assert(b !=0 && "Divide by zero in component division"); return (b != 0) ? (a / b) : T{0}; });
         }
 
-        [[noimplement]] constexpr ColorN operator/=(ColorN rhs){
-
+        [[nodiscard]] constexpr ColorN operator*(T scalar) const{
+            ColorN tempVec;
+            std::transform(cbegin(),cend(),tempVec.begin(),[scalar](T in){return in * scalar;});
+            return tempVec;
         }
 
-        [[noimplement]] [[nodiscard]] constexpr ColorN operator*(T scalar) const{
-
+        [[nodiscard]] constexpr friend ColorN operator*(T scalar, ColorN lhs){
+            ColorN tempVec;
+            std::transform(lhs.cbegin(),lhs.cend(),tempVec.begin(),[scalar](T in){return in * scalar;});
+            return tempVec;
         }
 
-        [[noimplement]] [[nodiscard]] constexpr friend ColorN operator*(T scalar, ColorN lhs){
-
+        constexpr ColorN& operator*=(T scalar){
+            std::transform(begin(),end(),begin(),[scalar](T in){return in * scalar;});
+            return *this;
         }
 
-        [[noimplement]] constexpr ColorN& operator*=(T scalar){
-
+        [[nodiscard]] constexpr ColorN operator/(T scalar) const{
+            ColorN tempCol;
+            std::transform(cbegin(), cend(), tempCol.begin(),[scalar](T in) {assert(scalar !=0 && "Divide by zero in operator/"); return (scalar != 0) ? (in / scalar) : T{0}; });
+            return tempCol;
         }
 
-        [[noimplement]] [[nodiscard]] constexpr ColorN operator/(T scalar) const{
-
+        constexpr ColorN& operator/=(T scalar){
+            std::transform(cbegin(), cend(), begin(),[scalar](T in) {assert(scalar !=0 && "Divide by zero in operator/"); return (scalar != 0) ? (in / scalar) : T{0}; });
+            return *this;
         }
 
-        [[noimplement]] constexpr ColorN& operator/=(T scalar){
+        [[noimplement]] [[nodiscard]] constexpr ColorN lerp(ColorN rhs, T t)const{}
 
+        [[noimplement]] constexpr ColorN& lerp_in_place(ColorN rhs, T t){}
+
+        [[noimplement]] [[nodiscard]] constexpr ColorN clamp(T lower, T upper) const{}
+
+        [[noimplement]] constexpr ColorN& clamp_in_place(T lower, T upper){}
+
+
+        template <typename... Args>
+        [[nodiscard]] static constexpr auto from_components(Args... args)requires(N!=2 && N !=4){ 
+            return ColorN<std::common_type_t<Args...>,sizeof...(Args)>(args...);
         }
 
-        [[noimplement]] [[nodiscard]] constexpr ColorN lerp(ColorN rhs, T t)const{
-
+        template <typename... Args>
+        [[nodiscard]] static constexpr auto from_premultiplied(Args... args) requires(N ==2 || N ==4){
+            return ColorN<std::common_type_t<Args...>,sizeof...(Args)>(args...);
         }
 
-        [[noimplement]] constexpr ColorN& lerp_in_place(ColorN rhs, T t){
-
+        template<typename... Args, typename U = T>
+        [[nodiscard]] static constexpr auto from_straight(Args... args) requires(N==2 || N==4) {
+            auto c = ColorN<U,N>(args...);
+            T A = c.A();
+            std::transform(c.begin(),c.end()-1,c.begin(),[A](T in){return in * A;});
+            return c;
         }
 
-        [[noimplement]] [[nodiscard]] constexpr ColorN clamp(T lower, T upper) const{
+        [[noimplement]] static constexpr ColorN from_linear_straight(T r, T g, T b, T a) {}
 
-        }
+        [[noimplement]] static constexpr ColorN from_linear_premultiplied(T r, T g, T b, T a) {}
 
-        [[noimplement]] constexpr ColorN& clamp_in_place(T lower, T upper){
+        [[noimplement]] static constexpr ColorN from_srgb_straight(T r, T g, T b, T a){}
 
-        }
+        [[noimplement]] static constexpr ColorN from_srgb_premultiplied(T r, T g, T b, T a){}
 
-        [[noimplement]] [[nodiscard]] static constexpr ColorN fromStraight(T IdkWhatToPutHereFrankly...){
+        [[noimplement]] auto to_linear_premultiplied(){}
 
-        }
+        [[noimplement]] auto to_linear_straight(){}
 
-        [[noimplement]] [[nodiscard]] ColorN ToStraight() const{
+        [[noimplement]] auto to_srgb_straight(){}
 
-        }
+        [[noimplement]] auto to_srgb_premultiplied(){}
+    
+        [[noimplement]] [[nodiscard]] ColorN to_straight() const requires(N==2 || N==4){}
 
-        [[noimplement]] [[nodiscard]] ColorN ToLinear() const{}
+        [[noimplement]] [[nodiscard]] ColorN from_SRBG() const{}
 
-        [[noimplement]] [[nodiscard]] ColorN ToSRGB() const{}
+        [[noimplement]] [[nodiscard]] ColorN to_SRGB() const{}
 
-        [[noimplement]] [[nodiscard]] T Luminance() const{}
+        [[noimplement]] [[nodiscard]] T luminance() const{}
 
-        [[noimplement]] [[nodiscard]] ColorN AdjustSaturation(T){}
+        [[noimplement]] [[nodiscard]] ColorN adjust_saturation(T){}
 
-        [[noimplement]] [[nodiscard]] ColorN AdjustBrightness(float){}
+        [[noimplement]] [[nodiscard]] ColorN adjust_brightness(T){}
 
 
     };
+    using ColorAuto = ColorN<void,0>;
+    using RGB = ColorN<float,3>;
+    using RGBA = ColorN<float,4>;
+    using LA = ColorN<float,2>;
+    using RGB8 = ColorN<int8_t,3>;
+    using RGBA8 = ColorN<int8_t,4>;
 
 };
