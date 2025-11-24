@@ -2,9 +2,11 @@
 #include <type_traits>
 #include <cassert>
 #include <cmath>
+#include <type_traits>
 #include <algorithm>
 #include <functional>
 #include "ContainerN.hpp"
+#include "config.hpp"
 
 namespace ES{
     
@@ -147,61 +149,78 @@ namespace ES{
         [[noimplement]] [[nodiscard]] constexpr ColorN clamp(T lower, T upper) const{}
 
         [[noimplement]] constexpr ColorN& clamp_in_place(T lower, T upper){}
-
-
-        template <typename... Args>
-        [[nodiscard]] static constexpr auto from_components(Args... args)requires(N!=2 && N !=4){ 
-            return ColorN<std::common_type_t<Args...>,sizeof...(Args)>(args...);
-        }
-
-        template <typename... Args>
-        [[nodiscard]] static constexpr auto from_premultiplied(Args... args) requires(N ==2 || N ==4){
-            return ColorN<std::common_type_t<Args...>,sizeof...(Args)>(args...);
-        }
-
-        template<typename... Args, typename U = T>
-        [[nodiscard]] static constexpr auto from_straight(Args... args) requires(N==2 || N==4) {
-            auto c = ColorN<U,N>(args...);
-            T A = c.A();
-            std::transform(c.begin(),c.end()-1,c.begin(),[A](T in){return in * A;});
-            return c;
-        }
-
-        [[noimplement]] static constexpr ColorN from_linear_straight(T r, T g, T b, T a) {}
-
-        [[noimplement]] static constexpr ColorN from_linear_premultiplied(T r, T g, T b, T a) {}
-
-        [[noimplement]] static constexpr ColorN from_srgb_straight(T r, T g, T b, T a){}
-
-        [[noimplement]] static constexpr ColorN from_srgb_premultiplied(T r, T g, T b, T a){}
-
+        
         [[noimplement]] auto to_linear_premultiplied(){}
-
+        
         [[noimplement]] auto to_linear_straight(){}
-
+        
         [[noimplement]] auto to_srgb_straight(){}
-
+        
         [[noimplement]] auto to_srgb_premultiplied(){}
-    
+        
         [[noimplement]] [[nodiscard]] ColorN to_straight() const requires(N==2 || N==4){}
-
-        [[noimplement]] [[nodiscard]] ColorN from_SRBG() const{}
-
+        
         [[noimplement]] [[nodiscard]] ColorN to_SRGB() const{}
-
+        
         [[noimplement]] [[nodiscard]] T luminance() const{}
-
+        
         [[noimplement]] [[nodiscard]] ColorN adjust_saturation(T){}
-
+        
         [[noimplement]] [[nodiscard]] ColorN adjust_brightness(T){}
-
-
+        
+        
     };
-    using ColorAuto = ColorN<void,0>;
     using RGB = ColorN<float,3>;
     using RGBA = ColorN<float,4>;
     using LA = ColorN<float,2>;
     using RGB8 = ColorN<int8_t,3>;
     using RGBA8 = ColorN<int8_t,4>;
 
+
+    namespace factory{
+
+
+        // I may be addicted to the fold
+        template<typename... Args>
+        static constexpr auto from_linear_straight(Args... args) requires (sizeof...(Args) == 2 || sizeof...(Args)==4) {
+            ColorN<std::common_type_t<Args...>, sizeof...(Args)> tempColor(args...);
+            auto a = tempColor.A();
+            std::transform(tempColor.begin(), tempColor.end()-1,tempColor.begin(),[a](auto in){return in*a;});
+            return tempColor; 
+        }
+
+    
+        template<typename... Args>
+        [[nodiscard]] static constexpr auto from_linear_premultiplied(Args... args) requires (sizeof...(Args) == 2 || sizeof...(Args)==4) {
+             return ColorN<std::common_type_t<Args...>, sizeof...(Args)>(args...);
+        }
+
+        template<typename... Args>
+        static constexpr auto from_linear(Args... args){
+            return ColorN<std::common_type_t<Args...>, sizeof...(Args)>(args...);
+        }
+
+        template<typename... Args>
+        [[noimplement]] static constexpr auto from__srgb(Args... args) requires (std::is_integral_v<std::common_type_t<Args...>>){
+                ColorN<real,sizeof...(args)> tempcol(static_cast<real>(args / 255.0f)...);
+        }
+
+        template<typename... Args>
+        [[noimplement]] static constexpr auto from__srgb(Args... args){
+                
+        }
+
+    
+        template<typename... Args>
+        [[noimplement]] static constexpr auto from_srgb_straight(Args... args){}
+        
+        template<typename... Args>
+        [[noimplement]] static constexpr auto from_srgb_premultiplied(Args... args){ }
+
+
+        [[noimplement]] static constexpr auto from_hex(int hex){
+            
+        }
+    }
+    
 };
