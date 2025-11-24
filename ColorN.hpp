@@ -168,6 +168,48 @@ namespace ES{
         
         [[noimplement]] [[nodiscard]] ColorN adjust_brightness(T){}
         
+        // These factories are giving me quite some trouble, hard to figure out the way to construct these classes correctly
+        // big struggle point for me is how to construct these int8_ts, because they are never properly deduced, because if someone passes
+        // in three values 255,255,25, the class just creates a int version, this is trouble
+        template<typename... Args>
+        [[noimplement]] static constexpr auto from_linear_straight(Args... args) requires (sizeof...(Args) == 2 || sizeof...(Args)==4) && (sizeof...(Args)== N) {
+            ColorN<T, N> tempColor(args...);
+            auto a = tempColor.A();
+            std::transform(tempColor.begin(), tempColor.end()-1,tempColor.begin(),[a](auto in){return in*a;});
+            return tempColor; 
+        }
+        template<typename... Args>
+        [[noimplement]][[nodiscard]] static constexpr auto from_linear_premultiplied(Args... args) requires (sizeof...(Args) == 2 || sizeof...(Args)==4) {
+             return ColorN<std::common_type_t<Args...>, sizeof...(Args)>(args...);
+        }
+    
+        template<typename... Args>
+        static constexpr auto from_linear(Args... args){
+            return ColorN<std::common_type_t<Args...>, sizeof...(Args)>(args...);
+        }
+    
+        template<typename... Args>
+        [[noimplement]] static constexpr auto from__srgb(Args... args) requires (std::is_integral_v<std::common_type_t<Args...>>){
+                ColorN<real,sizeof...(args)> tempcol(static_cast<real>(args / 255.0f)...);
+            
+        }
+    
+        template<typename... Args>
+        [[noimplement]] static constexpr auto from__srgb(Args... args){
+                
+        }
+    
+    
+        template<typename... Args>
+        [[noimplement]] static constexpr auto from_srgb_straight(Args... args){}
+        
+        template<typename... Args>
+        [[noimplement]] static constexpr auto from_srgb_premultiplied(Args... args){ }
+    
+    
+        [[noimplement]] static constexpr auto from_hex(int hex){
+            
+        }
         
     };
     using RGB = ColorN<float,3>;
@@ -180,47 +222,8 @@ namespace ES{
     namespace factory{
 
 
-        // I may be addicted to the fold
-        template<typename... Args>
-        static constexpr auto from_linear_straight(Args... args) requires (sizeof...(Args) == 2 || sizeof...(Args)==4) {
-            ColorN<std::common_type_t<Args...>, sizeof...(Args)> tempColor(args...);
-            auto a = tempColor.A();
-            std::transform(tempColor.begin(), tempColor.end()-1,tempColor.begin(),[a](auto in){return in*a;});
-            return tempColor; 
-        }
 
     
-        template<typename... Args>
-        [[nodiscard]] static constexpr auto from_linear_premultiplied(Args... args) requires (sizeof...(Args) == 2 || sizeof...(Args)==4) {
-             return ColorN<std::common_type_t<Args...>, sizeof...(Args)>(args...);
-        }
-
-        template<typename... Args>
-        static constexpr auto from_linear(Args... args){
-            return ColorN<std::common_type_t<Args...>, sizeof...(Args)>(args...);
-        }
-
-        template<typename... Args>
-        [[noimplement]] static constexpr auto from__srgb(Args... args) requires (std::is_integral_v<std::common_type_t<Args...>>){
-                ColorN<real,sizeof...(args)> tempcol(static_cast<real>(args / 255.0f)...);
-        }
-
-        template<typename... Args>
-        [[noimplement]] static constexpr auto from__srgb(Args... args){
-                
-        }
-
-    
-        template<typename... Args>
-        [[noimplement]] static constexpr auto from_srgb_straight(Args... args){}
-        
-        template<typename... Args>
-        [[noimplement]] static constexpr auto from_srgb_premultiplied(Args... args){ }
-
-
-        [[noimplement]] static constexpr auto from_hex(int hex){
-            
-        }
     }
     
 };
