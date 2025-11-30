@@ -16,6 +16,8 @@ namespace ES{
     template<template<typename, std::size_t> class Child, typename T, std::size_t N>
     class ContainerN{
     protected:
+    
+    
     public:
 
         std::array<T, N> data_ = {};
@@ -283,6 +285,10 @@ namespace ES{
             }
             return false;
         }
+        /** @brief Inequality operator, checks if every component of vector is equal */
+        [[nodiscard]] constexpr bool operator!=(const ContainerN other)const noexcept{
+           return !operator==(other);
+        }
 
         /**
         * @brief compares two vectors and returns true if there values are at least closer than epsilon
@@ -300,8 +306,6 @@ namespace ES{
             }
             return true;
         }
-
-
 
         /**
         * @brief Reduces two vectors into a single value using a ternary fold expression.

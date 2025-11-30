@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <functional>
 #include "ContainerN.hpp"
+#include "ES_angle.hpp"
 
 namespace ES {
 
@@ -189,6 +190,7 @@ public:
     constexpr VectorN& normalize_in_place() noexcept{
         T mag = magnitude();
         if(mag == 0){
+            assert(false && "Divide by zero error in normalize_in_place calculation");
             std::fill(begin(),end(),T{0});
             return *this;
         }
@@ -212,7 +214,7 @@ public:
         return VectorN(*this).normalize_in_place();
     }
 
-
+    
     /** @defgroup arithmetic Arithmetic Operators
     *  @brief Component-wise & scalar arithmetic operations for VectorN.
     *  @{
@@ -229,10 +231,9 @@ public:
     }
     /** @brief Unary negation */
     [[nodiscard]] constexpr VectorN operator-() const noexcept{
-        VectorN self{*this};
-        std::negate<> op;
-        for(auto& i : self) i = op(i);
-        return self;
+        VectorN result;
+        std::transform(begin(), end(), result.begin(), std::negate<>());
+        return result;
     }
 
     /** @brief Component-wise subtraction */
@@ -248,7 +249,7 @@ public:
     /** @brief Scalar multiplication */
     [[nodiscard]] constexpr VectorN operator*(const T scalar) const noexcept{
         VectorN tempVec;
-        std::transform(begin(),end(),tempVec.begin(),[scalar](T in){return in * scalar;});
+        std::transform(cbegin(),cend(),tempVec.begin(),[scalar](T in){return in * scalar;});
         return tempVec;
     }
     
@@ -265,7 +266,7 @@ public:
      */
     [[nodiscard]] constexpr VectorN operator/(const T scalar) const noexcept{
         VectorN tempVec;
-        std::transform(begin(), end(), tempVec.begin(),[scalar](T in) {assert(scalar !=0 && "Divide by zero in operator/"); return (scalar != 0) ? (in / scalar) : T{0}; });
+        std::transform(cbegin(), cend(), tempVec.begin(),[scalar](T in) {assert(scalar !=0 && "Divide by zero in operator/"); return (scalar != 0) ? (in / scalar) : T{0}; });
         return tempVec;
     }
 
@@ -286,9 +287,9 @@ public:
     *
     * @note This is a friend function to allow access to private members of VectorN.
     */
-    [[nodiscard]] friend constexpr VectorN operator*(const auto& scalar, const VectorN lhs) noexcept{
+    [[nodiscard]] friend constexpr VectorN operator*(const auto scalar, const VectorN lhs) noexcept{
         VectorN tempVec;
-        std::transform(lhs.begin(),lhs.end(),tempVec.begin(),[scalar](T in){return in * scalar;});
+        std::transform(lhs.cbegin(),lhs.cend(),tempVec.begin(),[scalar](T in){return in * scalar;});
         return tempVec;
     }
     
@@ -341,15 +342,15 @@ public:
     * @param rhs The vector to compute the angle to.
     * @return The angle between the two vectors in radians (for now).
     */
-    [[nodiscard]] constexpr T angle(const VectorN<T, N> rhs) const noexcept{
+    [[nodiscard]] /* TODO: make constexpr*/ angle_rad angle(const VectorN<T, N> rhs) const noexcept{
         T thisMag = magnitude_squared();
         T thatMag = rhs.magnitude_squared();
         
         if(thisMag == 0 || thatMag == 0) {
             assert(false && "Divide by zero error in angle calculation");
-            return T{0};
+            return {T{0}};
         }
-        return std::acos(std::clamp(dot(rhs) / std::sqrt(thisMag * thatMag), T{-1}, T{1}));  
+        return ES::angle_rad{std::acos(std::clamp(dot(rhs) / std::sqrt(thisMag * thatMag), T{-1}, T{1}))};
     }
 
     /**
@@ -541,8 +542,8 @@ public:
     [[nodiscard]] constexpr VectorN refract(VectorN rhs, T n1, T n2) const noexcept {
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhs));
-        T k = 1.0f - refractionRatio * refractionRatio * (1.0f - cosi * cosi);
-        if (k < 0.0f){
+        T k = T{1} - refractionRatio * refractionRatio * (T{1} - cosi * cosi);
+        if (k < T{0}){
             VectorN tempVec;
             std::fill(tempVec.begin(),tempVec.end(),T{0});
             return tempVec;
@@ -569,11 +570,11 @@ public:
     *          normalized, use `refract_in_place_safe()` instead.
     */
 
-    [[nodiscard]] constexpr VectorN& refract_in_place(VectorN rhs, T n1, T n2) noexcept {
+    constexpr VectorN& refract_in_place(VectorN rhs, T n1, T n2) noexcept {
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhs));
-        T k = 1.0f - refractionRatio * refractionRatio * (1.0f - cosi * cosi);
-        if (k < 0.0f){
+        T k = T{1} - refractionRatio * refractionRatio * (T{1}- cosi * cosi);
+        if (k < T{0}){
             std::fill(begin(),end(),T{0});
             return *this;
         }       
@@ -600,9 +601,9 @@ public:
 
         T refractionRatio = n1 / n2;
         T cosi = -(thisUnit.dot(rhsUnit));
-        T k = 1.0f - refractionRatio * refractionRatio * (1.0f - cosi * cosi);
+        T k = T{1} - refractionRatio * refractionRatio * (T{1} - cosi * cosi);
 
-        if (k < 0.0f){
+        if (k < T{0}){
             VectorN tempVec;
             std::fill(tempVec.begin(),tempVec.end(),T{0});
             return tempVec;
@@ -625,15 +626,15 @@ public:
     * @param n2  Refractive index of the medium the vector is entering.
     * @return A reference to this vector after modification.
     */
-    [[nodiscard]] constexpr VectorN& refract_in_place_safe(VectorN rhs, T n1, T n2)noexcept {
+    constexpr VectorN& refract_in_place_safe(VectorN rhs, T n1, T n2)noexcept {
         *this = normalize();
         VectorN rhsUnit = rhs.normalize();
 
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhsUnit));
-        T k = 1.0f - refractionRatio * refractionRatio * (1.0f - cosi * cosi);
+        T k = T{1} - refractionRatio * refractionRatio * (T{1} - cosi * cosi);
 
-        if (k < 0.0f){
+        if (k < T{0}){
             std::fill(begin(),end(),T{0});
             return *this;
         }
@@ -723,7 +724,7 @@ public:
     *
     * @note Asserts in debug if `rhs` is a zero vector. Release builds may produce undefined behavior.
     */
-    [[nodiscard]] VectorN project_onto_in_place(VectorN rhs)noexcept{
+    VectorN project_onto_in_place(VectorN rhs)noexcept{
         assert(rhs.dot(rhs)!=0 && "Divide by zero error in Project onto in place method");
         *this = dot(rhs)/rhs.dot(rhs) *rhs;
         return *this;
@@ -742,11 +743,11 @@ public:
     * @note If the angle between vectors is very small (< 1e-6), this function returns this vector directly.
     *       This avoids division by near-zero and ensures numerical stability.
     */
-    [[nodiscard]] VectorN slerp(const VectorN& rhs, T t)const noexcept{
+    [[nodiscard]] VectorN slerp(const VectorN rhs, T t)const noexcept{
         T daught = dot(rhs);
 
         T theta = std::acos(daught);
-        if (theta < T(1e-6)) {
+        if (theta < math::default_epsilon<T>::value) {
             return *this;
         }
 

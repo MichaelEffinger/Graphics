@@ -1,7 +1,3 @@
-//
-// Created by Comedic Genuis on 10/22/2025.
-//
-
 #ifndef COMPUTERGRAPHICS_ESRANDOM_HPP
 #define COMPUTERGRAPHICS_ESRANDOM_HPP
 
