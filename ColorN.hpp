@@ -172,33 +172,41 @@ namespace ES{
         // big struggle point for me is how to construct these int8_ts, because they are never properly deduced, because if someone passes
         // in three values 255,255,25, the class just creates a int version, this is trouble
         template<typename... Args>
-        [[noimplement]] static constexpr auto from_linear_straight(Args... args) requires (sizeof...(Args) == 2 || sizeof...(Args)==4) && (sizeof...(Args)== N) {
-            ColorN<T, N> tempColor(args...);
-            auto a = tempColor.A();
+        static constexpr auto from_linear_straight(Args... args) requires (sizeof...(Args)== N) && (N == 2 || N==4) {
+            ColorN tempColor(static_cast<T>(args)...);
+            T a = tempColor.A();
             std::transform(tempColor.begin(), tempColor.end()-1,tempColor.begin(),[a](auto in){return in*a;});
             return tempColor; 
         }
+
         template<typename... Args>
-        [[noimplement]][[nodiscard]] static constexpr auto from_linear_premultiplied(Args... args) requires (sizeof...(Args) == 2 || sizeof...(Args)==4) {
-             return ColorN<std::common_type_t<Args...>, sizeof...(Args)>(args...);
+        [[nodiscard]] static constexpr auto from_linear_premultiplied(Args... args) requires (sizeof...(Args)==N)&&(N == 2 || N==4) {
+            return ColorN(static_cast<T>(args)...);
         }
     
         template<typename... Args>
-        static constexpr auto from_linear(Args... args){
-            return ColorN<std::common_type_t<Args...>, sizeof...(Args)>(args...);
+        static constexpr auto from_linear(Args... args) requires (sizeof...(Args)==N) && (N!=2 && N!=4){
+            return ColorN(static_cast<T>(args)...);
         }
-    
+
+
         template<typename... Args>
-        [[noimplement]] static constexpr auto from__srgb(Args... args) requires (std::is_integral_v<std::common_type_t<Args...>>){
-                ColorN<real,sizeof...(args)> tempcol(static_cast<real>(args / 255.0f)...);
-            
+        [[noimplement]] static constexpr auto from_srgb(Args... args) requires (sizeof...(Args) == N) && (N != 2 && N != 4) && (std::conjunction_v<std::is_floating_point<Args>...>){
+            ColorN temp_col(args...);
+            std::transform(temp_col.begin(),temp_col.end(),temp_col.begin(),[](T in){if (in <= T{0.04045}) return in/ T{12.92}; else return pow((in + T{0.055})/T{1.055}, T{2.4});});
+            return temp_col;
         }
-    
+
+
         template<typename... Args>
-        [[noimplement]] static constexpr auto from__srgb(Args... args){
-                
+        [[noimplement]] static constexpr auto from_srgb(Args... args) requires (sizeof...(Args) == N) && (N != 2 && N != 4) && (std::conjunction_v<std::is_integral<Args>...>){
+            ColorN temp_col((static_cast<T>(args) / T(255))...);
+            std::transform(temp_col.begin(), temp_col.end(), temp_col.begin(),[](T in){if (in <= T{0.04045}) return in/ T{12.92}; else return pow((in + T{0.055})/T{1.055}, T{2.4});});
+            return temp_col;
         }
-    
+
+
+     
     
         template<typename... Args>
         [[noimplement]] static constexpr auto from_srgb_straight(Args... args){}
