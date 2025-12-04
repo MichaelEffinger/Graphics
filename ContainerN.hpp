@@ -13,7 +13,7 @@
 
 namespace ES{
     //hmmmmm. this is curious 
-    template<template<typename, std::size_t> class Child, typename T, std::size_t N>
+    template<class Child, typename T, std::size_t N>
     class ContainerN{
     protected:
     
@@ -74,33 +74,6 @@ namespace ES{
         */
         template <typename... Args> requires (sizeof...(Args) == N)
         constexpr ContainerN(Args&&... args) noexcept((std::is_nothrow_constructible_v<T, Args&&> && ...)) : data_{static_cast<T>(args)...} {}
-
-        /**
-        * @brief Construct a ContainerN form an N-J sized Container along with J other parameters
-        * 
-        * This is a variadic template contsructor that takes exactly one smaller Container of
-        * size N-J along with J other parameters. These together must be of size exactly N.
-        * The parameter arguments are static converted to to T.
-        *
-        * @tparam M The size of ContainerN, which is the first parameter  
-        * @tparam U Parameeter pack representing each of the remaining elements. 
-        *         Must have exactly size M-N
-        * @param smaller The Container of the first values to initialize in the Container
-        * @param extras The remaining values to initialize in the Container
-        *
-        * @note This constructor is `constexpr` and `noexcept` if all elements
-        *       if all element construction are noexcept.
-        *
-        * @example 
-        * ContainerN<float,2> v2(1.0f,2.0f);
-        * ContainerN<float,5> v5(v2,3.0f,4.0f,5.0f);
-        */
-        template<size_t M, typename... U> requires (sizeof...(U) == N - M)
-        constexpr ContainerN(const Child<T,M>& smaller, U... extras) noexcept((std::is_nothrow_constructible_v<T,U&&>&&...)): data_{} {      
-            std::copy(smaller.cbegin(), smaller.cend(), data_.begin());
-            size_t index = M;
-            ((data_[index++] = T(static_cast<T>(extras))), ...);
-        }
         
         /**
         * @brief Provides unchecked element access by index.
@@ -243,8 +216,8 @@ namespace ES{
         * @return A new VectorN where each element is `op(this[i], rhs[i])`.
         */
         template<typename other, typename BinaryOp>
-        [[nodiscard]] constexpr Child<T,N> zip(other rhs, BinaryOp op) const noexcept {
-            Child<T,N> resultant;
+        [[nodiscard]] constexpr Child zip(other rhs, BinaryOp op) const noexcept {
+            Child resultant;
             auto liter = cbegin(), riter = rhs.cbegin();
             auto oiter = resultant.begin();
             while(liter != cend()){
@@ -266,14 +239,14 @@ namespace ES{
         * @return Reference to this vector after modification.
         */
         template<typename other,typename BinaryOp>
-        constexpr Child<T,N>& zip_in_place(const other rhs, BinaryOp op) noexcept {
+        constexpr Child& zip_in_place(const other rhs, BinaryOp op) noexcept {
             auto liter = begin();
             auto riter = rhs.cbegin();
             while(liter != end()){
                 *liter = op(*liter, *riter);
                 ++liter, ++riter;
             }
-            return static_cast<Child<T,N>&>(*this);
+            return static_cast<Child&>(*this);
             //return reinterpret_cast<Child<T,N>&>(*this);      ///ryan wont let me
             
         }

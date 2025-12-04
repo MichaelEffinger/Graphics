@@ -10,7 +10,7 @@
 
 namespace ES {
     template <typename T, std::size_t N> requires(std::is_arithmetic_v<T>)
-    class PointN: public ContainerN<PointN,T,N> {
+    class PointN: public ContainerN<PointN<T,N>,T,N> {
     
     private:
         using ContainerN<PointN,T,N>::data_;
@@ -24,6 +24,37 @@ namespace ES {
         using ContainerN<PointN,T,N>::cbegin;
         using ContainerN<PointN,T,N>::cend;
         using ContainerN<PointN,T,N>::ContainerN;
+
+
+         /**
+        * @brief Construct a ContainerN form an N-J sized Container along with J
+        * other parameters
+        *
+        * This is a variadic template contsructor that takes exactly one smaller
+        * Container of size N-J along with J other parameters. These together must
+        * be of size exactly N. The parameter arguments are static converted to to
+        * T.
+        *
+        * @tparam M The size of ContainerN, which is the first parameter
+        * @tparam U Parameeter pack representing each of the remaining elements.
+        *         Must have exactly size M-N
+        * @param smaller The Container of the first values to initialize in the
+        * Container
+        * @param extras The remaining values to initialize in the Container
+        *
+        * @note This constructor is `constexpr` and `noexcept` if all elements
+        *       if all element construction are noexcept.
+        *
+        * @example
+        * ContainerN<float,2> v2(1.0f,2.0f);
+        * ContainerN<float,5> v5(v2,3.0f,4.0f,5.0f);
+        */
+        template <size_t M, typename... U> requires(sizeof...(U) == N - M)
+        constexpr PointN(const VectorN<T, M> &smaller, U... extras) noexcept((std::is_nothrow_constructible_v<T, U &&> && ...)) : ContainerN<PointN, T, N>{} {
+            std::copy(smaller.cbegin(), smaller.cend(), data_.begin());
+            size_t index = M;
+            ((data_[index++] = T(static_cast<T>(extras))), ...);
+        }
 
 
 
@@ -75,7 +106,7 @@ namespace ES {
         * @return new Position 
         */
         [[nodiscard]] constexpr PointN operator+(ES::VectorN<T,N> rhs)const noexcept{
-            return math::zip(*this,rhs,std::plus());
+            return math::zip(*this,rhs,std::plus{});
         }
         
         /** 
@@ -83,7 +114,7 @@ namespace ES {
         * @return new Position 
         */
         [[nodiscard]] friend constexpr PointN operator+(ES::VectorN<T,N> lhs, PointN rhs) noexcept {
-            return math::zip(rhs, lhs, std::plus());;
+            return math::zip(rhs, lhs, std::plus{});;
         }
 
         /** 
@@ -91,7 +122,7 @@ namespace ES {
         * @return Reference to self post modification
         */
         constexpr PointN &operator+=(ES::VectorN<T,N> rhs)noexcept {
-            return zip_in_place(rhs,std::plus());
+            return zip_in_place(rhs,std::plus{});
         }
         /**
         * @brief Component wise subtraction. Subtracts a PositoinN from a PointN
@@ -99,7 +130,7 @@ namespace ES {
         */
         [[nodiscard]] constexpr ES::VectorN<T,N> operator-(PointN rhs) const noexcept {
            VectorN<T,N> tempVec;
-            return math::zip_into(*this,rhs,tempVec,std::minus());
+            return math::zip_into(*this,rhs,tempVec,std::minus{});
         }
 
         /**
@@ -107,7 +138,7 @@ namespace ES {
         * @return PointN after subtraction.
         */
         [[nodiscard]] constexpr PointN operator-(ES::VectorN<T,N> rhs)const noexcept{
-            return zip(rhs,std::minus());
+            return zip(rhs,std::minus{});
         }
 
         /**
@@ -115,7 +146,7 @@ namespace ES {
         * @return Reference to self post modification.
         */
         constexpr PointN& operator-=(ES::VectorN<T,N> rhs) noexcept{
-            return zip_in_place(rhs,std::minus());
+            return zip_in_place(rhs,std::minus{});
         }
 
 

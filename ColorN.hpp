@@ -6,232 +6,144 @@
 #include <algorithm>
 #include <functional>
 #include "ContainerN.hpp"
-#include "config.hpp"
 
 namespace ES{
-    
-    template <typename T, std::size_t N> 
-    class ColorN: ContainerN<ColorN,T,N>{
+    template<class Child, typename T, std::size_t N>
+    class ColorOpsMixin{
 
+    protected:
+        constexpr Child& derived() {return static_cast<Child&>(*this);}
+        constexpr const Child& derived() const {return static_cast<const Child&>(*this);}
+        
+    public:
 
-        public:
-        using ContainerN<ColorN,T,N>::zip_in_place;
-        using ContainerN<ColorN,T,N>::zip;
-        using ContainerN<ColorN,T,N>::zip_reduce;
-        using ContainerN<ColorN,T,N>::begin;
-        using ContainerN<ColorN,T,N>::end;
-        using ContainerN<ColorN,T,N>::cend;
-        using ContainerN<ColorN,T,N>::cbegin;
-        using ContainerN<ColorN,T,N>::data_;
-        using ContainerN<ColorN,T,N>::ContainerN;
-
-        /**
-        * @brief Returns the Luminance component of the Color.
-        * @note Vector must have size exactly 2 
-        * @return Reference to the first element.
-        */
-        [[nodiscard]] constexpr auto&& L(this auto&& self) noexcept requires (N>0 && N<3) {
-            return std::forward_like<decltype(self)>(self[0]);
+        [[nodiscard]] constexpr Child operator+(Child rhs) const noexcept{
+            return derived().zip(rhs,std::plus{});
         }
 
-
-        /**
-        * @brief Returns the Alpha component of the Color.
-        * @note Vector must have size exactly 2 
-        * @return Reference to the second element.
-        */
-        [[nodiscard]] constexpr auto&& A(this auto&& self) noexcept requires (N==2) {
-            return std::forward_like<decltype(self)>(self[1]);
+        constexpr Child& operator+=(Child rhs) noexcept{
+            return derived().zip_in_place(rhs,std::plus{});
         }
 
-
-        /**
-        * @brief Returns the Red component.
-        * @note Vector must be smaller than 5, and bigger than 1
-        * @return Reference to the second element.
-        */
-        [[nodiscard]] constexpr auto&& R(this auto&& self) noexcept requires (N>2 && N<5) {
-            return std::forward_like<decltype(self)>(self[0]);
+        [[nodiscard]] constexpr Child operator-(Child rhs)const noexcept{
+            return derived().zip(rhs,std::minus{});
         }
 
-        /**
-        * @brief Returns the Green component.
-        * @note Vector must be smaller than 5, and bigger than 1
-        * @return Reference to the second element.
-        */
-        [[nodiscard]] constexpr auto&& G(this auto&& self) noexcept requires (N>2 && N<5) {
-            return std::forward_like<decltype(self)>(self[1]);
+        constexpr Child & operator-=(Child rhs) noexcept{
+            return derived().zip_in_place(rhs,std::minus{});
+        }
+        
+        [[nodiscard]] constexpr Child operator*(Child rhs) const noexcept{
+            return derived().zip(rhs,std::multiplies{});
         }
 
-        /**
-        * @brief Returns the Blue component.
-        * @note Vector must be smaller than 5, and bigger than 2
-        * @return Reference to the third element.
-        */
-        [[nodiscard]] constexpr auto&& B(this auto&& self) noexcept requires (N>2 && N<5) {
-            return std::forward_like<decltype(self)>(self[2]);
+        constexpr Child& operator*=(Child rhs) noexcept{
+            return derived().zip_in_place(rhs,std::multiplies{});
         }
 
-        /**
-        * @brief Returns the Alpha component of the vector.
-        * @note Vector must have size exactly 4
-        * @return Reference to the fourth element.
-        */
-        [[nodiscard]] constexpr auto&& A(this auto&& self) noexcept requires (N==4) {
-            return std::forward_like<decltype(self)>(self[3]);
+        [[nodiscard]] constexpr Child operator/(Child rhs)const noexcept{
+            return derived().zip(rhs, [](T a, T b) { assert(b !=0 && "Divide by zero in component division"); return (b != 0) ? (a / b) : T{0}; });
         }
 
-
-        [[nodiscard]] constexpr  ColorN operator+(ColorN rhs) const{
-            return zip(rhs,std::plus{});
+        constexpr Child& operator/=(Child rhs)noexcept{
+            return derived().zip_in_place(rhs, [](T a, T b) { assert(b !=0 && "Divide by zero in component division"); return (b != 0) ? (a / b) : T{0}; });
         }
 
-        constexpr ColorN& operator+=(ColorN rhs){
-            return zip_in_place(rhs,std::plus());
+        [[nodiscard]] constexpr Child operator*(T scalar) const noexcept{
+            Child temp_col;
+            std::transform(derived().cbegin(),derived().cend(),temp_col.begin(),[scalar](T in) {return in*scalar;});
+            return temp_col;
+        }
+        
+        [[nodiscard]] constexpr friend Child operator*(T scalar, Child lhs) noexcept{
+            Child temp_col;
+            std::transform(lhs.cbegin(),lhs.cend(),temp_col.begin(),[scalar](T in) {return in*scalar;} );
+            return temp_col;
         }
 
-        [[nodiscard]] constexpr ColorN operator-(ColorN rhs) const{
-            return zip(rhs, std::minus());
+        constexpr Child& operator*=(T scalar)noexcept{
+            std::transform(derived().begin(),derived().end(),derived().begin(),[scalar](T in){return in * scalar;});
+            return derived();
         }
 
-        constexpr ColorN& operator-=(ColorN rhs){
-            return zip_in_place(rhs,std::minus());
-        }
-
-        [[nodiscard]] constexpr ColorN operator*(ColorN rhs)const{
-            return zip(rhs,std::multiplies());
-        }
-
-        constexpr ColorN operator*=(ColorN rhs){
-            return zip_in_place(rhs,std::multiplies());
-        }
-
-        [[nodiscard]] constexpr ColorN operator/(ColorN rhs)const{
-            return zip(rhs, [](T a, T b) { assert(b !=0 && "Divide by zero in component division"); return (b != 0) ? (a / b) : T{0}; });
-        }
-
-        constexpr ColorN operator/=(ColorN rhs){
-            return zip_in_place(rhs, [](T a, T b) { assert(b !=0 && "Divide by zero in component division"); return (b != 0) ? (a / b) : T{0}; });
-        }
-
-        [[nodiscard]] constexpr ColorN operator*(T scalar) const{
-            ColorN tempVec;
-            std::transform(cbegin(),cend(),tempVec.begin(),[scalar](T in){return in * scalar;});
-            return tempVec;
-        }
-
-        [[nodiscard]] constexpr friend ColorN operator*(T scalar, ColorN lhs){
-            ColorN tempVec;
-            std::transform(lhs.cbegin(),lhs.cend(),tempVec.begin(),[scalar](T in){return in * scalar;});
-            return tempVec;
-        }
-
-        constexpr ColorN& operator*=(T scalar){
-            std::transform(begin(),end(),begin(),[scalar](T in){return in * scalar;});
-            return *this;
-        }
-
-        [[nodiscard]] constexpr ColorN operator/(T scalar) const{
-            ColorN tempCol;
-            std::transform(cbegin(), cend(), tempCol.begin(),[scalar](T in) {assert(scalar !=0 && "Divide by zero in operator/"); return (scalar != 0) ? (in / scalar) : T{0}; });
+        [[nodiscard]] constexpr Child operator/(T scalar) const noexcept{
+            Child tempCol;
+            std::transform(derived().cbegin(), derived().cend(),tempCol.begin(),[scalar](T in) {assert(scalar !=0 && "Divide by zero in operator/"); return (scalar != 0) ? (in / scalar) : T{0}; });
             return tempCol;
         }
 
-        constexpr ColorN& operator/=(T scalar){
-            std::transform(cbegin(), cend(), begin(),[scalar](T in) {assert(scalar !=0 && "Divide by zero in operator/"); return (scalar != 0) ? (in / scalar) : T{0}; });
-            return *this;
+        constexpr Child& operator/=(T scalar)noexcept{
+            std::transform(derived().cbegin(),derived().cend(),derived().begin(),[scalar](T in) {assert(scalar !=0 && "Divide by zero in operator/"); return (scalar != 0) ? (in / scalar) : T{0}; });
+            return derived();
         }
 
-        [[noimplement]] [[nodiscard]] constexpr ColorN lerp(ColorN rhs, T t)const{}
-
-        [[noimplement]] constexpr ColorN& lerp_in_place(ColorN rhs, T t){}
-
-        [[noimplement]] [[nodiscard]] constexpr ColorN clamp(T lower, T upper) const{}
-
-        [[noimplement]] constexpr ColorN& clamp_in_place(T lower, T upper){}
-        
-        [[noimplement]] auto to_linear_premultiplied(){}
-        
-        [[noimplement]] auto to_linear_straight(){}
-        
-        [[noimplement]] auto to_srgb_straight(){}
-        
-        [[noimplement]] auto to_srgb_premultiplied(){}
-        
-        [[noimplement]] [[nodiscard]] ColorN to_straight() const requires(N==2 || N==4){}
-        
-        [[noimplement]] [[nodiscard]] ColorN to_SRGB() const{}
-        
-        [[noimplement]] [[nodiscard]] T luminance() const{}
-        
-        [[noimplement]] [[nodiscard]] ColorN adjust_saturation(T){}
-        
-        [[noimplement]] [[nodiscard]] ColorN adjust_brightness(T){}
-        
-        // These factories are giving me quite some trouble, hard to figure out the way to construct these classes correctly
-        // big struggle point for me is how to construct these int8_ts, because they are never properly deduced, because if someone passes
-        // in three values 255,255,25, the class just creates a int version, this is trouble
-        template<typename... Args>
-        static constexpr auto from_linear_straight(Args... args) requires (sizeof...(Args)== N) && (N == 2 || N==4) {
-            ColorN tempColor(static_cast<T>(args)...);
-            T a = tempColor.A();
-            std::transform(tempColor.begin(), tempColor.end()-1,tempColor.begin(),[a](auto in){return in*a;});
-            return tempColor; 
+        [[nodiscard]] constexpr Child lerp(Child rhs, T t) const noexcept{
+            return derived().zip(rhs,[t](T a, T b) {return a+(b-a)*t;});
         }
 
-        template<typename... Args>
-        [[nodiscard]] static constexpr auto from_linear_premultiplied(Args... args) requires (sizeof...(Args)==N)&&(N == 2 || N==4) {
-            return ColorN(static_cast<T>(args)...);
-        }
-    
-        template<typename... Args>
-        static constexpr auto from_linear(Args... args) requires (sizeof...(Args)==N) && (N!=2 && N!=4){
-            return ColorN(static_cast<T>(args)...);
+        constexpr Child& lerp_in_place(Child rhs, T t) noexcept{
+            return derived().zip_in_place(rhs,[t](T a,T b) {return a+(b-a)*t;});
         }
 
-
-        template<typename... Args>
-        [[noimplement]] static constexpr auto from_srgb(Args... args) requires (sizeof...(Args) == N) && (N != 2 && N != 4) && (std::conjunction_v<std::is_floating_point<Args>...>){
-            ColorN temp_col(args...);
-            std::transform(temp_col.begin(),temp_col.end(),temp_col.begin(),[](T in){if (in <= T{0.04045}) return in/ T{12.92}; else return pow((in + T{0.055})/T{1.055}, T{2.4});});
+        [[nodiscard]] constexpr Child clamp(T lower, T upper) const noexcept{
+            Child temp_col;
+            std::transform(derived().cbegin(),derived().cend(), temp_col.begin(),[lower,upper](T in){return std::clamp(in, lower, upper);});
             return temp_col;
         }
 
+        constexpr Child& clamp_in_place(T lower, T upper)noexcept{
+            std::transform(derived().begin(),derived().end(),derived().begin(),[lower,upper](T in){return std::clamp(in, lower, upper);});
+            return derived();
+        }
 
-        template<typename... Args>
-        [[noimplement]] static constexpr auto from_srgb(Args... args) requires (sizeof...(Args) == N) && (N != 2 && N != 4) && (std::conjunction_v<std::is_integral<Args>...>){
-            ColorN temp_col((static_cast<T>(args) / T(255))...);
-            std::transform(temp_col.begin(), temp_col.end(), temp_col.begin(),[](T in){if (in <= T{0.04045}) return in/ T{12.92}; else return pow((in + T{0.055})/T{1.055}, T{2.4});});
+        [[nodiscard]] constexpr Child adjust_brightness(T factor) requires (Child::is_alpha()) {
+            Child temp_col;
+            std::transform(derived().begin(),derived().end()-1,temp_col.begin(),[factor](T in){return in * factor;});
+            temp_col.tail() = derived().tail();
             return temp_col;
         }
 
-
-     
-    
-        template<typename... Args>
-        [[noimplement]] static constexpr auto from_srgb_straight(Args... args){}
-        
-        template<typename... Args>
-        [[noimplement]] static constexpr auto from_srgb_premultiplied(Args... args){ }
-    
-    
-        [[noimplement]] static constexpr auto from_hex(int hex){
-            
+        constexpr Child adjust_brightness_in_place(T factor) requires (Child::is_alpha()) {
+            std::transform(derived().begin(),derived().end()-1,derived().begin(),[factor](T in){return in * factor;});
+            return derived();
         }
         
+        [[nodiscard]] constexpr Child adjust_brightness(T factor) requires (Child::is_standard()){
+            Child temp_col;
+            std::transform(derived().cbegin(),derived().cend(),temp_col.begin(),[factor](T in){return in * factor;});
+            return temp_col;
+        }
+
+        constexpr Child adjust_brightness_in_place(T factor) requires(Child::is_standard()){
+            std::transform(derived().begin(),derived().end(),derived().begin(),[factor](T in){return in * factor;});
+            return derived();
+        }
+
     };
-    using RGB = ColorN<float,3>;
-    using RGBA = ColorN<float,4>;
-    using LA = ColorN<float,2>;
-    using RGB8 = ColorN<int8_t,3>;
-    using RGBA8 = ColorN<int8_t,4>;
-
-
-    namespace factory{
-
-
-
     
-    }
     
-};
+    class RGB : public ContainerN<RGB,float,3>, public ColorOpsMixin<RGB,float,3> {
+
+ public:
+        constexpr static bool is_alpha(){
+            return true;
+        }
+
+        [[nodiscard]] constexpr auto&& R(this auto&& self) {
+            return std::forward_like<decltype(self)>(self[1]);
+        }
+        [[nodiscard]] constexpr auto&& G(this auto&& self) noexcept {
+            return std::forward_like<decltype(self)>(self[1]);
+        }
+        [[nodiscard]] constexpr auto&& B(this auto&& self) noexcept{
+            return std::forward_like<decltype(self)>(self[1]);
+        }
+
+
+    };
+
+
+
+
+
+}

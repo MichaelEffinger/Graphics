@@ -12,8 +12,8 @@
 namespace ES{
 
 
-template <typename T, std::size_t dummy = 4>
-class VectorH : public ContainerN<VectorH,T,4> {
+template <typename T>
+class VectorH : public ContainerN<VectorH<T>,T,4> {
     static const int N = 4;
     
     public:
