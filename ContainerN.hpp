@@ -197,8 +197,7 @@ namespace ES{
             return std::move((*this)[N - 1]);
         }
 
-
-
+        
         /** @defgroup zip Element-wise Operations
         *  @brief Component-wise operations on VectorN using custom binary functions.
         *  @{

@@ -1,7 +1,7 @@
 ﻿#Welcome to the debug CMakeLists
 add_executable(ComputerGraphics_Tests
         VectorN_test.cpp
-        Random_test.cpp
+        Color_test.cpp
         Angle_test.cpp
         Math_test.cpp
         ES_test_util.hpp
