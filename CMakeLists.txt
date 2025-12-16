@@ -10,7 +10,7 @@ project(ComputerGraphics LANGUAGES CXX)
 #SETTINGS!!!
   #Testing
 option(BUILD_TESTING "Build the testing suite" ON)
-option(BUILD_ENGINE "Build the actual game engine itself" ON) #maybe... if you only wanted tests?
+option(BUILD_ENGINE "Build the actual game engine itself" OFF) #maybe... if you only wanted tests? It's off as we've nothing to actually build... oops
 option(FETCH_CATCH2 "Download Catch2 if not found" OFF)
 set(DESIRED_BACKEND "WebGPU" CACHE STRING "The backend the engine shall use.") #sets the default funny backend
 set_property(CACHE DESIRED_BACKEND PROPERTY STRINGS "WebGPU" "Raylib") #this just gives the CMake GUI a dropdown... allegedly. Does not work as intended
@@ -53,6 +53,8 @@ testing_set_up() #immediately invoke the function... god I wish I could just sti
 ###############
 function(graphics_and_window_set_up)
     if(DESIRED_BACKEND STREQUAL "Raylib") #should we need raylib we just grab it and go
+        message("Chosen window library: Raylib")
+        message("Chosen backend: Raylib")
         find_package(raylib CONFIG REQUIRED)
 
         find_path(raylib_cpp_INCLUDE_DIR
@@ -63,16 +65,20 @@ function(graphics_and_window_set_up)
         target_link_libraries(ComputerGraphics PRIVATE raylib
                 $<$<BOOL:${WIN32}>:winmm gdi32> #Raylib needs these... on Windows exclusively... thank goodness I am so handsome and smart I know how to use generator expressions.
         )
-        message(FATAL_ERROR "Hey! Don't use this!")
+        message(FATAL_ERROR "Hey! Don't use raylib now! Clear the CMake cache and build again if you cannot make it use GLFW3")
 #        target_sources(ComputerGraphics PUBLIC ComputerGraphics.cpp)
 #        message("Successfully found and linked Raylib!")
 #        target_compile_definitions(ComputerGraphics PRIVATE ES_RAYLIB) #a preprocessor macro to signal that we're using raylib
 #        return() #We've raylib, we can exit now.
     endif ()
     #Now, if we're not using raylib, we must go on a GLFW adventure
+    message("Chosen window library: GLFW3")
     target_sources(ComputerGraphics PUBLIC main_webgpu.cpp)
-
-    find_package(glfw3 REQUIRED)
+    find_package(glfw3 QUIET)
+    if(NOT glfw3_FOUND AND BUILD_TESTING)
+        message(WARNING "Engine requested to be built, with a backend that needed GLFW3, yet GLFW3 was not found!\nThe engine will not be built, yet the tests still will.\nTry acquiring GLFW3 and adding it to your PATH, changing the backend to one you have, or building with -DBUILD_ENGINE=OFF.")
+        return()
+    endif ()
     target_link_libraries(ComputerGraphics PRIVATE glfw)
     target_compile_definitions(ComputerGraphics PRIVATE ES_GLFW) #macro for GLFW
     message("Successfully found and linked GLFW3!")
@@ -85,5 +91,5 @@ if(BUILD_ENGINE)
     message("Building the engine now!")
     graphics_and_window_set_up()
 else ()
-    message("Skipping building the engine entirely!")
+    message("Skipping building the engine...")
 endif ()

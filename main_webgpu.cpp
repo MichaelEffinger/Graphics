@@ -1,9 +1,6 @@
 #include <GLFW/glfw3.h>
 
 #include <iostream>
-#include <thread>
-#include <chrono>
-using namespace std::chrono_literals;
 
 
 namespace ES {
