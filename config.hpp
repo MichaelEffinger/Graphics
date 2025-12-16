@@ -3,7 +3,6 @@
 
 namespace ES{
    using real = float;
-   using angle = float;
    using Whole = uint32_t;
    using Index = std::size_t;
 
