@@ -10,7 +10,7 @@ project(ComputerGraphics LANGUAGES CXX)
 #SETTINGS!!!
   #Testing
 option(BUILD_TESTING "Build the testing suite" ON)
-option(BUILD_ENGINE "Build the actual game engine itself" OFF) #maybe... if you only wanted tests? It's off as we've nothing to actually build... oops
+option(BUILD_ENGINE "Build the actual game engine itself" ON) #maybe... if you only wanted tests? It's off as we've nothing to actually build... oops
 option(FETCH_CATCH2 "Download Catch2 if not found" OFF)
 set(DESIRED_BACKEND "WebGPU" CACHE STRING "The backend the engine shall use.") #sets the default funny backend
 set_property(CACHE DESIRED_BACKEND PROPERTY STRINGS "WebGPU" "Raylib") #this just gives the CMake GUI a dropdown... allegedly. Does not work as intended
