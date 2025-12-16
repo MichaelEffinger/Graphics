@@ -1,6 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include "../ES_math.hpp"
 #include "../PointN.hpp"
+#include <iostream>
 
 using namespace ES;
 
@@ -186,8 +187,8 @@ TEST_CASE("PointN lerp with different interpolation values", "[PointN]") {
 }
 
 TEST_CASE("PointN lerp_in_place modifies original point", "[PointN]") {
-    PointN<double, 3> pos{0.0, 0.0, 0.0};
-    PointN<double, 3> target{10.0, 20.0, 30.0};
+    PointN<float, 3> pos{0.0, 0.0, 0.0};
+    PointN<float, 3> target{10.0, 20.0, 30.0};
     
     pos.lerp_in_place(target, 0.3);
     

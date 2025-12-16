@@ -104,6 +104,28 @@ namespace ES{
             return std::move(data_[i]);
         }
 
+        [[nodiscard]] constexpr auto& data() & noexcept{
+            return data_;
+        }
+
+        /** @overload */
+        [[nodiscard]] constexpr const auto& data() const & noexcept{
+            return data_;
+        }
+
+        /** @overload */
+        [[nodiscard]] constexpr auto&& data() && noexcept {
+            return std::move(data_);
+        }
+
+        /** @overload */
+        [[nodiscard]] constexpr const auto&& data() const && noexcept{
+            return std::move(data_);
+        }
+
+
+        
+
 
         /**
         * @brief Provides clamped element access by index.

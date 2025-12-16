@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <functional>
 #include "ContainerN.hpp"
+#include "ArithmeticOpsMixin.hpp"
 
 namespace ES {
 
@@ -31,25 +32,36 @@ namespace ES {
  */
  
 template <typename T, std::size_t N> requires std::is_arithmetic_v<T>
-class VectorN: public ContainerN<VectorN<T,N>,T,N>{
-private:
-
-public:
+class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<VectorN<T,N>,T,N> {
+    
+    private:
+    using ContainerN<VectorN,T,N>::data_;
+    
+    public:
     using ContainerN<VectorN,T,N>::zip_in_place;
     using ContainerN<VectorN,T,N>::zip;
     using ContainerN<VectorN,T,N>::zip_reduce;
     using ContainerN<VectorN,T,N>::begin;
     using ContainerN<VectorN,T,N>::end;
     using ContainerN<VectorN,T,N>::cend;
+    using ContainerN<VectorN,T,N>::data;
     using ContainerN<VectorN,T,N>::cbegin;
-    using ContainerN<VectorN,T,N>::data_;
     using ContainerN<VectorN,T,N>::ContainerN;
 
+    
+    constexpr static void can_component_add(){return;};
+    constexpr static void can_component_subtract(){return;};
+    constexpr static void can_scalar_multiply(){return;};
+    constexpr static void can_scalar_divide(){return;};
+    constexpr static void can_negate(){return;};
+    constexpr static void can_clamp(){return;};
+    constexpr static void can_lerp(){return;};
+    
     /**
-     * @brief Construct a ContainerN form an N-J sized Container along with J
-     * other parameters
-     *
-     * This is a variadic template contsructor that takes exactly one smaller
+    * @brief Construct a ContainerN form an N-J sized Container along with J
+    * other parameters
+    *
+    * This is a variadic template contsructor that takes exactly one smaller
      * Container of size N-J along with J other parameters. These together must
      * be of size exactly N. The parameter arguments are static converted to to
      * T.
@@ -241,86 +253,8 @@ public:
     [[nodiscard]] constexpr VectorN normalize() const noexcept{
         return VectorN(*this).normalize_in_place();
     }
-
     
-    /** @defgroup arithmetic Arithmetic Operators
-    *  @brief Component-wise & scalar arithmetic operations for VectorN.
-    *  @{
-    */
 
-    /** @brief Component-wise addition. */
-    [[nodiscard]] constexpr VectorN operator+(const VectorN rhs)const noexcept{
-        return zip(rhs,std::plus{});
-    }
-    
-    /** @brief In-place component-wise addition */
-    constexpr VectorN& operator+=(const VectorN rhs) noexcept{
-        return zip_in_place(rhs, std::plus{});
-    }
-    /** @brief Unary negation */
-    [[nodiscard]] constexpr VectorN operator-() const noexcept{
-        VectorN result;
-        std::transform(begin(), end(), result.begin(), std::negate<>());
-        return result;
-    }
-
-    /** @brief Component-wise subtraction */
-    [[nodiscard]] constexpr VectorN operator-(const VectorN rhs) const noexcept{
-        return zip(rhs, std::minus{});
-    }
-
-    /** @brief In-place component-wise subtraction */
-    constexpr VectorN& operator-=(const VectorN rhs) noexcept{
-        return zip_in_place(rhs, std::minus{});
-    }
-
-    /** @brief Scalar multiplication */
-    [[nodiscard]] constexpr VectorN operator*(const T scalar) const noexcept{
-        VectorN tempVec;
-        std::transform(cbegin(),cend(),tempVec.begin(),[scalar](T in){return in * scalar;});
-        return tempVec;
-    }
-    
-    /** @brief In-place scalar multiplication */
-    constexpr VectorN& operator*=(const T scalar) noexcept{
-        std::transform(begin(),end(),begin(),[scalar](T in){return in * scalar;});
-        return *this;
-    }
-    
-    /**
-     * @brief scalar division 
-     * @note Division by zero triggers an assert in debug mode,
-     *       but returns a zero vector in release mode.
-     */
-    [[nodiscard]] constexpr VectorN operator/(const T scalar) const noexcept{
-        VectorN tempVec;
-        std::transform(cbegin(), cend(), tempVec.begin(),[scalar](T in) {assert(scalar !=0 && "Divide by zero in operator/"); return (scalar != 0) ? (in / scalar) : T{0}; });
-        return tempVec;
-    }
-
-    /**
-     * @brief In-place component-wise division by const scaler
-     * @note Division by zero triggers an assert in debug mode,
-     *       but returns a zero vector in release mode.
-     */
-    constexpr VectorN& operator/=(const T scalar) noexcept{
-        std::transform(begin(), end(),begin(),[scalar](T in) {assert(scalar !=0 && "Divide by zero in operator/="); return (scalar != 0) ? (in / scalar) : T{0}; });
-        return *this;
-    }
-    
-    /**
-    * @brief Scalar multiplication with the scalar on the left.
-    *
-    * Allows expressions like `2 * vec` by multiplying each component of `lhs` by `scalar`.
-    *
-    * @note This is a friend function to allow access to private members of VectorN.
-    */
-    [[nodiscard]] friend constexpr VectorN operator*(const auto scalar, const VectorN lhs) noexcept{
-        VectorN tempVec;
-        std::transform(lhs.cbegin(),lhs.cend(),tempVec.begin(),[scalar](T in){return in * scalar;});
-        return tempVec;
-    }
-    
     /** @brief Component-wise multiplication */
     [[nodiscard]] constexpr VectorN hadamard_product(const VectorN rhs) const noexcept{
         return zip(rhs, std::multiplies{});
@@ -435,41 +369,6 @@ public:
         std::copy_n(begin(), N, tempVec.begin());
         std::fill_n(tempVec.begin() + N, M - N, T{0});
         return tempVec;
-    }
-
-    /**
-    * @brief Linearly interpolates between this vector and another.
-    *
-    * Computes a point between the two vectors based on the interpolation
-    * parameter `t`, where:
-    *  - `t = 0` returns this vector
-    *  - `t = 1` returns `rhs`
-    *  - values in between produce a proportional blend.
-    *
-    * @param rhs The vector to interpolate toward.
-    * @param t Interpolation amount in the range [0, 1].
-    * @return A new vector representing the interpolated result.
-    *
-    * @note This is a component-wise operation.
-    */
-    [[nodiscard]] constexpr VectorN lerp(VectorN rhs, T t) const noexcept{
-         return zip(rhs,[t](T a, T b) {return a+(b-a)*t;});
-    }
-
-    /**
-    * @brief In-place linear interpolation between this vector and another.
-    *
-    * Modifies the current vector to be the interpolated result. Behaves
-    * the same as `lerp()`, but without creating a temporary result.
-    *
-    * @param rhs The vector to interpolate toward.
-    * @param t Interpolation amount in the range [0, 1].
-    * @return A reference to this vector after modification.
-    *
-    * @note Use this when avoiding temporaries matters.
-    */
-    constexpr VectorN& lerp_in_place(VectorN rhs, T t) noexcept {
-        return zip_in_place(rhs, [t](T a, T b) { return a + (b - a) * t;});
     }
 
     /**
@@ -668,32 +567,6 @@ public:
         }
         T sqrtK = std::sqrt(k);
         return zip_in_place(rhsUnit, [refractionRatio, cosi, sqrtK](T i, T n) {return i * refractionRatio + n * (refractionRatio * cosi - sqrtK);});
-    }
-
-
-    /**
-     * @brief Clamps each value into range [minVal, maxVal]
-     * 
-     * @param minVal the lower range(lowest value that any vector value can be)
-     * @param maxVal the upper range(highest value that any vector value can be)
-     * @return a new vector with clamped values from the original vector
-     */    
-    [[nodiscard]] constexpr VectorN clamp(T minVal, T maxVal) noexcept{
-        VectorN tempVec;
-        std::transform(begin(),end(), tempVec.begin(),[minVal,maxVal](T in){return std::clamp(in, minVal, maxVal);});
-        return tempVec;
-    }
-    
-    /**
-     * @brief Clams each value into range [minVal, maxVal] in-place
-     * 
-     * @param minVal the lower range(lowest value that any vector value can be)
-     * @param maxVal the upper range(highest value that any vector value can be)
-     * @return a reference to the modified value clamped in range
-     */
-    constexpr VectorN& clamp_in_place(T minVal, T maxVal) noexcept {
-        std::transform(begin(), end(), begin(),[minVal, maxVal](T in) { return std::clamp(in, minVal, maxVal);});
-        return *this;
     }
 
     /**

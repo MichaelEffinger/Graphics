@@ -10,13 +10,14 @@
 
 namespace ES {
     template <typename T, std::size_t N> requires(std::is_arithmetic_v<T>)
-    class PointN: public ContainerN<PointN<T,N>,T,N> {
+    class PointN: public ContainerN<PointN<T,N>,T,N>, public ArithmeticOpsMixin<PointN<T,N>,T,N>  {
     
     private:
         using ContainerN<PointN,T,N>::data_;
         
     public:
         using ContainerN<PointN,T,N>::zip_in_place;
+        using ContainerN<PointN,T,N>::data;
         using ContainerN<PointN,T,N>::zip;
         using ContainerN<PointN,T,N>::zip_reduce;
         using ContainerN<PointN,T,N>::begin;
@@ -24,6 +25,16 @@ namespace ES {
         using ContainerN<PointN,T,N>::cbegin;
         using ContainerN<PointN,T,N>::cend;
         using ContainerN<PointN,T,N>::ContainerN;
+        using ArithmeticOpsMixin<PointN,T,N>::lerp_in_place;
+        using ArithmeticOpsMixin<PointN,T,N>::lerp;
+
+
+
+        constexpr static void can_scalar_multiply(){return;};
+        constexpr static void can_scalar_divide(){return;};
+        constexpr static void can_lerp(){return;};
+        constexpr static void can_clamp(){return;};
+
 
 
          /**
@@ -149,58 +160,6 @@ namespace ES {
             return zip_in_place(rhs,std::minus{});
         }
 
-
-        /**
-         * @brief scalar  multiplication for position
-         * @return Position after mutilpying
-         */
-        [[nodiscard]] constexpr PointN operator*(T scalar)noexcept{
-            PointN tempPos;
-            std::transform(cbegin(),cend(),tempPos.begin(),[scalar](T in){return in * scalar;});
-            return tempPos;
-        }
-
-        /**
-         * @brief scalar multiplication friend function for position
-         * @return Positon after multiplying
-         */
-        [[nodiscard]] friend constexpr PointN operator*(T scalar, PointN pos){
-            PointN tempPos;
-            std::transform(pos.begin(),pos.end(),tempPos.begin(), [scalar](T in){return in * scalar;});
-            return tempPos;
-        }
-
-        /**
-         * @brief scalar in place multiplication for position
-         * @return Position after mutilpying
-         */
-        constexpr PointN operator*=(T scalar)noexcept{
-            std::transform(begin(),end(),begin(),[scalar](T in){return in* scalar;});
-            return *this;
-        }
-
-
-        /**
-        * @brief scalar division 
-        * @note Division by zero triggers an assert in debug mode,
-        *       but returns a zero position in release mode.
-        */
-        [[nodiscard]] constexpr PointN operator/(const T scalar) const noexcept{
-            PointN tempPos;
-            std::transform(begin(), end(), tempPos.begin(),[scalar](T in) {assert(scalar !=0 && "Divide by zero in operator/"); return (scalar != T{0}) ? (in / scalar) : T{0}; });
-            return tempPos;
-        }
-
-        /**
-        * @brief In-place component-wise division by const scaler
-        * @note Division by zero triggers an assert in debug mode,
-        *       but returns a zero position in release mode.
-        */
-        constexpr PointN& operator/=(const T scalar) noexcept{
-            std::transform(begin(), end(),begin(),[scalar](T in) {assert(scalar !=0 && "Divide by zero in operator/="); return (scalar != 0) ? (in / scalar) : T{0}; });
-            return *this;
-        }
-    
         /**
         * @brief compute the distance from this Position to another Position
         * @param rhs the other position to mesure distance to
@@ -217,26 +176,6 @@ namespace ES {
         */
         [[nodiscard]] constexpr T distance_squared(const PointN& rhs) const noexcept {
              return zip_reduce(rhs, T{0}, [](T accum, T l, T r){T d = l - r; return accum + d*d;});
-        }
-
-        /**
-        * @brief linearly interpolate between this Position and another
-        * @param rhs the target position to interpolate too
-        * @param t interapolation factor, 0 returns this, 1 returns rhs
-        * @return new PointN at the interpolated location
-        */
-        [[nodiscard]] constexpr PointN lerp(const PointN& rhs, T t) const noexcept {
-            return zip(rhs,[t](T a, T b) {return a+(b-a)*t;});
-        }
-
-        /**
-        * @brief in-place linearly interpolate this Position towards another
-        * @param rhs the target position to interpolate to
-        * @param t interpolation factor, 0 leaves this unchanged, 1 sets to rhs
-        * @return reference to this Position post modification
-        */
-        constexpr PointN& lerp_in_place(PointN rhs, T t) noexcept{
-            return zip_in_place(rhs, [t](T a,T b) {return a+(b-a)*t;});
         }
 
         /**
