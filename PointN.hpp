@@ -10,13 +10,14 @@
 
 namespace ES {
     template <typename T, std::size_t N> requires(std::is_arithmetic_v<T>)
-    class PointN: public ContainerN<PointN,T,N> {
+    class PointN: public ContainerN<PointN<T,N>,T,N>, public ArithmeticOpsMixin<PointN<T,N>,T,N>  {
     
     private:
         using ContainerN<PointN,T,N>::data_;
         
     public:
         using ContainerN<PointN,T,N>::zip_in_place;
+        using ContainerN<PointN,T,N>::data;
         using ContainerN<PointN,T,N>::zip;
         using ContainerN<PointN,T,N>::zip_reduce;
         using ContainerN<PointN,T,N>::begin;
@@ -24,6 +25,47 @@ namespace ES {
         using ContainerN<PointN,T,N>::cbegin;
         using ContainerN<PointN,T,N>::cend;
         using ContainerN<PointN,T,N>::ContainerN;
+        using ArithmeticOpsMixin<PointN,T,N>::lerp_in_place;
+        using ArithmeticOpsMixin<PointN,T,N>::lerp;
+
+
+
+        constexpr static void can_scalar_multiply(){return;};
+        constexpr static void can_scalar_divide(){return;};
+        constexpr static void can_lerp(){return;};
+        constexpr static void can_clamp(){return;};
+
+
+
+         /**
+        * @brief Construct a ContainerN form an N-J sized Container along with J
+        * other parameters
+        *
+        * This is a variadic template contsructor that takes exactly one smaller
+        * Container of size N-J along with J other parameters. These together must
+        * be of size exactly N. The parameter arguments are static converted to to
+        * T.
+        *
+        * @tparam M The size of ContainerN, which is the first parameter
+        * @tparam U Parameeter pack representing each of the remaining elements.
+        *         Must have exactly size M-N
+        * @param smaller The Container of the first values to initialize in the
+        * Container
+        * @param extras The remaining values to initialize in the Container
+        *
+        * @note This constructor is `constexpr` and `noexcept` if all elements
+        *       if all element construction are noexcept.
+        *
+        * @example
+        * ContainerN<float,2> v2(1.0f,2.0f);
+        * ContainerN<float,5> v5(v2,3.0f,4.0f,5.0f);
+        */
+        template <size_t M, typename... U> requires(sizeof...(U) == N - M)
+        constexpr PointN(const VectorN<T, M> &smaller, U... extras) noexcept((std::is_nothrow_constructible_v<T, U &&> && ...)) : ContainerN<PointN, T, N>{} {
+            std::copy(smaller.cbegin(), smaller.cend(), data_.begin());
+            size_t index = M;
+            ((data_[index++] = T(static_cast<T>(extras))), ...);
+        }
 
 
 
@@ -75,7 +117,7 @@ namespace ES {
         * @return new Position 
         */
         [[nodiscard]] constexpr PointN operator+(ES::VectorN<T,N> rhs)const noexcept{
-            return math::zip(*this,rhs,std::plus());
+            return math::zip(*this,rhs,std::plus{});
         }
         
         /** 
@@ -83,7 +125,7 @@ namespace ES {
         * @return new Position 
         */
         [[nodiscard]] friend constexpr PointN operator+(ES::VectorN<T,N> lhs, PointN rhs) noexcept {
-            return math::zip(rhs, lhs, std::plus());;
+            return math::zip(rhs, lhs, std::plus{});;
         }
 
         /** 
@@ -91,7 +133,7 @@ namespace ES {
         * @return Reference to self post modification
         */
         constexpr PointN &operator+=(ES::VectorN<T,N> rhs)noexcept {
-            return zip_in_place(rhs,std::plus());
+            return zip_in_place(rhs,std::plus{});
         }
         /**
         * @brief Component wise subtraction. Subtracts a PositoinN from a PointN
@@ -99,7 +141,7 @@ namespace ES {
         */
         [[nodiscard]] constexpr ES::VectorN<T,N> operator-(PointN rhs) const noexcept {
            VectorN<T,N> tempVec;
-            return math::zip_into(*this,rhs,tempVec,std::minus());
+            return math::zip_into(*this,rhs,tempVec,std::minus{});
         }
 
         /**
@@ -107,7 +149,7 @@ namespace ES {
         * @return PointN after subtraction.
         */
         [[nodiscard]] constexpr PointN operator-(ES::VectorN<T,N> rhs)const noexcept{
-            return zip(rhs,std::minus());
+            return zip(rhs,std::minus{});
         }
 
         /**
@@ -115,61 +157,9 @@ namespace ES {
         * @return Reference to self post modification.
         */
         constexpr PointN& operator-=(ES::VectorN<T,N> rhs) noexcept{
-            return zip_in_place(rhs,std::minus());
+            return zip_in_place(rhs,std::minus{});
         }
 
-
-        /**
-         * @brief scalar  multiplication for position
-         * @return Position after mutilpying
-         */
-        [[nodiscard]] constexpr PointN operator*(T scalar)noexcept{
-            PointN tempPos;
-            std::transform(cbegin(),cend(),tempPos.begin(),[scalar](T in){return in * scalar;});
-            return tempPos;
-        }
-
-        /**
-         * @brief scalar multiplication friend function for position
-         * @return Positon after multiplying
-         */
-        [[nodiscard]] friend constexpr PointN operator*(T scalar, PointN pos){
-            PointN tempPos;
-            std::transform(pos.begin(),pos.end(),tempPos.begin(), [scalar](T in){return in * scalar;});
-            return tempPos;
-        }
-
-        /**
-         * @brief scalar in place multiplication for position
-         * @return Position after mutilpying
-         */
-        constexpr PointN operator*=(T scalar)noexcept{
-            std::transform(begin(),end(),begin(),[scalar](T in){return in* scalar;});
-            return *this;
-        }
-
-
-        /**
-        * @brief scalar division 
-        * @note Division by zero triggers an assert in debug mode,
-        *       but returns a zero position in release mode.
-        */
-        [[nodiscard]] constexpr PointN operator/(const T scalar) const noexcept{
-            PointN tempPos;
-            std::transform(begin(), end(), tempPos.begin(),[scalar](T in) {assert(scalar !=0 && "Divide by zero in operator/"); return (scalar != T{0}) ? (in / scalar) : T{0}; });
-            return tempPos;
-        }
-
-        /**
-        * @brief In-place component-wise division by const scaler
-        * @note Division by zero triggers an assert in debug mode,
-        *       but returns a zero position in release mode.
-        */
-        constexpr PointN& operator/=(const T scalar) noexcept{
-            std::transform(begin(), end(),begin(),[scalar](T in) {assert(scalar !=0 && "Divide by zero in operator/="); return (scalar != 0) ? (in / scalar) : T{0}; });
-            return *this;
-        }
-    
         /**
         * @brief compute the distance from this Position to another Position
         * @param rhs the other position to mesure distance to
@@ -186,26 +176,6 @@ namespace ES {
         */
         [[nodiscard]] constexpr T distance_squared(const PointN& rhs) const noexcept {
              return zip_reduce(rhs, T{0}, [](T accum, T l, T r){T d = l - r; return accum + d*d;});
-        }
-
-        /**
-        * @brief linearly interpolate between this Position and another
-        * @param rhs the target position to interpolate too
-        * @param t interapolation factor, 0 returns this, 1 returns rhs
-        * @return new PointN at the interpolated location
-        */
-        [[nodiscard]] constexpr PointN lerp(const PointN& rhs, T t) const noexcept {
-            return zip(rhs,[t](T a, T b) {return a+(b-a)*t;});
-        }
-
-        /**
-        * @brief in-place linearly interpolate this Position towards another
-        * @param rhs the target position to interpolate to
-        * @param t interpolation factor, 0 leaves this unchanged, 1 sets to rhs
-        * @return reference to this Position post modification
-        */
-        constexpr PointN& lerp_in_place(PointN rhs, T t) noexcept{
-            return zip_in_place(rhs, [t](T a,T b) {return a+(b-a)*t;});
         }
 
         /**

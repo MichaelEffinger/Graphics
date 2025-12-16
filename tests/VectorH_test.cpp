@@ -12,6 +12,8 @@ TEST_CASE("VectorH accessors x, y, z, w", "[VectorH]") {
     REQUIRE(math::approx_equal(v.y(), 2.0f));
     REQUIRE(math::approx_equal(v.z(), 3.0f));
     REQUIRE(math::approx_equal(v.w(), 4.0f));
+
+    REQUIRE(v.data() == v.data());
     
     v.x() = 10.0f;
     v.y() = 20.0f;

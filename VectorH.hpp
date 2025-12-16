@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ArithmeticOpsMixin.hpp"
 #include "VectorN.hpp"
 #include "PointN.hpp"
 #include <cmath>
@@ -12,9 +13,10 @@
 namespace ES{
 
 
-template <typename T, std::size_t dummy = 4>
-class VectorH : public ContainerN<VectorH,T,4> {
+template <typename T>
+class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<VectorH<T>, T, 4> {
     static const int N = 4;
+    using ContainerN<VectorH,T,N>::data_;
     
     public:
     using ContainerN<VectorH,T,N>::zip_in_place;
@@ -22,11 +24,11 @@ class VectorH : public ContainerN<VectorH,T,4> {
     using ContainerN<VectorH,T,N>::zip_reduce;
     using ContainerN<VectorH,T,N>::begin;
     using ContainerN<VectorH,T,N>::end;
+    using ContainerN<VectorH,T,N>::data;
     using ContainerN<VectorH,T,N>::cend;
     using ContainerN<VectorH,T,N>::cbegin;
-    using ContainerN<VectorH,T,N>::data_;
     using ContainerN<VectorH,T,N>::ContainerN;
-    
+
     VectorH(PointN<T,3> point, T w = T{1}){
         std::copy(point.cbegin(),point.cend(), data_.begin());
         w() = w;

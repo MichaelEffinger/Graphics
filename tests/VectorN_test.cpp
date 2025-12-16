@@ -59,6 +59,7 @@ TEST_CASE("VectorN arithmetic operators", "[VectorN]") {
     Vector3<float> b{3.0f, 2.0f, 1.0f};
     Vector3<float> zero(0,0,0);
     
+    REQUIRE(b.data() == b.data());
     auto c = a + b;
     REQUIRE(c[0] == 4.0f);
     REQUIRE(c[1] == 4.0f);
@@ -69,6 +70,8 @@ TEST_CASE("VectorN arithmetic operators", "[VectorN]") {
     REQUIRE(c.x() ==4.0f);
     REQUIRE(c.y() ==4.0f);
     REQUIRE(c.z() == 4.0f);
+
+
 
     auto d = c - b;
     REQUIRE(a == d);
