@@ -200,7 +200,6 @@ TEST_CASE("PointN lerp_in_place modifies original point", "[PointN]") {
     REQUIRE(math::approx_equal(pos.x(), 6.5));
     REQUIRE(math::approx_equal(pos.y(), 13.0));
     REQUIRE(math::approx_equal(pos.z(), 19.5));
-    REQUIRE(false);
 }
 
 TEST_CASE("PointN mid_point between two points", "[PointN]") {

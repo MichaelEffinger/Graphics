@@ -34,50 +34,50 @@ namespace ES{
         
     public:
 
-        [[nodiscard]] constexpr Child adjust_brightness(T factor) noexcept requires requires { Child::is_alpha(); } {
+        [[nodiscard]] constexpr Child adjust_brightness(float factor) noexcept requires requires { Child::is_alpha(); } {
             Child temp_col;
-            std::transform(derived().begin(),derived().end()-1,temp_col.begin(),[factor](T in){return in * factor;});
+            std::transform(derived().begin(),derived().end()-1,temp_col.begin(),[factor](float in){return in * factor;});
             temp_col.tail() = derived().tail();
             return temp_col;
         }
 
-        constexpr Child adjust_brightness_in_place(T factor) noexcept requires requires { Child::is_alpha(); } {
-            std::transform(derived().begin(),derived().end()-1,derived().begin(),[factor](T in){return in * factor;});
+        constexpr Child adjust_brightness_in_place(float factor) noexcept requires requires { Child::is_alpha(); } {
+            std::transform(derived().begin(),derived().end()-1,derived().begin(),[factor](float in){return in * factor;});
             return derived();
         }
         
-        [[nodiscard]] constexpr Child adjust_brightness(T factor) noexcept requires requires { Child::is_standard(); }{
+        [[nodiscard]] constexpr Child adjust_brightness(float factor) noexcept requires requires { Child::is_standard(); }{
             Child temp_col;
-            std::transform(derived().cbegin(),derived().cend(),temp_col.begin(),[factor](T in){return in * factor;});
+            std::transform(derived().cbegin(),derived().cend(),temp_col.begin(),[factor](float in){return in * factor;});
             return temp_col;
         }
 
-        constexpr Child adjust_brightness_in_place(T factor) noexcept requires requires { Child::is_standard(); }{
-            std::transform(derived().begin(),derived().end(),derived().begin(),[factor](T in){return in * factor;});
+        constexpr Child adjust_brightness_in_place(float factor) noexcept requires requires { Child::is_standard(); }{
+            std::transform(derived().begin(),derived().end(),derived().begin(),[factor](float in){return in * factor;});
             return derived();
         }
 
 
         [[nodiscard]] constexpr Child invert() const noexcept requires requires { Child::is_standard(); } {
             Child temp_col;
-            std::transform(derived().cbegin(),derived().cend(),temp_col.begin(),[](T in){return  max_color<T>::value-in;});
+            std::transform(derived().cbegin(),derived().cend(),temp_col.begin(),[](float in){return  max_color<T>::value-in;});
             return temp_col;
         }
 
         constexpr Child invert_in_place() noexcept requires requires { Child::is_standard(); }{
-            std::transform(derived().begin(),derived().end(),derived().begin(),[](T in){return  max_color<T>::value-in;});
+            std::transform(derived().begin(),derived().end(),derived().begin(),[](float in){return  max_color<T>::value-in;});
             return derived();
         }
 
         [[nodiscard]] constexpr Child invert() const noexcept requires requires { Child::is_alpha(); }{
             Child temp_col;
-            std::transform(derived().cbegin(),derived().cend()-1,temp_col.begin(),[](T in){return  max_color<T>::value-in;});
+            std::transform(derived().cbegin(),derived().cend()-1,temp_col.begin(),[](float in){return  max_color<T>::value-in;});
             temp_col.tail() = derived().tail();
             return temp_col;
         }
 
         constexpr Child invert_in_place() noexcept requires requires { Child::is_alpha(); }{
-            std::transform(derived().begin(),derived().end()-1,derived().begin(),[](T in){return  max_color<T>::value-in;});
+            std::transform(derived().begin(),derived().end()-1,derived().begin(),[](float in){return  max_color<T>::value-in;});
             return derived();
         }
 
@@ -329,9 +329,10 @@ namespace ES{
 
     class RGBA : public ContainerN<RGBA,float, 4>, public ColorOpsMixin<RGBA,float,4>, public ArithmeticOpsMixin<RGBA, float, 4>{
         
-        constexpr static void is_alpha(){
-            return;
-        }
+
+        
+        public:
+        constexpr static void is_alpha(){return;}
         constexpr static void can_component_add(){return;};
         constexpr static void can_component_subtract(){return;};
         constexpr static void can_component_multiply(){return;};
@@ -341,7 +342,6 @@ namespace ES{
         constexpr static void can_clamp(){return;};
         constexpr static void can_lerp(){return;};
         
-        public:
         using ContainerN<RGBA,float,4>::zip_in_place;
         using ContainerN<RGBA,float,4>::zip;
         using ContainerN<RGBA,float,4>::zip_reduce;
