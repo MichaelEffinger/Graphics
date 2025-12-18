@@ -1,20 +1,9 @@
-// oh how I wish I could be coding all the time, but not much can be done about that currently
-
-
-
-
-// I love liv!!!!!!!!!!!!!!!!!!!!
-
 
 
 #pragma once
-#include <type_traits>
 #include <cassert>
-#include <cmath>
-#include <type_traits>
 #include <algorithm>
 #include <functional>
-#include "ContainerN.hpp"
 #include "config.hpp"
 
 
