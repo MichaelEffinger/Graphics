@@ -94,11 +94,12 @@ namespace ES{
         constexpr T determinant() const noexcept requires (N==2 && M==2){
             return operator[](0)*operator[](3) - operator[](1)*operator[](2);
         }
-
+        //specialization for the 3x3, its just the cofactor expansion urnolled
         constexpr T determinant() const noexcept requires (N==3 && M==3){
             return operator[](0)*operator[](4)*operator[](8) + operator[](3)*operator[](7)*operator[](2) + operator[](6)*operator[](1)*operator[](5) - operator[](6)*operator[](4)*operator[](2) - operator[](3)*operator[](1)*operator[](8) -operator[](0)*operator[](7)*operator[](5);
         }
 
+        //specialization for the 4x4, its just the cofactor expansion urnolled
         constexpr T determinant() const noexcept requires (N==4 && M==4){
             T m0 = operator[](0)*( operator[](5)* operator[](10)* operator[](15) +  operator[](6)* operator[](11)* operator[](13) +  operator[](7)* operator[](9)* operator[](14) -  operator[](7)* operator[](10)* operator[](13) -  operator[](6)* operator[](9)* operator[](15) -  operator[](5)* operator[](11)* operator[](14));
             T m1 =  operator[](1)*( operator[](4)* operator[](10)* operator[](15) +  operator[](6)* operator[](11)* operator[](12) +  operator[](7)* operator[](8)* operator[](14) -  operator[](7)* operator[](10)* operator[](12) -  operator[](6)* operator[](8)* operator[](15) -  operator[](4)* operator[](11)* operator[](14));
@@ -146,7 +147,6 @@ namespace ES{
             return accumulate;
         }
 
-
         constexpr VectorN<T,N> column(std::size_t column) const noexcept{
             VectorN<T,N> temp;
 
@@ -167,7 +167,7 @@ namespace ES{
             }
             return temp;
         }
-        constexpr Matrix& tranpose_in_place() noexcept requires(N==M){
+        constexpr Matrix& transpose_in_place() noexcept requires(N==M){
  
             for(std::size_t i =0;i<N;i++){
                 for(std::size_t j = i+1; j<N; j++){
@@ -178,13 +178,12 @@ namespace ES{
 
         }
 
-        constexpr Matrix inverse() const noexcept {
+        constexpr Matrix inverse() const noexcept requires (N==M) {
             Matrix temp(*this);
             return temp.inverse_in_place();
         };
 
-
-        constexpr Matrix& inverse_in_place() requires (N == 2 && M == 2){
+        constexpr Matrix& inverse_in_place() noexcept requires (N == 2 && M == 2){
 
             const T det = determinant();
             assert(det != T{0});
@@ -199,34 +198,80 @@ namespace ES{
             operator[](3) = operator[](3)*inv_det;
             return *this;
         }
-        constexpr Matrix inverse_in_place() const noexcept requires (N==3 && M==3){
+
+        constexpr Matrix& inverse_in_place() noexcept requires ((N==3 && M==3) ||(N==4 && M==4) ){
             const T det = determinant();
             assert(det != T{0});
 
             const T inv_det = T{1} / det;
-            
-        }
-        constexpr Matrix inverse_in_place() const noexcept requires(N==4,M==4){
+
+            Matrix adj = cofactor().transpose_in_place();
+
+            *this = adj *inv_det;
+            return *this;
 
         }
-        constexpr Matrix inverse_in_place() const noexcept{};
 
 
+        constexpr Matrix inverse_in_place() noexcept requires(N==M && N >4){
+            Matrix temp(*this);
+
+            Matrix inverse = Matrix::identity();
+
+            for (std::size_t i = 0;i<N;i++){
+                
+                std::size_t pivot = i;
+                if(temp[i*N+i] == T{0}){
+                    for(std::size_t j =i + 1; j<N; j++){
+                        if (temp[i*N+j] != 0){
+                            pivot = j;
+                            break;
+                        }  
+                    }
+                    if(pivot == i){
+                        std::fill(inverse.begin(),inverse.end(),T{0});
+                        return inverse;
+                    }
+                    
+                    temp.swap_rows_in_place(i,pivot);
+                    inverse.swap_rows_in_place(i,pivot);
+                }
+                for(std::size_t k = i+1; k<N;k++){
+                    T scale = -temp[i*N+k]/temp[i*N+i];
+                    temp.add_scaled_row_in_place(i,scale,k);
+                    inverse.add_scaled_row_in_place(i,scale,k);
+                }
+            }
+
+            for(int l= N-1;l>=0;l--){ 
+                for (std::size_t m = 0; m < N; m++) {
+                    temp[m*N +l] /= temp[l*N +l];
+                    inverse[m*N + l] /=  temp[l*N + l];
+                }
 
 
+                for (int n = l - 1; n >= 0; n--) {
+                    T scale = temp[l*N + n] / temp[l*N+l];
+                    temp.add_scaled_row_in_place(l, -scale, n);   
+                    inverse.add_scaled_row_in_place(l, -scale, n); 
+                 }
+
+            }
+            return inverse;
+        }
+
+        constexpr Matrix pseudo_inverse() const noexcept{};
+        constexpr Matrix cofactor() const noexcept{};
         template <std::size_t O, std::size_t P>
-        constexpr Matrix<T,N,P> operator*(){
-            return false;
-        }
+        constexpr Matrix<T,N,P> operator*(){};
         constexpr Matrix rref() const noexcept{};
         constexpr Matrix reduce() const noexcept{};
-        constexpr Matrix reduce_aggregate() const noexcept{};
         constexpr T trace() const noexcept{};
         constexpr Matrix adjugate() const noexcept{};
-        constexpr auto Eigenvalues() const noexcept{};
         constexpr auto orthonormalize() const noexcept{}; 
         constexpr auto minor(auto row,auto col) const noexcept{};
         constexpr auto map(auto &&func) const noexcept{};
+        static constexpr Matrix identity() noexcept requires(N==M){};
 
 
         constexpr auto is_symmetric() const noexcept{};
