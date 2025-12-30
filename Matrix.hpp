@@ -2,10 +2,8 @@
 #include <cassert>
 #include <cmath>
 #include <algorithm>
-#include <functional>
-#include <string>
+#include <cstring>
 #include "ContainerN.hpp"
-#include <cstdint>
 #include "ArithmeticOpsMixin.hpp"
 #include "VectorN.hpp"
 
@@ -18,18 +16,20 @@ namespace ES{
     class Matrix : public ArithmeticOpsMixin<Matrix<T,N,M>, T, N*M>, public ContainerN<Matrix<T,N,M>,T,N*M>{
        
         using ContainerN<Matrix,T,N>::data_;
+
+
         public: 
 
-        using ContainerN<Matrix,T,N>::zip_in_place;
-        using ContainerN<Matrix,T,N>::zip;
-        using ContainerN<Matrix,T,N>::zip_reduce;
-        using ContainerN<Matrix,T,N>::begin;
-        using ContainerN<Matrix,T,N>::end;
-        using ContainerN<Matrix,T,N>::cend;
-        using ContainerN<Matrix,T,N>::data;
-        using ContainerN<Matrix,T,N>::cbegin;
-        using ContainerN<Matrix,T,N>::operator[];
-        using ContainerN<Matrix,T,N>::ContainerN;
+        using ContainerN<Matrix,T,N*M>::zip_in_place;
+        using ContainerN<Matrix,T,N*M>::zip;
+        using ContainerN<Matrix,T,N*M>::zip_reduce;
+        using ContainerN<Matrix,T,N*M>::begin;
+        using ContainerN<Matrix,T,N*M>::end;
+        using ContainerN<Matrix,T,N*M>::cend;
+        using ContainerN<Matrix,T,N*M>::data;
+        using ContainerN<Matrix,T,N*M>::cbegin;
+        using ContainerN<Matrix,T,N*M>::operator[];
+        using ContainerN<Matrix,T,N*M>::ContainerN;
 
 
         static constexpr void can_scalar_multiply(){return;}
@@ -41,84 +41,92 @@ namespace ES{
         static constexpr void can_clamp(){return;}
 
 
+        template<class... Args>
+        constexpr Matrix(Args... columns) requires(sizeof...(Args) == M && (std::is_same_v<Args, VectorN<T,N>> && ...)){
+            std::size_t col = 0;
+            ((std::memcpy(&data_[col * N], &columns[0], sizeof(T) * N), col++), ...);
+        }
+
+
 
         constexpr auto&& operator()(this auto&& self, std::size_t row, std::size_t column) noexcept{
             return std::forward_like<decltype(self)>(self[(column*N+row)]);
         }
 
         constexpr Matrix swap_rows(std::size_t first, std::size_t second) const noexcept {
-            Matrix temp(*this);
+            Matrix temp((*this));
             for(std::size_t i=0; i<M;i++){
-                std::swap(temp[i*N+ first], temp[i*N + second]);
+                std::swap(temp(first,i), temp(second, i));
             }
             return temp;            
         }
 
+
         constexpr Matrix& swap_rows_in_place(std::size_t first, std::size_t second) noexcept{
             for(std::size_t i=0; i<M; i++){
-                std::swap(operator[](i*N+first),operator[](i*N+second));
+                std::swap((*this)(first,i),(*this)(second,i));
             }
-            return *this;
+            return (*this);
         }
 
         constexpr Matrix scale_row(std::size_t row, T scale)const noexcept{
-            Matrix temp(*this);
+            Matrix temp((*this));
             for (std::size_t i =0; i<M; i++){
-                temp[i*N+row] *= scale;
+                temp(row,i) *= scale;
             }
             return temp;
         }
 
         constexpr Matrix& scale_row_in_place(std::size_t row, T scale) noexcept {
             for (std::size_t i =0; i<M; i++){
-                operator[](i*N+row) *= scale;
+                (*this)(row,i) *= scale;
             }
-            return *this;
+            return (*this);
         }
 
         constexpr Matrix add_scaled_row(std::size_t source, T scale, std::size_t destination) const noexcept{
-            Matrix temp(*this);
+            Matrix temp((*this));
             for(std::size_t i =0; i<M; i++){
-                temp[i*N+destination] +=temp[i*N+source]*scale; 
+                temp(destination,i) += temp(source,i)*scale;
             }
             return temp;
         }
-
+        
         constexpr Matrix& add_scaled_row_in_place(std::size_t source, T scale, std::size_t destination) noexcept{
             for(std::size_t i = 0; i<M; i++){
-                operator[](i*N+destination) += operator[](i*N+source)*scale;
+                (*this)(destination,i) += (*this)(source,i)*scale;
             }
-            return *this;
+            return (*this);
         }            
         
         constexpr T determinant() const noexcept requires (N==2 && M==2){
-            return operator[](0)*operator[](3) - operator[](1)*operator[](2);
+            return (*this)[0]*(*this)[3] - (*this)[1]*(*this)[2];
         }
         //specialization for the 3x3, its just the cofactor expansion urnolled
         constexpr T determinant() const noexcept requires (N==3 && M==3){
-            return operator[](0)*operator[](4)*operator[](8) + operator[](3)*operator[](7)*operator[](2) + operator[](6)*operator[](1)*operator[](5) - operator[](6)*operator[](4)*operator[](2) - operator[](3)*operator[](1)*operator[](8) -operator[](0)*operator[](7)*operator[](5);
+            return (*this)[0]*(*this)[4]*(*this)[8] + (*this)[3]*(*this)[7]*(*this)[2] + (*this)[6]*(*this)[1]*(*this)[5] - (*this)[6]*(*this)[4]*(*this)[2] - (*this)[3]*(*this)[1]*(*this)[8] -(*this)[0]*(*this)[7]*(*this)[5];
         }
 
         //specialization for the 4x4, its just the cofactor expansion urnolled
         constexpr T determinant() const noexcept requires (N==4 && M==4){
-            T m0 = operator[](0)*( operator[](5)* operator[](10)* operator[](15) +  operator[](6)* operator[](11)* operator[](13) +  operator[](7)* operator[](9)* operator[](14) -  operator[](7)* operator[](10)* operator[](13) -  operator[](6)* operator[](9)* operator[](15) -  operator[](5)* operator[](11)* operator[](14));
-            T m1 =  operator[](1)*( operator[](4)* operator[](10)* operator[](15) +  operator[](6)* operator[](11)* operator[](12) +  operator[](7)* operator[](8)* operator[](14) -  operator[](7)* operator[](10)* operator[](12) -  operator[](6)* operator[](8)* operator[](15) -  operator[](4)* operator[](11)* operator[](14));
-            T m2 =  operator[](2)*( operator[](4)* operator[](9)* operator[](15) +  operator[](5)* operator[](11)* operator[](12) +  operator[](7)* operator[](8)* operator[](13) -  operator[](7)* operator[](9)* operator[](12) -  operator[](5)* operator[](8)* operator[](15) -  operator[](4)* operator[](11)* operator[](13));
-            T m3 =  operator[](3)*( operator[](4)* operator[](9)* operator[](14) +  operator[](5)* operator[](10)* operator[](12) +  operator[](6)* operator[](8)* operator[](13) -  operator[](6)* operator[](9)* operator[](12) -  operator[](5)* operator[](8)* operator[](14) -  operator[](4)* operator[](10)* operator[](13));
+            T m0 = (*this)[0]*( (*this)[5]* (*this)[10]* (*this)[15] +  (*this)[6]* (*this)[11]* (*this)[13] +  (*this)[7]* (*this)[9]* (*this)[14] -  (*this)[7]* (*this)[10]* (*this)[13] -  (*this)[6]* (*this)[9]* (*this)[15] -  (*this)[5]* (*this)[11]* (*this)[14]);
+            T m1 =  (*this)[1]*( (*this)[4]* (*this)[10]* (*this)[15] +  (*this)[6]* (*this)[11]* (*this)[12] +  (*this)[7]* (*this)[8]* (*this)[14] -  (*this)[7]* (*this)[10]* (*this)[12] -  (*this)[6]* (*this)[8]* (*this)[15] -  (*this)[4]* (*this)[11]* (*this)[14]);
+            T m2 =  (*this)[2]*( (*this)[4]* (*this)[9]* (*this)[15] +  (*this)[5]* (*this)[11]* (*this)[12] +  (*this)[7]* (*this)[8]* (*this)[13] -  (*this)[7]* (*this)[9]* (*this)[12] -  (*this)[5]* (*this)[8]* (*this)[15] -  (*this)[4]* (*this)[11]* (*this)[13]);
+            T m3 =  (*this)[3]*( (*this)[4]* (*this)[9]* (*this)[14] +  (*this)[5]* (*this)[10]* (*this)[12] +  (*this)[6]* (*this)[8]* (*this)[13] -  (*this)[6]* (*this)[9]* (*this)[12] -  (*this)[5]* (*this)[8]* (*this)[14] -  (*this)[4]* (*this)[10]* (*this)[13]);
           return m0 - m1 + m2 - m3;
 
         }
         
         constexpr T determinant() const noexcept requires (N == M && N >4 && std::is_floating_point_v<T>) {
             T accumulate = 1;
-            Matrix temp(*this);
+            Matrix temp((*this));
 
             for (std::size_t i = 0;i<N;i++){
                 
                 std::size_t pivot = i;
-                if(temp[i*N+i] == T{0}){
+                if(temp(i,i) == T{0}){
                     for(std::size_t j =i + 1; j<N; j++){
-                        if (temp[i*N+j] != 0){
+                        if (temp(j,i) != 0){
                             pivot = j;
                             break;
                         }  
@@ -131,7 +139,7 @@ namespace ES{
                     accumulate *=-1;
                 }
                 for(std::size_t k = i+1; k<N;k++){
-                    T scale = -temp[i*N+k]/temp[i*N+i];
+                    T scale = -temp(k,i)/temp(i,i);
                     temp.add_scaled_row_in_place(i,scale,k);
                 }            
             }
@@ -142,7 +150,7 @@ namespace ES{
         constexpr T product_of_diagonals() const noexcept{
             T accumulate = 1;
             for(std::size_t i = 0; i<N; i++){
-                accumulate *= operator[](i*N +i);
+                accumulate *= (*this)(i,i);
             }
             return accumulate;
         }
@@ -151,18 +159,18 @@ namespace ES{
             VectorN<T,N> temp;
 
             for(std::size_t i =0; i<N;i++){
-                temp[i] = operator[](column*N + i);
+                temp[i] = (*this)(i,column);
             }
             return temp;
         }
 
 
         constexpr Matrix transpose() const noexcept{
-            Matrix<T,M,N>  temp;
+            Matrix<T,M,N> temp;
 
             for(std::size_t i=0; i<N; i++){
                 for (std::size_t j=0;j<M;j++){
-                    temp[i*M+j]=operator[](j*N+i);
+                    temp(j,i)=(*this)(i,j);
                 } 
             }
             return temp;
@@ -171,15 +179,15 @@ namespace ES{
  
             for(std::size_t i =0;i<N;i++){
                 for(std::size_t j = i+1; j<N; j++){
-                    std::swap(operator[](i*N+j),operator[](j*N+i));
+                    std::swap((*this)(j,i),(*this)(i,j));
                 }
             }
-            return *this;
+            return (*this);
 
         }
 
         constexpr Matrix inverse() const noexcept requires (N==M) {
-            Matrix temp(*this);
+            Matrix temp((*this));
             return temp.inverse_in_place();
         };
 
@@ -190,13 +198,13 @@ namespace ES{
 
             const T inv_det = T{1} / det;
 
-            std::swap(operator[](0),operator[](3));
+            std::swap((*this)[0],(*this)[3]);
 
-            operator[](0) = operator[](0)*inv_det;
-            operator[](1) *= -inv_det;
-            operator[](2) *= -inv_det;
-            operator[](3) = operator[](3)*inv_det;
-            return *this;
+            (*this)[0] = (*this)[0]*inv_det;
+            (*this)[1] *= -inv_det;
+            (*this)[2] *= -inv_det;
+            (*this)[3] = (*this)[3]*inv_det;
+            return (*this);
         }
 
         constexpr Matrix& inverse_in_place() noexcept requires ((N==3 && M==3) ||(N==4 && M==4) ){
@@ -207,14 +215,14 @@ namespace ES{
 
             Matrix adj = cofactor().transpose_in_place();
 
-            *this = adj *inv_det;
-            return *this;
+            (*this) = adj *inv_det;
+            return (*this);
 
         }
 
 
         constexpr Matrix inverse_in_place() noexcept requires(N==M && N >4){
-            Matrix temp(*this);
+            Matrix temp((*this));
 
             Matrix inverse = Matrix::identity();
 
@@ -223,7 +231,7 @@ namespace ES{
                 std::size_t pivot = i;
                 if(temp[i*N+i] == T{0}){
                     for(std::size_t j =i + 1; j<N; j++){
-                        if (temp[i*N+j] != 0){
+                        if (temp(j,i) != 0){
                             pivot = j;
                             break;
                         }  
@@ -237,7 +245,7 @@ namespace ES{
                     inverse.swap_rows_in_place(i,pivot);
                 }
                 for(std::size_t k = i+1; k<N;k++){
-                    T scale = -temp[i*N+k]/temp[i*N+i];
+                    T scale = -temp(k,i)/temp(i,i);
                     temp.add_scaled_row_in_place(i,scale,k);
                     inverse.add_scaled_row_in_place(i,scale,k);
                 }
@@ -245,13 +253,13 @@ namespace ES{
 
             for(int l= N-1;l>=0;l--){ 
                 for (std::size_t m = 0; m < N; m++) {
-                    temp[m*N +l] /= temp[l*N +l];
-                    inverse[m*N + l] /=  temp[l*N + l];
+                    temp(l,m) /= temp(l,l);
+                    inverse(l,m) /=  temp(l,l);
                 }
 
 
                 for (int n = l - 1; n >= 0; n--) {
-                    T scale = temp[l*N + n] / temp[l*N+l];
+                    T scale = temp(n,l) / temp(l,l);
                     temp.add_scaled_row_in_place(l, -scale, n);   
                     inverse.add_scaled_row_in_place(l, -scale, n); 
                  }
@@ -260,32 +268,332 @@ namespace ES{
             return inverse;
         }
 
-        constexpr Matrix pseudo_inverse() const noexcept{};
-        constexpr Matrix cofactor() const noexcept{};
+        constexpr Matrix<T,M,N> pseudo_inverse() const noexcept requires(N>=M) {
+            Matrix<T,M,N> At = transpose();
+            Matrix<T,M> AtA = At * (*this);
+            if(!AtA.is_invertible()){
+              assert(true == false);
+              //temp solution need to figure out what the best handling of this situation is
+            }
+            Matrix<T,M> AtA_inv = AtA.inverse();
+            Matrix<T,M,N> A_plus = AtA_inv * At;
+            return A_plus;
+        }
+
+        constexpr Matrix<T,M,N> pseudo_inverse() const noexcept requires(M>N) {
+            Matrix<T,M,N> At = transpose();
+            Matrix<T,M> AAt = (*this) * At;
+            if(!AAt.is_invertible()){
+                assert(true == false);
+                //same as before ja know
+            }
+            Matrix<T,N> AAt_inv = AAt.inverse();
+            Matrix<T,M,N> A_plus = At * AAt_inv;
+            return A_plus;
+        }
+        
+        constexpr Matrix cofactor() const noexcept requires(N==M){
+            Matrix<T,N> cofactor;
+            
+            for(std::size_t i = 0; i<N; i++){
+                for(std::size_t j = 0; j<N; j++){
+                    Matrix<T,N-1,N-1> m = minor(i,j);
+                    const T negative = ((i+j)&1) ? T{-1} : T{1};
+                    cofactor(j,i) = negative * m.determinant();
+                }
+            }
+            return cofactor;
+        }    
+        
+        
         template <std::size_t O, std::size_t P>
-        constexpr Matrix<T,N,P> operator*(){};
-        constexpr Matrix rref() const noexcept{};
-        constexpr Matrix reduce() const noexcept{};
-        constexpr T trace() const noexcept{};
-        constexpr Matrix adjugate() const noexcept{};
-        constexpr auto orthonormalize() const noexcept{}; 
-        constexpr auto minor(auto row,auto col) const noexcept{};
-        constexpr auto map(auto &&func) const noexcept{};
-        static constexpr Matrix identity() noexcept requires(N==M){};
+        constexpr Matrix<T,N,P> operator*(Matrix<T,O,P> rhs) const requires(O==M){
+
+            Matrix<T,N,P> temp;
+            for(std::size_t i =0; i<N; i++){
+                for(std::size_t j = 0; j<P; j++){
+                    T accumulate = T{0};
+                    for(std::size_t k = 0; k<M;k++){
+                        accumulate += (*this)(i,k)*rhs(k,j);
+                    }
+                    temp(i,j) = accumulate;
+                }
+            }
+            return temp;
+        }
 
 
-        constexpr auto is_symmetric() const noexcept{};
-        constexpr auto is_orthogonal() const noexcept{};
-        constexpr auto is_invertible() const noexcept{};
+        constexpr Matrix rref() const noexcept{
+            Matrix temp((*this));
+            std::size_t row = 0;
+            std::size_t col = 0;
+            while(row<N && col <M){
+                std::size_t pivot = row;
+                T max_value = std::abs(temp(row,col));
 
+                for(std::size_t r = row +1; r<N;r++){
+                    T value = std::abs(temp(r,col));
+                    if(value>max_value){
+                        max_value = value;
+                        pivot = r;
+                    }
+                }
 
+                if(max_value == T{0}){
+                    col++;
+                    continue;
+                }
+
+                if(pivot != row){
+                    temp.swap_rows_in_place(row,pivot);
+                }
+                T pivot_value = temp(row,col);
+                
+                temp.scale_row_in_place(row,1/pivot_value);
+
+                for(std::size_t r = 0; r<N; r++){
+                    if(r==row){
+                        continue;
+                    } 
+                    T scale = -temp(r,col);
+                    if(scale != temp(r,col)){
+                        temp.add_scaled_row_in_place(row, scale, r);
+                    }
+
+                }
+                row++;
+                col++;
+            }
+            return temp;
+        }
+
+        constexpr Matrix rref_in_place() noexcept{
+            std::size_t row = 0;
+            std::size_t col = 0;
+            while(row<N && col <M){
+                std::size_t pivot = row;
+                T max_value = std::abs((*this)(row,col));
+
+                for(std::size_t r = row +1; r<N;r++){
+                    T value = std::abs((*this)(row,col));
+                    if(value>max_value){
+                        max_value = value;
+                        pivot = r;
+                    }
+                }
+
+                if(max_value == T{0}){
+                    col++;
+                    continue;
+                }
+
+                if(pivot != row){
+                    (*this).swap_rows_in_place(row,pivot);
+                }
+                T pivot_value = (*this)(row,col);
+                
+                (*this).scale_row_in_place(row,1/pivot_value);
+
+                for(std::size_t r = 0; r<N; r++){
+                    if(r==row){
+                        continue;
+                    } 
+                    T scale = -(*this)(r,col);
+                    if(scale != (*this)(r,col)){
+                        (*this).add_scaled_row_in_place(row, scale, r);
+                    }
+
+                }
+                row++;
+                col++;
+            }
+            return (*this);
+        }
+
+        constexpr Matrix reduce() const noexcept{
+            Matrix temp((*this));
+            std::size_t row = 0;
+            std::size_t col = 0;
+            while(row<N && col <M){
+                std::size_t pivot = row;
+                T max_value = std::abs(temp(row,col));
+
+                for(std::size_t r = row +1; r<N;r++){
+                    T value = std::abs(temp(row,col));
+                    if(value>max_value){
+                        max_value = value;
+                        pivot = r;
+                    }
+                }
+
+                if(max_value == T{0}){
+                    col++;
+                    continue;
+                }
+
+                if(pivot != row){
+                    temp.swap_rows_in_place(row,pivot);
+                }
+                T pivot_value = temp(row,col);
+                temp.scale_row_in_place(row,1/pivot_value);
+
+                return temp;
+            }
+        }
+
+        constexpr Matrix reduce_in_place() noexcept{
+            std::size_t row = 0;
+            std::size_t col = 0;
+            while(row<N && col <M){
+                std::size_t pivot = row;
+                T max_value = std::abs((*this)(row,col));
+
+                for(std::size_t r = row +1; r<N;r++){
+                    T value = std::abs((*this)(row,col));
+                    if(value>max_value){
+                        max_value = value;
+                        pivot = r;
+                    }
+                }
+
+                if(max_value == T{0}){
+                    col++;
+                    continue;
+                }
+
+                if(pivot != row){
+                    (*this).swap_rows_in_place(row,pivot);
+                }
+                T pivot_value = (*this)(row,col);
+                (*this).scale_row_in_place(row,1/pivot_value);
+
+                return (*this);
+            }
+        }
+        
+        constexpr T trace() const noexcept requires(N == M){
+            T accumulate = 0;
+            for(std::size_t i = 0; i<N; i++){
+                accumulate += (*this)(i,i);
+            }
+            return accumulate; 
+        }
+
+        constexpr auto minor(std::size_t row, std::size_t col) const noexcept {
+            Matrix<T,N-1,N-1> m{};
+            std::size_t small_col = 0;
+            for (std::size_t k = 0; k < N; k++) {
+                if (k == col) {
+                continue;
+            }
+            std::size_t small_row = 0;
+            for (std::size_t l = 0; l < N; l++) {
+                if (row == l) {
+                    continue;
+                }
+                m(small_row, small_col) = (*this)(l, k);
+
+                small_row++;
+            }
+            small_col++;
+            }
+          return m;
+        }
+
+        constexpr auto map(auto &&func) const noexcept{
+            Matrix<T,N,M> temp; 
+            std::transform(cbegin(),cend(),temp.begin(), func);
+            return temp;
+        }
+        constexpr auto map_in_place(auto &&func) noexcept{
+            std::transform(begin(),end(),begin(), func);
+            return (*this);
+        }
+        
+        static constexpr Matrix identity() noexcept requires(N==M){
+            Matrix temp;
+            std::fill(temp.begin(),temp.end(),T{0});
+            for(std::size_t i =0;i<N;i++){
+                temp(i,i) = 1;
+            }
+            return temp;
+        }
+        
+        constexpr auto orthonormalize() const noexcept{
+
+            std::array<VectorN<T,N>,M> temp_array;
+            for(std::size_t i =0;i<M;i++){
+                temp_array[i] = column(i);
+            }
+            temp_array[0].normalize_in_place();
+            for (std::size_t i = 1; i < M; ++i) {
+                for (std::size_t j = 0; j < i; ++j) {
+                    T proj = temp_array[i].dot(temp_array[j]);
+                    temp_array[i] -= temp_array[j] * proj;
+                 }
+                temp_array[i].normalize_in_place();
+            }
+            Matrix result;
+            for (std::size_t c = 0; c < M; ++c){
+                 for (std::size_t r = 0; r < N; ++r){
+                    result(r, c) = temp_array[c][r];
+                 }
+            }
+            return result;
+
+        }
+        constexpr bool is_symmetric() const noexcept{
+            if constexpr(N!=M){
+                return false;
+            }
+            if (*this == transpose()){
+                return true;
+            }
+            return false;
+
+        }
+        constexpr auto is_orthogonal() const noexcept{
+            if constexpr(N!=M){
+                return false;
+            }
+            
+            for(std::size_t i = 0; i<N;i++){
+                for(std::size_t j = i;j<N; j++){
+                    auto first = column(i);
+                    auto second = column(j);
+                    auto dot = first.dot(second);
+
+                    if(i ==j){
+                        if(!math::approx_equal(dot,T{1})){
+                            return false;
+                        }
+                    }
+                    else{
+                        if(!math::approx_equal(dot,T{0})){
+                            return false;
+                        }
+                    }
+                }
+                
+            }
+            return true;
+        }
+        constexpr bool is_invertible() const noexcept{
+            if constexpr(N!=M){
+                return false;
+            }
+            if (determinant() == 0){
+                return false;
+            }
+            return true;
+        }
 
         auto get() noexcept {
             return data_;
         }
 
-         auto get_row_major() {
-            return data_;
+        auto get_row_major() {
+            return transpose().data_;
         }
 
         auto get_col_major() {
