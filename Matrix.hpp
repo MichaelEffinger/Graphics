@@ -15,7 +15,7 @@ namespace ES{
     template<typename T, std::size_t N, std::size_t M = N>
     class Matrix : public ArithmeticOpsMixin<Matrix<T,N,M>, T, N*M>, public ContainerN<Matrix<T,N,M>,T,N*M>{
        
-        using ContainerN<Matrix,T,N>::data_;
+        using ContainerN<Matrix,T,N*M>::data_;
 
 
         public: 
@@ -30,6 +30,7 @@ namespace ES{
         using ContainerN<Matrix,T,N*M>::cbegin;
         using ContainerN<Matrix,T,N*M>::operator[];
         using ContainerN<Matrix,T,N*M>::ContainerN;
+        using ArithmeticOpsMixin<Matrix,T,N*M>::operator*;
 
 
         static constexpr void can_scalar_multiply(){return;}
@@ -99,6 +100,9 @@ namespace ES{
             return (*this);
         }            
         
+        constexpr T determinant() const noexcept requires (N==1 && M==1){
+            return data_[0];
+        }
         constexpr T determinant() const noexcept requires (N==2 && M==2){
             return (*this)[0]*(*this)[3] - (*this)[1]*(*this)[2];
         }
@@ -165,7 +169,7 @@ namespace ES{
         }
 
 
-        constexpr Matrix transpose() const noexcept{
+        constexpr Matrix<T,M,N> transpose() const noexcept{
             Matrix<T,M,N> temp;
 
             for(std::size_t i=0; i<N; i++){
@@ -175,7 +179,8 @@ namespace ES{
             }
             return temp;
         }
-        constexpr Matrix& transpose_in_place() noexcept requires(N==M){
+
+        constexpr Matrix<T,M,N>& transpose_in_place() noexcept requires(N==M){
  
             for(std::size_t i =0;i<N;i++){
                 for(std::size_t j = i+1; j<N; j++){
@@ -292,18 +297,24 @@ namespace ES{
             return A_plus;
         }
         
-        constexpr Matrix cofactor() const noexcept requires(N==M){
-            Matrix<T,N> cofactor;
+        constexpr Matrix adjugate() const noexcept requires(N==M){
+            Matrix<T,N> adjugate;
             
             for(std::size_t i = 0; i<N; i++){
                 for(std::size_t j = 0; j<N; j++){
                     Matrix<T,N-1,N-1> m = minor(i,j);
                     const T negative = ((i+j)&1) ? T{-1} : T{1};
-                    cofactor(j,i) = negative * m.determinant();
+                    adjugate(j,i) =negative * m.determinant();
                 }
             }
-            return cofactor;
+            return adjugate;
         }    
+
+        constexpr Matrix cofactor() const noexcept requires(N==M){
+            Matrix<T,N> cof = adjugate();
+            cof.transpose_in_place(); 
+            return cof;
+        }
         
         
         template <std::size_t O, std::size_t P>
