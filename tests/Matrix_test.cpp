@@ -538,3 +538,153 @@ TEST_CASE("Matrix negate", "[Matrix]"){
     REQUIRE(result(1,0) == -3.0f);
     REQUIRE(result(1,1) == 4.0f);
 }
+
+
+TEST_CASE("Matrix adjugate 2x2", "[Matrix]"){
+    Matrix<float, 2, 2> m;
+    m(0,0) = 1.0f; m(0,1) = 2.0f;
+    m(1,0) = 3.0f; m(1,1) = 4.0f;
+    
+    auto adj = m.adjugate();
+    
+    REQUIRE(adj(0,0) == 4.0f);
+    REQUIRE(adj(0,1) == -2.0f);
+    REQUIRE(adj(1,0) == -3.0f);
+    REQUIRE(adj(1,1) == 1.0f);
+}
+
+TEST_CASE("Matrix adjugate 3x3", "[Matrix]"){
+    Matrix<float, 3, 3> m;
+    m(0,0) = 1.0f; m(0,1) = 2.0f; m(0,2) = 3.0f;
+    m(1,0) = 0.0f; m(1,1) = 1.0f; m(1,2) = 4.0f;
+    m(2,0) = 5.0f; m(2,1) = 6.0f; m(2,2) = 0.0f;
+    
+    auto adj = m.adjugate();
+    auto det = m.determinant();
+    
+    auto result = m * adj;
+    
+    REQUIRE(math::approx_equal(result(0,0), det));
+    REQUIRE(math::approx_equal(result(1,1), det));
+    REQUIRE(math::approx_equal(result(2,2), det));
+    REQUIRE(math::approx_equal(result(0,1), 0.0f));
+    REQUIRE(math::approx_equal(result(1,0), 0.0f));
+}
+
+TEST_CASE("Matrix pseudo_inverse tall matrix", "[Matrix]"){
+
+    Matrix<float, 3, 2> m;
+    m(0,0) = 1.0f; m(0,1) = 2.0f;
+    m(1,0) = 3.0f; m(1,1) = 4.0f;
+    m(2,0) = 5.0f; m(2,1) = 6.0f;
+    
+    auto pinv = m.pseudo_inverse();
+    
+    REQUIRE(pinv.column(0).size() == 2);
+    
+    auto should_be_identity = pinv * m;
+    REQUIRE(math::approx_equal(should_be_identity(0,0), 1.0f));
+    REQUIRE(math::approx_equal(should_be_identity(1,1), 1.0f));
+    REQUIRE(math::approx_equal(should_be_identity(0,1), 0.0f));
+    REQUIRE(math::approx_equal(should_be_identity(1,0), 0.0f));
+}
+
+TEST_CASE("Matrix pseudo_inverse wide matrix", "[Matrix]"){
+    Matrix<float, 2, 3> m;
+    m(0,0) = 1.0f; m(0,1) = 2.0f; m(0,2) = 3.0f;
+    m(1,0) = 4.0f; m(1,1) = 5.0f; m(1,2) = 6.0f;
+    
+    auto pinv = m.pseudo_inverse();
+    
+    REQUIRE(pinv.column(0).size() == 3);
+    
+    auto should_be_identity = m * pinv;
+    REQUIRE(math::approx_equal(should_be_identity(0,0), 1.0f));
+    REQUIRE(math::approx_equal(should_be_identity(1,1), 1.0f));
+    REQUIRE(math::approx_equal(should_be_identity(0,1), 0.0f));
+    REQUIRE(math::approx_equal(should_be_identity(1,0), 0.0f));
+}
+
+TEST_CASE("Matrix reduce", "[Matrix]"){
+    Matrix<float, 3, 3> m;
+    m(0,0) = 2.0f; m(0,1) = 1.0f; m(0,2) = -1.0f;
+    m(1,0) = -3.0f; m(1,1) = -1.0f; m(1,2) = 2.0f;
+    m(2,0) = -2.0f; m(2,1) = 1.0f; m(2,2) = 2.0f;
+    
+    auto result = m.reduce();
+    
+    REQUIRE(math::approx_equal(result(0,0), 1.0f));
+    REQUIRE(m(0,0) == 2.0f);
+}
+
+TEST_CASE("Matrix reduce_in_place", "[Matrix]"){
+    Matrix<float, 3, 3> m;
+    m(0,0) = 2.0f; m(0,1) = 1.0f; m(0,2) = -1.0f;
+    m(1,0) = -3.0f; m(1,1) = -1.0f; m(1,2) = 2.0f;
+    m(2,0) = -2.0f; m(2,1) = 1.0f; m(2,2) = 2.0f;
+    
+    m.reduce_in_place();
+    
+    REQUIRE(math::approx_equal(m(0,0), 1.0f));
+}
+
+TEST_CASE("Matrix rref_in_place", "[Matrix]"){
+    Matrix<float, 2, 3> m;
+    m(0,0) = 2.0f; m(0,1) = 1.0f; m(0,2) = -1.0f;
+    m(1,0) = -3.0f; m(1,1) = -1.0f; m(1,2) = 2.0f;
+    
+    m.rref_in_place();
+    
+    REQUIRE(math::approx_equal(m(0,0), 1.0f));
+    REQUIRE(math::approx_equal(m(1,1), 1.0f));
+}
+
+TEST_CASE("Matrix get methods", "[Matrix]"){
+    Matrix<float, 2, 2> m;
+    m(0,0) = 1.0f; m(0,1) = 2.0f;
+    m(1,0) = 3.0f; m(1,1) = 4.0f;
+    
+    auto data = m.get();
+    REQUIRE(data[0] == 1.0f);
+    REQUIRE(data[1] == 3.0f);
+    REQUIRE(data[2] == 2.0f);
+    REQUIRE(data[3] == 4.0f);
+    
+    auto col_major = m.get_col_major();
+    REQUIRE(col_major[0] == 1.0f);
+    REQUIRE(col_major[1] == 3.0f);
+    
+    auto row_major = m.get_row_major();
+    REQUIRE(row_major[0] == 1.0f);
+    REQUIRE(row_major[1] == 2.0f);
+    REQUIRE(row_major[2] == 3.0f);
+    REQUIRE(row_major[3] == 4.0f);
+}
+
+TEST_CASE("Matrix 5x5 determinant using Gaussian elimination", "[Matrix]"){
+    Matrix<float, 5, 5> m;
+    for(std::size_t i = 0; i < 5; i++){
+        for(std::size_t j = 0; j < 5; j++){
+            m(i,j) = (i == j) ? 2.0f : 0.0f;
+        }
+    }
+    
+    float det = m.determinant();
+    
+    REQUIRE(math::approx_equal(det, 32.0f));
+}
+
+TEST_CASE("Matrix 5x5 inverse", "[Matrix]"){
+    Matrix<float, 5, 5> m = Matrix<float, 5, 5>::identity();
+    m(0,1) = 1.0f;
+    m(1,2) = 1.0f;
+    m(2,3) = 1.0f;
+    m(3,4) = 1.0f;
+    
+    auto inv = m.inverse();
+    auto identity = m * inv;
+    
+    for(std::size_t i = 0; i < 5; i++){
+        REQUIRE(math::approx_equal(identity(i,i), 1.0f));
+    }
+}

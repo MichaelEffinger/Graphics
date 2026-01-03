@@ -121,32 +121,36 @@ namespace ES{
 
         }
         
-        constexpr T determinant() const noexcept requires (N == M && N >4 && std::is_floating_point_v<T>) {
+        constexpr T determinant() const noexcept requires (N == M && N > 4 && std::is_floating_point_v<T>) {
             T accumulate = 1;
             Matrix temp((*this));
 
-            for (std::size_t i = 0;i<N;i++){
-                
+            for (std::size_t i = 0; i < N; i++) {
                 std::size_t pivot = i;
-                if(temp(i,i) == T{0}){
-                    for(std::size_t j =i + 1; j<N; j++){
-                        if (temp(j,i) != 0){
-                            pivot = j;
-                            break;
-                        }  
+                T max_value = std::abs(temp(i,i));
+                for (std::size_t j = i + 1; j < N; j++) {
+                    T value = std::abs(temp(j,i));
+                    if (value > max_value) {
+                        max_value = value;
+                        pivot = j;
                     }
-                    if(pivot == i){
-                        return T{0};
-                    }
-                    
-                    temp.swap_rows_in_place(i,pivot);
-                    accumulate *=-1;
                 }
-                for(std::size_t k = i+1; k<N;k++){
-                    T scale = -temp(k,i)/temp(i,i);
-                    temp.add_scaled_row_in_place(i,scale,k);
-                }            
+
+                if (max_value == T{0}) {
+                    return T{0};
+                }
+
+                if (pivot != i) {
+                    temp.swap_rows_in_place(i, pivot);
+                    accumulate *= -1;
+                }
+
+                for (std::size_t k = i + 1; k < N; k++) {
+                    T scale = -temp(k,i) / temp(i,i);
+                    temp.add_scaled_row_in_place(i, scale, k);
+                }
             }
+
             return accumulate * temp.product_of_diagonals();
         }
 
@@ -232,23 +236,27 @@ namespace ES{
             Matrix inverse = Matrix::identity();
 
             for (std::size_t i = 0;i<N;i++){
-                
                 std::size_t pivot = i;
-                if(temp[i*N+i] == T{0}){
-                    for(std::size_t j =i + 1; j<N; j++){
-                        if (temp(j,i) != 0){
-                            pivot = j;
-                            break;
-                        }  
+                T max_value = std::abs(temp(i,i));
+
+                for(std::size_t j = i+1; j<N; j++){
+                    T value = std::abs(temp(j,i));
+                    if(value > max_value){
+                        max_value = value;
+                        pivot = j;
                     }
-                    if(pivot == i){
-                        std::fill(inverse.begin(),inverse.end(),T{0});
-                        return inverse;
-                    }
-                    
-                    temp.swap_rows_in_place(i,pivot);
-                    inverse.swap_rows_in_place(i,pivot);
                 }
+
+                if(max_value == T{0}){
+                    std::fill(inverse.begin(), inverse.end(), T{0});
+                    return inverse;
+                }
+
+                if(pivot != i){
+                    temp.swap_rows_in_place(i, pivot);
+                    inverse.swap_rows_in_place(i, pivot);
+                }
+
                 for(std::size_t k = i+1; k<N;k++){
                     T scale = -temp(k,i)/temp(i,i);
                     temp.add_scaled_row_in_place(i,scale,k);
@@ -287,7 +295,7 @@ namespace ES{
 
         constexpr Matrix<T,M,N> pseudo_inverse() const noexcept requires(M>N) {
             Matrix<T,M,N> At = transpose();
-            Matrix<T,M> AAt = (*this) * At;
+            Matrix<T,N> AAt = (*this) * At;
             if(!AAt.is_invertible()){
                 assert(true == false);
                 //same as before ja know
@@ -448,8 +456,10 @@ namespace ES{
                 T pivot_value = temp(row,col);
                 temp.scale_row_in_place(row,1/pivot_value);
 
-                return temp;
+                row++;
+                col++;
             }
+            return temp;
         }
 
         constexpr Matrix reduce_in_place() noexcept{
@@ -478,8 +488,10 @@ namespace ES{
                 T pivot_value = (*this)(row,col);
                 (*this).scale_row_in_place(row,1/pivot_value);
 
-                return (*this);
+                row++;
+                col++;
             }
+            return (*this);
         }
         
         constexpr T trace() const noexcept requires(N == M){
@@ -490,7 +502,7 @@ namespace ES{
             return accumulate; 
         }
 
-        constexpr auto minor(std::size_t row, std::size_t col) const noexcept {
+        constexpr Matrix<T,N-1,N-1> minor(std::size_t row, std::size_t col) const noexcept {
             Matrix<T,N-1,N-1> m{};
             std::size_t small_col = 0;
             for (std::size_t k = 0; k < N; k++) {
@@ -511,12 +523,12 @@ namespace ES{
           return m;
         }
 
-        constexpr auto map(auto &&func) const noexcept{
-            Matrix<T,N,M> temp; 
+        constexpr Matrix map(auto &&func) const noexcept{
+            Matrix temp; 
             std::transform(cbegin(),cend(),temp.begin(), func);
             return temp;
         }
-        constexpr auto map_in_place(auto &&func) noexcept{
+        constexpr Matrix& map_in_place(auto &&func) noexcept{
             std::transform(begin(),end(),begin(), func);
             return (*this);
         }
@@ -530,7 +542,7 @@ namespace ES{
             return temp;
         }
         
-        constexpr auto orthonormalize() const noexcept{
+        constexpr Matrix orthonormalize() const noexcept{
 
             std::array<VectorN<T,N>,M> temp_array;
             for(std::size_t i =0;i<M;i++){
@@ -561,9 +573,8 @@ namespace ES{
                 return true;
             }
             return false;
-
         }
-        constexpr auto is_orthogonal() const noexcept{
+        constexpr bool is_orthogonal() const noexcept{
             if constexpr(N!=M){
                 return false;
             }
@@ -589,6 +600,7 @@ namespace ES{
             }
             return true;
         }
+
         constexpr bool is_invertible() const noexcept{
             if constexpr(N!=M){
                 return false;
