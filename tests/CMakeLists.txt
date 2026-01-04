@@ -7,6 +7,7 @@ add_executable(ComputerGraphics_Tests
         VectorH_test.cpp
         Color_test.cpp
         Matrix_test.cpp
+        Affine3_test.cpp
 )
 
 target_compile_definitions(ComputerGraphics_Tests PRIVATE NDEBUG)

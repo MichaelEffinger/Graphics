@@ -1,3 +1,5 @@
+#pragma once
+
 #include <type_traits>
 #include <cassert>
 #include <cmath>
@@ -54,7 +56,7 @@ namespace ES{
             return std::forward_like<decltype(self)>(self[(column*N+row)]);
         }
 
-        constexpr Matrix swap_rows(std::size_t first, std::size_t second) const noexcept {
+        [[nodiscard]] constexpr Matrix swap_rows(std::size_t first, std::size_t second) const noexcept {
             Matrix temp((*this));
             for(std::size_t i=0; i<M;i++){
                 std::swap(temp(first,i), temp(second, i));
@@ -70,7 +72,7 @@ namespace ES{
             return (*this);
         }
 
-        constexpr Matrix scale_row(std::size_t row, T scale)const noexcept{
+        [[nodiscard]] constexpr Matrix scale_row(std::size_t row, T scale)const noexcept{
             Matrix temp((*this));
             for (std::size_t i =0; i<M; i++){
                 temp(row,i) *= scale;
@@ -85,7 +87,7 @@ namespace ES{
             return (*this);
         }
 
-        constexpr Matrix add_scaled_row(std::size_t source, T scale, std::size_t destination) const noexcept{
+        [[nodiscard]] constexpr Matrix add_scaled_row(std::size_t source, T scale, std::size_t destination) const noexcept{
             Matrix temp((*this));
             for(std::size_t i =0; i<M; i++){
                 temp(destination,i) += temp(source,i)*scale;
@@ -100,19 +102,19 @@ namespace ES{
             return (*this);
         }            
         
-        constexpr T determinant() const noexcept requires (N==1 && M==1){
+        [[nodiscard]] constexpr T determinant() const noexcept requires (N==1 && M==1){
             return data_[0];
         }
-        constexpr T determinant() const noexcept requires (N==2 && M==2){
+        [[nodiscard]] constexpr T determinant() const noexcept requires (N==2 && M==2){
             return (*this)[0]*(*this)[3] - (*this)[1]*(*this)[2];
         }
         //specialization for the 3x3, its just the cofactor expansion urnolled
-        constexpr T determinant() const noexcept requires (N==3 && M==3){
+        [[nodiscard]] constexpr T determinant() const noexcept requires (N==3 && M==3){
             return (*this)[0]*(*this)[4]*(*this)[8] + (*this)[3]*(*this)[7]*(*this)[2] + (*this)[6]*(*this)[1]*(*this)[5] - (*this)[6]*(*this)[4]*(*this)[2] - (*this)[3]*(*this)[1]*(*this)[8] -(*this)[0]*(*this)[7]*(*this)[5];
         }
 
         //specialization for the 4x4, its just the cofactor expansion urnolled
-        constexpr T determinant() const noexcept requires (N==4 && M==4){
+        [[nodiscard]] constexpr T determinant() const noexcept requires (N==4 && M==4){
             T m0 = (*this)[0]*( (*this)[5]* (*this)[10]* (*this)[15] +  (*this)[6]* (*this)[11]* (*this)[13] +  (*this)[7]* (*this)[9]* (*this)[14] -  (*this)[7]* (*this)[10]* (*this)[13] -  (*this)[6]* (*this)[9]* (*this)[15] -  (*this)[5]* (*this)[11]* (*this)[14]);
             T m1 =  (*this)[1]*( (*this)[4]* (*this)[10]* (*this)[15] +  (*this)[6]* (*this)[11]* (*this)[12] +  (*this)[7]* (*this)[8]* (*this)[14] -  (*this)[7]* (*this)[10]* (*this)[12] -  (*this)[6]* (*this)[8]* (*this)[15] -  (*this)[4]* (*this)[11]* (*this)[14]);
             T m2 =  (*this)[2]*( (*this)[4]* (*this)[9]* (*this)[15] +  (*this)[5]* (*this)[11]* (*this)[12] +  (*this)[7]* (*this)[8]* (*this)[13] -  (*this)[7]* (*this)[9]* (*this)[12] -  (*this)[5]* (*this)[8]* (*this)[15] -  (*this)[4]* (*this)[11]* (*this)[13]);
@@ -121,7 +123,7 @@ namespace ES{
 
         }
         
-        constexpr T determinant() const noexcept requires (N == M && N > 4 && std::is_floating_point_v<T>) {
+        [[nodiscard]] constexpr T determinant() const noexcept requires (N == M && N > 4 && std::is_floating_point_v<T>) {
             T accumulate = 1;
             Matrix temp((*this));
 
@@ -155,7 +157,7 @@ namespace ES{
         }
 
 
-        constexpr T product_of_diagonals() const noexcept{
+        [[nodiscard]] constexpr T product_of_diagonals() const noexcept{
             T accumulate = 1;
             for(std::size_t i = 0; i<N; i++){
                 accumulate *= (*this)(i,i);
@@ -163,7 +165,7 @@ namespace ES{
             return accumulate;
         }
 
-        constexpr VectorN<T,N> column(std::size_t column) const noexcept{
+        [[nodiscard]] constexpr VectorN<T,N> column(std::size_t column) const noexcept{
             VectorN<T,N> temp;
 
             for(std::size_t i =0; i<N;i++){
@@ -173,7 +175,7 @@ namespace ES{
         }
 
 
-        constexpr Matrix<T,M,N> transpose() const noexcept{
+        [[nodiscard]] constexpr Matrix<T,M,N> transpose() const noexcept{
             Matrix<T,M,N> temp;
 
             for(std::size_t i=0; i<N; i++){
@@ -195,7 +197,7 @@ namespace ES{
 
         }
 
-        constexpr Matrix inverse() const noexcept requires (N==M) {
+        [[nodiscard]] constexpr Matrix inverse() const noexcept requires (N==M) {
             Matrix temp((*this));
             return temp.inverse_in_place();
         };
@@ -281,31 +283,35 @@ namespace ES{
             return inverse;
         }
 
-        constexpr Matrix<T,M,N> pseudo_inverse() const noexcept requires(N>=M) {
+        [[nodiscard]] constexpr Matrix<T,M,N> pseudo_inverse() const noexcept requires(N>=M) {
             Matrix<T,M,N> At = transpose();
             Matrix<T,M> AtA = At * (*this);
             if(!AtA.is_invertible()){
-              assert(true == false);
-              //temp solution need to figure out what the best handling of this situation is
+              assert(false && "Matrix is not invertible");
+              Matrix<T,M,N> A_plus;
+              std::fill(A_plus.begin(), A_plus.end(),0);
+              return A_plus;
             }
             Matrix<T,M> AtA_inv = AtA.inverse();
             Matrix<T,M,N> A_plus = AtA_inv * At;
             return A_plus;
         }
 
-        constexpr Matrix<T,M,N> pseudo_inverse() const noexcept requires(M>N) {
+        [[nodiscard]] constexpr Matrix<T,M,N> pseudo_inverse() const noexcept requires(M>N) {
             Matrix<T,M,N> At = transpose();
             Matrix<T,N> AAt = (*this) * At;
             if(!AAt.is_invertible()){
-                assert(true == false);
-                //same as before ja know
+              assert(false && "Matrix is not invertible");
+              Matrix<T,M,N> A_plus;
+              std::fill(A_plus.begin(), A_plus.end(),0);
+              return A_plus;
             }
             Matrix<T,N> AAt_inv = AAt.inverse();
             Matrix<T,M,N> A_plus = At * AAt_inv;
             return A_plus;
         }
         
-        constexpr Matrix adjugate() const noexcept requires(N==M){
+        [[nodiscard]] constexpr Matrix adjugate() const noexcept requires(N==M){
             Matrix<T,N> adjugate;
             
             for(std::size_t i = 0; i<N; i++){
@@ -318,7 +324,7 @@ namespace ES{
             return adjugate;
         }    
 
-        constexpr Matrix cofactor() const noexcept requires(N==M){
+        [[nodiscard]] constexpr Matrix cofactor() const noexcept requires(N==M){
             Matrix<T,N> cof = adjugate();
             cof.transpose_in_place(); 
             return cof;
@@ -326,7 +332,7 @@ namespace ES{
         
         
         template <std::size_t O, std::size_t P>
-        constexpr Matrix<T,N,P> operator*(Matrix<T,O,P> rhs) const requires(O==M){
+        [[nodiscard]] constexpr Matrix<T,N,P> operator*(Matrix<T,O,P> rhs) const noexcept requires(O==M){
 
             Matrix<T,N,P> temp;
             for(std::size_t i =0; i<N; i++){
@@ -341,8 +347,21 @@ namespace ES{
             return temp;
         }
 
+        template<std::size_t O>
+        [[nodiscard]] constexpr VectorN<T,N> operator*(VectorN<T,O> rhs) const noexcept requires(O==M){
+            VectorN<T,N> temp;
 
-        constexpr Matrix rref() const noexcept{
+            for(std::size_t i =0; i<N; i++){
+                T accumulate = T{0};
+                for(std::size_t j = 0; j<O;j++){
+                    accumulate += (*this)(i,j)*rhs[j];
+                }
+                temp[i]= accumulate;
+            }
+            return temp;
+        }
+
+        [[nodiscard]] constexpr Matrix rref() const noexcept{
             Matrix temp((*this));
             std::size_t row = 0;
             std::size_t col = 0;
@@ -429,7 +448,7 @@ namespace ES{
             return (*this);
         }
 
-        constexpr Matrix reduce() const noexcept{
+        [[nodiscard]] constexpr Matrix reduce() const noexcept{
             Matrix temp((*this));
             std::size_t row = 0;
             std::size_t col = 0;
@@ -494,7 +513,7 @@ namespace ES{
             return (*this);
         }
         
-        constexpr T trace() const noexcept requires(N == M){
+        [[nodiscard]] constexpr T trace() const noexcept requires(N == M){
             T accumulate = 0;
             for(std::size_t i = 0; i<N; i++){
                 accumulate += (*this)(i,i);
@@ -502,7 +521,7 @@ namespace ES{
             return accumulate; 
         }
 
-        constexpr Matrix<T,N-1,N-1> minor(std::size_t row, std::size_t col) const noexcept {
+        [[nodiscard]] constexpr Matrix<T,N-1,N-1> minor(std::size_t row, std::size_t col) const noexcept {
             Matrix<T,N-1,N-1> m{};
             std::size_t small_col = 0;
             for (std::size_t k = 0; k < N; k++) {
@@ -523,7 +542,7 @@ namespace ES{
           return m;
         }
 
-        constexpr Matrix map(auto &&func) const noexcept{
+        [[nodiscard]] constexpr Matrix map(auto &&func) const noexcept{
             Matrix temp; 
             std::transform(cbegin(),cend(),temp.begin(), func);
             return temp;
@@ -533,7 +552,7 @@ namespace ES{
             return (*this);
         }
         
-        static constexpr Matrix identity() noexcept requires(N==M){
+        [[nodiscard]] static constexpr Matrix identity() noexcept requires(N==M){
             Matrix temp;
             std::fill(temp.begin(),temp.end(),T{0});
             for(std::size_t i =0;i<N;i++){
@@ -542,7 +561,7 @@ namespace ES{
             return temp;
         }
         
-        constexpr Matrix orthonormalize() const noexcept{
+        [[nodiscard]] constexpr Matrix orthonormalize() const noexcept{
 
             std::array<VectorN<T,N>,M> temp_array;
             for(std::size_t i =0;i<M;i++){
@@ -565,7 +584,8 @@ namespace ES{
             return result;
 
         }
-        constexpr bool is_symmetric() const noexcept{
+
+        [[nodiscard]] constexpr bool is_symmetric() const noexcept{
             if constexpr(N!=M){
                 return false;
             }
@@ -574,7 +594,8 @@ namespace ES{
             }
             return false;
         }
-        constexpr bool is_orthogonal() const noexcept{
+
+        [[nodiscard]] constexpr bool is_orthogonal() const noexcept{
             if constexpr(N!=M){
                 return false;
             }
@@ -601,7 +622,7 @@ namespace ES{
             return true;
         }
 
-        constexpr bool is_invertible() const noexcept{
+        [[nodiscard]] constexpr bool is_invertible() const noexcept{
             if constexpr(N!=M){
                 return false;
             }
@@ -611,15 +632,15 @@ namespace ES{
             return true;
         }
 
-        auto get() noexcept {
+        [[nodiscard]] auto get() noexcept {
             return data_;
         }
 
-        auto get_row_major() {
+        [[nodiscard]] auto get_row_major() {
             return transpose().data_;
         }
 
-        auto get_col_major() {
+        [[nodiscard]] auto get_col_major() {
             return data_;
         }
 

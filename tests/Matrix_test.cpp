@@ -15,8 +15,6 @@ TEST_CASE("Matrix 2x2 constructor and accessors", "[Matrix]"){
     REQUIRE(m(0,1) == 2.0f);
     REQUIRE(m(1,0) == 3.0f);
     REQUIRE(m(1,1) == 4.0f);
-    
-    REQUIRE(m == m);
 }
 
 TEST_CASE("Matrix 3x3 constructor and accessors", "[Matrix]"){

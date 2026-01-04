@@ -8,7 +8,6 @@
 
 
 namespace ES{
-
     template<class Child, typename T, std::size_t N>
     class ArithmeticOpsMixin{
 
