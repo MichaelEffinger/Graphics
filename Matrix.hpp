@@ -166,6 +166,7 @@ namespace ES{
         }
 
         [[nodiscard]] constexpr VectorN<T,N> column(std::size_t column) const noexcept{
+            assert(i < N);
             VectorN<T,N> temp;
 
             for(std::size_t i =0; i<N;i++){
@@ -631,6 +632,48 @@ namespace ES{
             }
             return true;
         }
+
+
+        [[nodiscard]] constexpr Matrix normalize() const noexcept {
+            Matrix result = *this;
+            result.normalize_in_place(); 
+            return result;
+        }
+
+        constexpr Matrix& normalize_in_place() noexcept {
+            for (std::size_t col = 0; col < M; ++col) {
+                VectorN<T,N> vec;
+                std::memcpy(&vec[0], &data_[col * N], sizeof(T) * N);
+                vec.normalize_in_place();
+                std::memcpy(&data_[col * N], &vec[0], sizeof(T) * N);
+            }
+            return *this;
+        }
+
+        [[nodiscard]] constexpr Matrix set_row(std::size_t row, const VectorN<T,M>& vec) const noexcept {
+            Matrix result = *this;
+            result.set_row_in_place(row, vec);
+            return result;
+        }
+
+        constexpr Matrix& set_row_in_place(std::size_t row, const VectorN<T,M>& vec) noexcept {
+            for (std::size_t col = 0; col < M; ++col) {
+                data_[col * N + row] = vec[col];
+            }
+            return *this;
+        }
+
+        [[nodiscard]] constexpr Matrix set_column(std::size_t col, const VectorN<T,N>& vec) const noexcept {
+            Matrix result = *this;
+            result.set_column_in_place(col, vec);
+            return result;
+        }
+
+        constexpr Matrix& set_column_in_place(std::size_t col, const VectorN<T,N>& vec) noexcept {
+            std::memcpy(&data_[col * N], &vec[0], sizeof(T) * N);
+            return *this;
+        }
+
 
         [[nodiscard]] auto get() noexcept {
             return data_;
