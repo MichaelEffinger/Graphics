@@ -47,7 +47,7 @@ namespace ES{
         }
 
         constexpr Transform& operator*=(const Transform& rhs) noexcept {
-            mat *= rhs.mat;
+            mat = mat* rhs.mat;
             inv = rhs.inv * inv;
             return *this;
         }
@@ -82,10 +82,12 @@ namespace ES{
 
         [[nodiscard]] static constexpr Transform translation(const VectorN<T,N-1> t) noexcept{
             Transform temp;
-            std::memcpy(&temp.mat(0,N-1),t.data(),sizeof(T) * N-1);
+            std::memcpy(&temp.mat(0,N-1),&t.data(),sizeof(T) * (N-1));
             temp.inv = temp.mat.inverse();
+            
             return temp;
         }
+
         [[nodiscard]] static constexpr Transform scale(const VectorN<T,N>& s) noexcept{
             Transform temp;
             for(std::size_t i =0; i<N; i++){
@@ -94,6 +96,7 @@ namespace ES{
             temp.inv = temp.mat.inverse();
             return temp;
         }
+
         [[nodiscard]] static constexpr Transform uniform_scale(T s) noexcept{
             Transform temp;
             for(std::size_t i =0; i<N; i++){

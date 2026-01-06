@@ -293,8 +293,8 @@ namespace ES{
         * @return true if all values are closer than epsilon
         * @return false if any value is further than epsilon
         */
-        [[nodiscard]] bool almost_equal(ContainerN rhs, T epsilon = ES::math::default_epsilon<T>::value)noexcept{
-            for (size_t i = 0; i < N; ++i) {
+        [[nodiscard]] bool almost_equal(ContainerN rhs, T epsilon = ES::math::default_epsilon<T>::value) const noexcept{
+            for (std::size_t i = 0; i < N; ++i) {
             if (!math::approx_equal(data_[i], rhs[i], epsilon))
                 return false;
             }
