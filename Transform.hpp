@@ -9,6 +9,8 @@ namespace ES{
         Matrix<T,N> mat;
         Matrix<T,N> inv;
 
+        public:
+
         constexpr Transform() noexcept{
             mat = Matrix<T,N>::identity();
             inv = mat;
@@ -78,9 +80,28 @@ namespace ES{
             return mat.normalize();
         }
 
-        [[nodiscard]] static constexpr Transform translation(const VectorN<T,N> t) noexcept;
-        [[nodiscard]] static constexpr Transform scale(const VectorN<T,N>& s) noexcept;
-        [[nodiscard]] static constexpr Transform uniform_scale(T s) noexcept;
+        [[nodiscard]] static constexpr Transform translation(const VectorN<T,N-1> t) noexcept{
+            Transform temp;
+            std::memcpy(&temp.mat(0,N-1),t.data(),sizeof(T) * N-1);
+            temp.inv = temp.mat.inverse();
+            return temp;
+        }
+        [[nodiscard]] static constexpr Transform scale(const VectorN<T,N>& s) noexcept{
+            Transform temp;
+            for(std::size_t i =0; i<N; i++){
+                temp.mat(i,i) = s[i];
+            }
+            temp.inv = temp.mat.inverse();
+            return temp;
+        }
+        [[nodiscard]] static constexpr Transform uniform_scale(T s) noexcept{
+            Transform temp;
+            for(std::size_t i =0; i<N; i++){
+                temp.mat(i,i) = s;
+            }
+            temp.inv = temp.mat.inverse();
+            return temp;
+        }
             
     };
 }
