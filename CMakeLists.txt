@@ -12,8 +12,8 @@ project(ComputerGraphics LANGUAGES CXX)
 option(BUILD_TESTING "Build the testing suite" ON)
 option(BUILD_ENGINE "Build the actual game engine itself" ON) #maybe... if you only wanted tests? It's off as we've nothing to actually build... oops
 option(FETCH_CATCH2 "Download Catch2 if not found" OFF)
-set(DESIRED_BACKEND "WebGPU" CACHE STRING "The backend the engine shall use.") #sets the default funny backend
-set_property(CACHE DESIRED_BACKEND PROPERTY STRINGS "WebGPU" "Raylib") #this just gives the CMake GUI a dropdown... allegedly. Does not work as intended
+set(DESIRED_BACKEND "Vulkan-Headers" CACHE STRING "The backend the engine shall use.") #sets the default funny backend
+set_property(CACHE DESIRED_BACKEND PROPERTY STRINGS "WebGPU" "Raylib" "Vulkan-Headers") #this just gives the CMake GUI a dropdown! Make sure to clear you cache if you want to change these!
 
 if(BUILD_ENGINE)
 # Main executable
@@ -40,6 +40,7 @@ function(testing_set_up)
     if(Catch2_FOUND)
         message(NOTICE "Building the Catch2 testing suite!")
         add_subdirectory(tests) #and then this sees the CMakeLists INSIDE of the test folder!
+        message(STATUS "Testing suite done")
         return()
     endif()
 
@@ -53,8 +54,8 @@ testing_set_up() #immediately invoke the function... god I wish I could just sti
 ###############
 function(graphics_and_window_set_up)
     if(DESIRED_BACKEND STREQUAL "Raylib") #should we need raylib we just grab it and go
-        message("Chosen window library: Raylib")
-        message("Chosen backend: Raylib")
+        message(STATUS "Chosen window library: Raylib")
+        message(STATUS "Chosen backend: Raylib")
         find_package(raylib CONFIG REQUIRED)
 
         find_path(raylib_cpp_INCLUDE_DIR
@@ -71,8 +72,8 @@ function(graphics_and_window_set_up)
 #        target_compile_definitions(ComputerGraphics PRIVATE ES_RAYLIB) #a preprocessor macro to signal that we're using raylib
 #        return() #We've raylib, we can exit now.
     endif ()
-    #Now, if we're not using raylib, we must go on a GLFW adventure
-    message("Chosen window library: GLFW3")
+    #Now, if we're not using raylib (or anything that has its own window manager), we must go on a GLFW adventure
+    message(STATUS "Chosen window library: GLFW3")
     target_sources(ComputerGraphics PUBLIC main_webgpu.cpp)
     find_package(glfw3 QUIET)
     if(NOT glfw3_FOUND AND BUILD_TESTING)
@@ -80,10 +81,18 @@ function(graphics_and_window_set_up)
         return()
     endif ()
     target_link_libraries(ComputerGraphics PRIVATE glfw)
-    target_compile_definitions(ComputerGraphics PRIVATE ES_GLFW) #macro for GLFW
-    message("Successfully found and linked GLFW3!")
+    target_compile_definitions(ComputerGraphics PRIVATE ES_GLFW) #C++ macro for GLFW
+    message(STATUS "Successfully found and linked GLFW3!")
 
 
+    #Vulkan-Headers time
+    if(DESIRED_BACKEND STREQUAL "Vulkan-Headers")
+        message(STATUS "Chosen backend: Vulkan-headers")
+        find_package(VulkanHeaders REQUIRED CONFIG)
+        target_link_libraries(ComputerGraphics PRIVATE Vulkan::Headers)
+        message(STATUS "Vulkan Headers Version: ${VulkanHeaders_VERSION}")
+        return()
+    endif ()
 
 
 endfunction()
@@ -93,3 +102,5 @@ if(BUILD_ENGINE)
 else ()
     message("Skipping building the engine...")
 endif ()
+
+message("We should be good to go!") #oh John...
