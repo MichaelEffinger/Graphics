@@ -81,7 +81,7 @@ public:
         Angle temp(*this);
         return temp.wrap_to_in_place(lower, upper);
     }
-    
+
     constexpr Angle<Unit,V>& wrap_to_in_place(V lower, V upper) noexcept {
         V range = upper - lower;
         angle_ = std::fmod(angle_ - lower, range);
@@ -116,6 +116,7 @@ public:
     constexpr Angle& operator*=(V scalar) { angle_ *= scalar; return *this; }
     constexpr Angle& operator/=(V scalar) { angle_ /= scalar; return *this; }
     constexpr Angle& operator/=(Angle rhs) const { angle_ /= rhs.angle_; return *this; }
+    constexpr Angle operator-() const {return Angle{-angle_};}
 
     [[nodiscard]] constexpr Angle& normalize_in_place() { 
         angle_ = std::is_same_v<Unit, in_radians> ? math::c_normalize_angle_rad(angle_) : math::c_normalize_angle_deg(angle_); 

@@ -18,8 +18,6 @@ namespace ES{
         using ContainerN<EulerAngles,Angle<Unit,T>,3>::cbegin;
         using ContainerN<EulerAngles,Angle<Unit,T>,3>::ContainerN;
 
-        static constexpr void can_scalar_multiply(){return;}
-        static constexpr void can_scalar_divide(){return;}
         static constexpr void can_component_add(){return;}
         static constexpr void can_component_subtract(){return;}
         //naive lerp
@@ -41,6 +39,44 @@ namespace ES{
             return std::forward_like<decltype(self)>(self[2]);
         }
 
+
+        constexpr EulerAngles operator*(T scalar) noexcept{
+            EulerAngles temp;
+            std::transform(cbegin(),cend(),temp.begin(),[scalar](Angle<Unit,T> in) {return in*scalar;});
+            return temp;
+        }
+
+        [[nodiscard]] friend constexpr EulerAngles operator*(T scalar, EulerAngles angles){
+            EulerAngles temp;
+            std::transform(angles.begin(),angles.end(),temp.begin(), [scalar](Angle<Unit,T> in){return in * scalar;});
+            return temp;
+        }
+
+        constexpr EulerAngles& operator*=(T scalar) noexcept{
+            std::transform(cbegin(),cend(),begin(),[scalar](Angle<Unit,T> in) {return in*scalar;});
+            return *this;
+        }
+
+        [[nodiscard]] constexpr EulerAngles operator/(EulerAngles rhs)const noexcept{
+            return zip(rhs, [](Angle<Unit,T> a, T b) { assert(b !=0 && "Divide by zero in component division"); return (b != 0) ? (a / b) : T{0}; });
+        }
+
+        constexpr EulerAngles& operator/=(EulerAngles rhs)noexcept{
+            return zip_in_place(rhs, [](Angle<Unit,T> a, T b) { assert(b !=0 && "Divide by zero in component division"); return (b != 0) ? (a / b) : T{0}; });
+        }
+
+        [[nodiscard]] constexpr EulerAngles operator/(T scalar) const noexcept {
+            EulerAngles tempCol;
+            std::transform(cbegin(), cend(),tempCol.begin(),[scalar](auto in) {assert(scalar !=0 && "Divide by zero in operator/"); return (scalar != 0) ? (in / scalar) : T{0}; });
+            return tempCol;
+        }
+
+        constexpr EulerAngles& operator/=(T scalar)noexcept{
+            std::transform(begin(),end(),begin(),[scalar](auto in) {assert(scalar !=0 && "Divide by zero in operator/"); return (scalar != 0) ? (in / scalar) : T{0}; });
+            return *this;
+        }
+
+
         constexpr EulerAngles() noexcept{
             std::fill(begin(),end(), 0);
         }
@@ -54,9 +90,9 @@ namespace ES{
         
         [[nodiscard]] constexpr EulerAngles normalize() const noexcept{
             EulerAngles temp(*this); 
-            temp.yaw().wrap_to(-ES::math::pi<T>,ES::math::pi<T>);
-            temp.pitch().wrap_to(-ES::math::pi<T>,ES::math::pi<T>);
-            temp.roll().wrap_to(-ES::math::pi<T>,ES::math::pi<T>);
+            temp.yaw() = yaw().wrap_to(-ES::math::pi<T>,ES::math::pi<T>);
+            temp.pitch() = pitch().wrap_to(-ES::math::pi<T>,ES::math::pi<T>);
+            temp.roll() = roll().wrap_to(-ES::math::pi<T>,ES::math::pi<T>);
             return temp;
         }
         constexpr EulerAngles& normalize_in_place() noexcept{

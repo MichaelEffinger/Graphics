@@ -185,7 +185,7 @@ TEST_CASE("VectorN angle between vectors", "[VectorN]") {
     Vector3<float> a{1.0f, 0.0f, 0.0f};
     Vector3<float> b{0.0f, 1.0f, 0.0f};
     
-    angle_rad angle = a.angle(b);
+    AngleRad angle = a.angle(b);
    // REQUIRE(ES::math::approx_equal(angle, ES::math::pi<float> / 2.0f));
     
     Vector3<float> parallel{2.0f, 0.0f, 0.0f};
@@ -194,7 +194,7 @@ TEST_CASE("VectorN angle between vectors", "[VectorN]") {
     
     Vector3<float> opposite{-1.0f, 0.0f, 0.0f};
     angle = a.angle(opposite);
-    static constexpr float pi = ES::angle_rad(ES::angle_deg{180.f}).get();
+    static constexpr float pi = ES::AngleRad(ES::AngleDeg{180.f}).get();
    REQUIRE(ES::math::approx_equal(angle.get(), pi));
 }
     
