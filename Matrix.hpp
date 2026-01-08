@@ -13,6 +13,11 @@ namespace ES{
 
 
 
+    //column-major matrices
+    //Indexing at zero
+    // speed focus, not abosolute correctness
+    //implements arithmeticmixins and containerN
+
     // I think I am going to go with column major... too popular in graphics to ignore
     template<typename T, std::size_t N, std::size_t M = N>
     class Matrix : public ArithmeticOpsMixin<Matrix<T,N,M>, T, N*M>, public ContainerN<Matrix<T,N,M>,T,N*M>{
@@ -35,6 +40,7 @@ namespace ES{
         using ArithmeticOpsMixin<Matrix,T,N*M>::operator*;
 
 
+        // opt in template tags for ArithmeticOpsMixin, each empty function turns on inherited functions for use
         static constexpr void can_scalar_multiply(){return;}
         static constexpr void can_scalar_divide(){return;}
         static constexpr void can_component_add(){return;}
@@ -166,7 +172,7 @@ namespace ES{
         }
 
         [[nodiscard]] constexpr VectorN<T,N> column(std::size_t column) const noexcept{
-            assert(i < N);
+            assert(column < N);
             VectorN<T,N> temp;
 
             for(std::size_t i =0; i<N;i++){

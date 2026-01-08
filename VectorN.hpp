@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <functional>
 #include "ContainerN.hpp"
-#include "ES_angle.hpp"
+#include "Angle.hpp"
 #include "ArithmeticOpsMixin.hpp"
 
 namespace ES {
@@ -305,7 +305,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @param rhs The vector to compute the angle to.
     * @return The angle between the two vectors in radians (for now).
     */
-    [[nodiscard]] /* TODO: make constexpr*/ angle_rad angle(const VectorN<T, N> rhs) const noexcept{
+    [[nodiscard]] /* TODO: make constexpr*/ AngleRad angle(const VectorN<T, N> rhs) const noexcept{
         T thisMag = magnitude_squared();
         T thatMag = rhs.magnitude_squared();
         
@@ -313,7 +313,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
             assert(false && "Divide by zero error in angle calculation");
             return {T{0}};
         }
-        return ES::angle_rad{std::acos(std::clamp(dot(rhs) / std::sqrt(thisMag * thatMag), T{-1}, T{1}))};
+        return ES::AngleRad{std::acos(std::clamp(dot(rhs) / std::sqrt(thisMag * thatMag), T{-1}, T{1}))};
     }
 
     /**
