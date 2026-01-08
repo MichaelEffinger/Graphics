@@ -269,7 +269,11 @@ namespace ES{
             return RGB_Int::from_srgb(r/255.0f,g/255.0f,b/255.0f);
         }
 
-        static constexpr RGB_Int from_hexRGB(const uint32_t hex) noexcept{
+        static
+#if __cpp_lib_constexpr_cmath >= 202202L
+        constexpr
+#endif
+        RGB_Int from_hexRGB(const uint32_t hex) noexcept{
             float sR = ((hex >> 16) & 0xFF) / 255.0f;
             float sG = ((hex >> 8)  & 0xFF) / 255.0f;
             float sB = (hex & 0xFF) / 255.0f;
@@ -280,7 +284,11 @@ namespace ES{
             return RGB_Int::from_linear(R,G,B);
         }  
 
-        static constexpr RGB_Int from_hexBGR(const uint32_t hex) noexcept{
+        static
+#if __cpp_lib_constexpr_cmath >= 202202L
+        constexpr
+#endif
+         RGB_Int from_hexBGR(const uint32_t hex) noexcept{
             float sB = ((hex >> 16) & 0xFF) / 255.0f;
             float sG = ((hex >> 8)  & 0xFF) / 255.0f;
             float sR = (hex & 0xFF) / 255.0f;
@@ -300,7 +308,11 @@ namespace ES{
         }
 
 
-        static constexpr RGB_Int from_linear(float r, float g, float b)noexcept{
+        static
+#if __cpp_lib_constexpr_cmath >= 202202L
+        constexpr
+#endif
+        RGB_Int from_linear(float r, float g, float b)noexcept{
             int R = std::round(r*255);
             int G = std::round(g*255);
             int B = std::round(b*255);
@@ -579,7 +591,11 @@ namespace ES{
             return from_straight_linear(static_cast<int>(std::round(r*255)),static_cast<int>(std::round(g*255)),static_cast<int>(std::round(b*255)),static_cast<int>(std::round(a*255)));
         }
 
-        static constexpr RGBA_Int from_premultiplied_linear(float r, float g, float b, float a)noexcept{
+        static
+#if __cpp_lib_constexpr_cmath >= 202202L
+        constexpr
+#endif
+         RGBA_Int from_premultiplied_linear(float r, float g, float b, float a)noexcept{
             int R = std::round(r*255);
             int G = std::round(g*255);
             int B = std::round(b*255);
