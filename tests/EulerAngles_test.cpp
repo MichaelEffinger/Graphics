@@ -352,20 +352,20 @@ TEST_CASE("EulerAngles clamp_in_place", "[EulerAngles]"){
     REQUIRE(math::approx_equal(angles.roll().get(), 3.0f));
 }
 
-TEST_CASE("EulerAngles degrees default constructor", "[EulerAngles]"){
-    EulerAngles<Degrees, float> angles;
+TEST_CASE("EulerAngles in_degree default constructor", "[EulerAngles]"){
+    EulerAngles<in_degrees, float> angles;
     
     REQUIRE(angles.yaw().get() == 0.0f);
     REQUIRE(angles.pitch().get() == 0.0f);
     REQUIRE(angles.roll().get() == 0.0f);
 }
 
-TEST_CASE("EulerAngles degrees constructor with values", "[EulerAngles]"){
-    Angle<Degrees, float> y(45.0f);
-    Angle<Degrees, float> p(90.0f);
-    Angle<Degrees, float> r(180.0f);
+TEST_CASE("EulerAngles in_degrees constructor with values", "[EulerAngles]"){
+    Angle<in_degrees, float> y(45.0f);
+    Angle<in_degrees, float> p(90.0f);
+    Angle<in_degrees, float> r(180.0f);
     
-    EulerAngles<Degrees, float> angles(y, p, r);
+    EulerAngles<in_degrees, float> angles(y, p, r);
     
     REQUIRE(angles.yaw().get() == 45.0f);
     REQUIRE(angles.pitch().get() == 90.0f);
