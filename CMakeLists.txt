@@ -26,10 +26,12 @@ endif ()
 # Neat testing set up function FOR FREESTANDING ES library things #
 #########################################
 function(testing_set_up)
+
     if(NOT BUILD_TESTING)
-        message(NOTICE "Skipping the Catch2 test suite...")
+        message("Skipping the Catch2 test suite...")
         return() #this actually takes us out of the function (blocks do NOT work as I thought... OOPSIE), instead of prematurely terminating before reaching whatever may lie below!
     endif()
+    message("Setting up testing!")
 
     find_package(Catch2 CONFIG QUIET) #only once we have the build testing go ahead, do we actually need to see if we've it.
 
@@ -38,7 +40,8 @@ function(testing_set_up)
     endif()
 
     if(Catch2_FOUND)
-        message(NOTICE "Building the Catch2 testing suite!")
+        message(STATUS "Catch2 was found!")
+        message(STATUS "Building the Catch2 testing suite!")
         add_subdirectory(tests) #and then this sees the CMakeLists INSIDE of the test folder!
         message(STATUS "Testing suite done")
         return()
