@@ -95,18 +95,18 @@ public:
     }
 
     //funky operators
-    [[nodiscard]] constexpr angle operator+(angle rhs) const { return angle{angle_ + rhs.angle_}; }
-    [[nodiscard]] constexpr angle operator-(angle rhs) const { return angle{angle_ - rhs.angle_}; }
-    [[nodiscard]] constexpr angle operator*(V scalar) const { return angle{angle_ * scalar}; }
-    [[nodiscard]] constexpr angle operator/(V scalar) const { return angle{angle_ / scalar}; }
-    [[nodiscard]] constexpr angle operator/(angle rhs) const { return angle{angle_ / rhs.angle_}; }
+    [[nodiscard]] constexpr angle operator+(const angle rhs) const { return angle{angle_ + rhs.angle_}; }
+    [[nodiscard]] constexpr angle operator-(const angle rhs) const { return angle{angle_ - rhs.angle_}; }
+    [[nodiscard]] constexpr angle operator*(const V scalar) const { return angle{angle_ * scalar}; }
+    [[nodiscard]] constexpr angle operator/(const V scalar) const { return angle{angle_ / scalar}; }
+    [[nodiscard]] constexpr angle operator/(const angle rhs) const { return angle{angle_ / rhs.angle_}; }
     [[nodiscard]] constexpr angle normalize() const { return std::is_same_v<Unit, in_radians> ? math::c_normalize_angle_rad(angle_) : math::c_normalize_angle_deg(angle_); }
     //funky compound assignment operators
-    constexpr angle& operator+=(angle rhs) { angle_ += rhs.angle_; return *this; }
-    constexpr angle& operator-=(angle rhs) { angle_ -= rhs.angle_; return *this; }
-    constexpr angle& operator*=(V scalar) { angle_ *= scalar; return *this; }
-    constexpr angle& operator/=(V scalar) { angle_ /= scalar; return *this; }
-    constexpr angle& operator/=(angle rhs) const { angle_ /= rhs.angle_; return *this; }
+    constexpr angle& operator+=(const angle rhs) { angle_ += rhs.angle_; return *this; }
+    constexpr angle& operator-=(const angle rhs) { angle_ -= rhs.angle_; return *this; }
+    constexpr angle& operator*=(const V scalar) { angle_ *= scalar; return *this; }
+    constexpr angle& operator/=(const V scalar) { angle_ /= scalar; return *this; }
+    constexpr angle& operator/=(const angle rhs) const { angle_ /= rhs.angle_; return *this; }
     [[nodiscard]] constexpr angle& normalize_in_place() { angle_ = std::is_same_v<Unit, in_radians> ? math::c_normalize_angle_rad(angle_) : math::c_normalize_angle_deg(angle_); return *this; }
 
     //everyone's favorite spaceship
