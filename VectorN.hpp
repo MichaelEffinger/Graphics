@@ -1,5 +1,4 @@
 // Michael Effinger
-// Ryan Seavey
 
 #pragma once
 
@@ -32,6 +31,7 @@ namespace ES {
  * @tparam N  Number of elements in the vector (must be > 0).
  */
  
+
 template <typename T, std::size_t N> requires std::is_arithmetic_v<T>
 class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<VectorN<T,N>,T,N> {
     
@@ -203,6 +203,11 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     }
 
 
+    //see magnitude
+    [[nodiscard]] constexpr T length() const noexcept{
+        return std::sqrt(std::fabs(dot(*this)));
+    }
+
     /**
     * @brief Computes the squared magnitude of this vector.
     * 
@@ -214,6 +219,11 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *       Use this for comparisons or repeated calculations where the actual magnitude is not required.
     */
     [[nodiscard]] constexpr T magnitude_squared() const noexcept{
+        return dot(*this);
+    }
+
+    // se magnitude squared
+    [[nodiscard]] constexpr T length_squared() const noexcept{
         return dot(*this);
     }
 

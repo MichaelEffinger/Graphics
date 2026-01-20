@@ -57,14 +57,6 @@ namespace ES{
             return *this;
         }
 
-        [[nodiscard]] constexpr EulerAngles operator/(EulerAngles rhs)const noexcept{
-            return zip(rhs, [](Angle<Unit,T> a, T b) { assert(b !=0 && "Divide by zero in component division"); return (b != 0) ? (a / b) : T{0}; });
-        }
-
-        constexpr EulerAngles& operator/=(EulerAngles rhs)noexcept{
-            return zip_in_place(rhs, [](Angle<Unit,T> a, T b) { assert(b !=0 && "Divide by zero in component division"); return (b != 0) ? (a / b) : T{0}; });
-        }
-
         [[nodiscard]] constexpr EulerAngles operator/(T scalar) const noexcept {
             EulerAngles tempCol;
             std::transform(cbegin(), cend(),tempCol.begin(),[scalar](auto in) {assert(scalar !=0 && "Divide by zero in operator/"); return (scalar != 0) ? (in / scalar) : T{0}; });
@@ -77,8 +69,12 @@ namespace ES{
         }
 
 
-        constexpr EulerAngles() noexcept{
-            std::fill(begin(),end(), 0);
+        constexpr EulerAngles() noexcept = default;
+
+        static constexpr EulerAngles zero() noexcept{
+            EulerAngles temp;
+            std::fill(temp.begin(),temp.end(),0);
+            return temp;
         }
 
         constexpr EulerAngles(Angle<Unit,T> y,Angle<Unit,T> p, Angle<Unit,T> r){
@@ -113,24 +109,25 @@ namespace ES{
             return *this;
         }
 
-        [[nodiscard]] constexpr T sin_yaw()  const noexcept{
+        [[nodiscard]] /* c++ 26 constexpr*/ T sin_yaw()  const noexcept{
             return std::sin(yaw().get());
         }
-        [[nodiscard]] constexpr T cos_yaw()  const noexcept{
+        [[nodiscard]] /* c++ 26 constexpr*/ T cos_yaw()  const noexcept{
             return std::cos(yaw().get());
         }
-        [[nodiscard]] constexpr T sin_pitch() const noexcept {
+        [[nodiscard]] /* c++ 26 constexpr*/ T sin_pitch() const noexcept {
             return std::sin(pitch().get());
         }
-        [[nodiscard]] constexpr T cos_pitch() const noexcept {
+        [[nodiscard]] /* c++ 26 constexpr*/ T cos_pitch() const noexcept {
             return std::cos(pitch().get());
         }
-        [[nodiscard]] constexpr T sin_roll() const noexcept{
+        [[nodiscard]] /* c++ 26 constexpr*/ T sin_roll() const noexcept{
             return std::sin(roll().get());
         }
-        [[nodiscard]] constexpr T cos_roll() const noexcept{
+        [[nodiscard]] /* c++ 26 constexpr*/ T cos_roll() const noexcept{
             return std::cos(roll().get());
         }
+
 
 
     };

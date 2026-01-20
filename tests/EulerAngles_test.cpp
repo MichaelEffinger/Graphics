@@ -6,8 +6,8 @@
 
 using namespace ES;
 
-TEST_CASE("EulerAngles default constructor", "[EulerAngles]"){
-    EulerAngles<in_radians, float> angles;
+TEST_CASE("EulerAngles zero constructor", "[EulerAngles]"){
+    EulerAngles<in_radians, float> angles = EulerAngles<in_radians,float>::zero();
     
     REQUIRE(angles.yaw().get() == 0.0f);
     REQUIRE(angles.pitch().get() == 0.0f);
