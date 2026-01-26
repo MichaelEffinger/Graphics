@@ -8,6 +8,7 @@
 #include "ContainerN.hpp"
 #include "ArithmeticOpsMixin.hpp"
 #include "VectorN.hpp"
+#include "PointN.hpp"
 
 namespace ES{
 
@@ -357,6 +358,20 @@ namespace ES{
         template<std::size_t O>
         [[nodiscard]] constexpr VectorN<T,N> operator*(VectorN<T,O> rhs) const noexcept requires(O==M){
             VectorN<T,N> temp;
+
+            for(std::size_t i =0; i<N; i++){
+                T accumulate = T{0};
+                for(std::size_t j = 0; j<O;j++){
+                    accumulate += (*this)(i,j)*rhs[j];
+                }
+                temp[i]= accumulate;
+            }
+            return temp;
+        }
+
+        template<std::size_t O>
+        [[nodiscard]] constexpr VectorN<T,N> operator*(PointN<T,O> rhs) const noexcept requires(O==M){
+            PointN<T,N> temp;
 
             for(std::size_t i =0; i<N; i++){
                 T accumulate = T{0};

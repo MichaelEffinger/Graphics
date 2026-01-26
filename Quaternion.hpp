@@ -35,21 +35,21 @@ namespace ES{
         static constexpr void can_negate(){return;}
         static constexpr void can_lerp(){return;}
 
-        // i component;
+        // scalar powerhouse
         [[nodiscard]] constexpr auto&& w(this auto&& self) noexcept{
             return std::forward_like<decltype(self)>(self[0]);
         }
 
-        // j-component;
+        // i-component;
         [[nodiscard]] constexpr auto&& x(this auto&& self) noexcept{
             return std::forward_like<decltype(self)>(self[1]);
         }
         
-        // k-coponent;
+        // j-coponent;
         [[nodiscard]] constexpr auto&& y(this auto&& self) noexcept{
             return std::forward_like<decltype(self)>(self[2]);
         }
-        //scalar powerhouse;
+        //k-component;
         [[nodiscard]] constexpr auto&& z(this auto&& self) noexcept{
             return std::forward_like<decltype(self)>(self[3]);
         }
