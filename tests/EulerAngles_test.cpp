@@ -448,3 +448,80 @@ TEST_CASE("EulerAngles scalar division in place", "[EulerAngles]"){
     REQUIRE(math::approx_equal(angles.pitch().get(), 2.0f));
     REQUIRE(math::approx_equal(angles.roll().get(), 3.0f));
 }
+
+TEST_CASE("EulerAngles from identity quaternion", "[euler][quat]") {
+    Quaternion<double> q{1.0, 0.0, 0.0, 0.0};
+    EulerAngles<in_radians, double> e{q};
+
+    REQUIRE(math::approx_equal(e.roll().get(), 0.0));
+    REQUIRE(math::approx_equal(e.pitch().get(), 0.0));
+    REQUIRE(math::approx_equal(e.yaw().get(), 0.0));
+}
+
+TEST_CASE("EulerAngles from pure X rotation (roll)", "[euler][quat]") {
+    double angle = M_PI / 2.0;
+    Quaternion<double> q{
+        std::cos(angle / 2.0),
+        std::sin(angle / 2.0),
+        0.0,
+        0.0
+    };
+    EulerAngles<in_radians, double> e{q};
+
+    REQUIRE(math::approx_equal(e.roll().get(), angle));
+    REQUIRE(math::approx_equal(e.pitch().get(), 0.0));
+    REQUIRE(math::approx_equal(e.yaw().get(), 0.0));
+}
+
+TEST_CASE("EulerAngles from pure Y rotation (pitch)", "[euler][quat]") {
+    double angle = M_PI / 2.0;
+    Quaternion<double> q{
+        std::cos(angle / 2.0),
+        0.0,
+        std::sin(angle / 2.0),
+        0.0
+    };
+    EulerAngles<in_radians,double> e{q};
+
+    REQUIRE(math::approx_equal(e.roll().get(), 0.0));
+    REQUIRE(math::approx_equal(e.pitch().get(), angle));
+    REQUIRE(math::approx_equal(e.yaw().get(), 0.0));
+}
+
+TEST_CASE("EulerAngles from pure Z rotation (yaw)", "[euler][quat]") {
+    double angle = M_PI / 2.0;
+    Quaternion<double> q{
+        std::cos(angle / 2.0),
+        0.0,
+        0.0,
+        std::sin(angle / 2.0)
+    };
+    EulerAngles<in_radians, double> e{q};
+
+    REQUIRE(math::approx_equal(e.roll().get(), 0.0));
+    REQUIRE(math::approx_equal(e.pitch().get(), 0.0));
+    REQUIRE(math::approx_equal(e.yaw().get(), angle));
+}
+
+TEST_CASE("from_Quaternion produces same result as constructor", "[euler][quat]") {
+    Quaternion<double> q{0.9238795325, 0.3826834323, 0.0, 0.0}; 
+    EulerAngles<in_radians, double> e1{q};
+    EulerAngles<in_radians,double> e2 = EulerAngles<in_radians,double>::from_Quaternion(q);
+
+    REQUIRE(math::approx_equal(e1.roll().get(), e2.roll().get()));
+    REQUIRE(math::approx_equal(e1.pitch().get(), e2.pitch().get()));
+    REQUIRE(math::approx_equal(e1.yaw().get(), e2.yaw().get()));
+}
+
+TEST_CASE("EulerAngles handles gimbal lock safely", "[euler][quat]") {
+    double angle = M_PI / 2.0;
+    Quaternion<double> q{
+        std::cos(angle / 2.0),
+        0.0,
+        std::sin(angle / 2.0),
+        0.0
+    };
+    EulerAngles<in_radians, double> e{q};
+
+    REQUIRE(math::approx_equal(e.pitch().get(), angle));
+}

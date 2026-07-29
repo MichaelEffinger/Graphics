@@ -2,6 +2,7 @@
 #include "Angle.hpp"
 #include "ContainerN.hpp"
 #include "ArithmeticOpsMixin.hpp"
+#include "Quaternion.hpp"
 
 namespace ES{
     template <ES::radian_or_degree Unit, typename T>
@@ -17,6 +18,7 @@ namespace ES{
         using ContainerN<EulerAngles,Angle<Unit,T>,3>::data;
         using ContainerN<EulerAngles,Angle<Unit,T>,3>::cbegin;
         using ContainerN<EulerAngles,Angle<Unit,T>,3>::ContainerN;
+        using ContainerN<EulerAngles,Angle<Unit,T>,3>::data_;
 
         static constexpr void can_component_add(){return;}
         static constexpr void can_component_subtract(){return;}
@@ -71,6 +73,7 @@ namespace ES{
 
         constexpr EulerAngles() noexcept = default;
 
+
         static constexpr EulerAngles zero() noexcept{
             EulerAngles temp;
             std::fill(temp.begin(),temp.end(),0);
@@ -108,6 +111,20 @@ namespace ES{
             pitch().wrap_to_in_place(-ES::math::half_pi<T>,ES::math::half_pi<T>);
             return *this;
         }
+
+        EulerAngles(Quaternion<T> quat) noexcept : EulerAngles{0,0,0} {
+            roll()  = std::atan2(2 * (quat.w()*quat.x()), 1 - 2*(quat.x()*quat.x() + quat.y()*quat.y()));
+            pitch() = std::asin(std::clamp(2 * (quat.w()*quat.y() - quat.z()*quat.x()), -1.0, 1.0));
+            yaw()   = std::atan2(2 * (quat.w()*quat.z() + quat.x()*quat.y()), 1 - 2*(quat.y()*quat.y() + quat.z()*quat.z()));
+        }
+
+
+
+        static constexpr EulerAngles from_Quaternion(Quaternion<T> quat) noexcept{
+            EulerAngles temp{quat};
+            return temp;
+        }
+
 
         [[nodiscard]] /* c++ 26 constexpr*/ T sin_yaw()  const noexcept{
             return std::sin(yaw().get());

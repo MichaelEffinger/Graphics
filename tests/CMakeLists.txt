@@ -10,6 +10,7 @@ add_executable(ComputerGraphics_Tests
         Affine3_test.cpp
         Transform_test.cpp
         EulerAngles_test.cpp
+        Ray_test.cpp
 )
 
 target_compile_definitions(ComputerGraphics_Tests PRIVATE NDEBUG)

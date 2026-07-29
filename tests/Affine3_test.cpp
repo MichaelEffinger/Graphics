@@ -313,3 +313,86 @@ TEST_CASE("AffineTransform3 identity transform", "[AffineTransform3]"){
     REQUIRE(result[1] == 7.0f);
     REQUIRE(result[2] == 9.0f);
 }
+
+
+TEST_CASE("AffineTransform3::from_rotation with identity quaternion", "[AffineTransform3]") {
+    Quaternion<double> identity_quat{1.0, 0.0, 0.0, 0.0};
+    auto mat = AffineTransform3<double>::from_rotation(identity_quat);
+
+    // Identity rotation should produce 3x3 identity matrix
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            REQUIRE(math::approx_equal(mat.linear(i,j), i == j ? 1.0 : 0.0));
+
+    // Translation should be zero
+    REQUIRE(math::approx_equal(mat.translation[0], 0.0));
+    REQUIRE(math::approx_equal(mat.translation[1], 0.0));
+    REQUIRE(math::approx_equal(mat.translation[2], 0.0));
+}
+
+TEST_CASE("AffineTransform3::from_rotation with 180-degree rotation around X", "[AffineTransform3]") {
+    // 180-degree rotation around X
+    Quaternion<double> quat{0.0, 1.0, 0.0, 0.0}; // w=0, x=1, y=0, z=0
+    auto mat = AffineTransform3<double>::from_rotation(quat);
+
+    // Expected rotation matrix for 180 degrees around X
+    REQUIRE(math::approx_equal(mat.linear(0,0), 1.0));
+    REQUIRE(math::approx_equal(mat.linear(0,1), 0.0));
+    REQUIRE(math::approx_equal(mat.linear(0,2), 0.0));
+
+    REQUIRE(math::approx_equal(mat.linear(1,0), 0.0));
+    REQUIRE(math::approx_equal(mat.linear(1,1), -1.0));
+    REQUIRE(math::approx_equal(mat.linear(1,2), 0.0));
+
+    REQUIRE(math::approx_equal(mat.linear(2,0), 0.0));
+    REQUIRE(math::approx_equal(mat.linear(2,1), 0.0));
+    REQUIRE(math::approx_equal(mat.linear(2,2), -1.0));
+
+    REQUIRE(math::approx_equal(mat.translation[0], 0.0));
+    REQUIRE(math::approx_equal(mat.translation[1], 0.0));
+    REQUIRE(math::approx_equal(mat.translation[2], 0.0));
+}
+
+TEST_CASE("AffineTransform3::from_trs with identity rotation, zero translation, unit scale", "[AffineTransform3]") {
+    VectorN<double,3> t{0.0,0.0,0.0};
+    Quaternion<double> r{1.0,0.0,0.0,0.0};
+    VectorN<double,3> s{1.0,1.0,1.0};
+
+    auto mat = AffineTransform3<double>::from_trs(t,r,s);
+
+    // Should be identity
+    for (int i = 0; i < 3; ++i)
+        for (int j = 0; j < 3; ++j)
+            REQUIRE(math::approx_equal(mat.linear(i,j), i==j ? 1.0 : 0.0));
+
+    REQUIRE(math::approx_equal(mat.translation[0], 0.0));
+    REQUIRE(math::approx_equal(mat.translation[1], 0.0));
+    REQUIRE(math::approx_equal(mat.translation[2], 0.0));
+}
+
+TEST_CASE("AffineTransform3::from_trs with translation, rotation, and scale", "[AffineTransform3]") {
+    VectorN<double,3> t{1.0,2.0,3.0};
+    // 180-degree rotation around X
+    Quaternion<double> r{0.0, 1.0, 0.0, 0.0};
+    VectorN<double,3> s{2.0, 3.0, 4.0};
+
+    auto mat = AffineTransform3<double>::from_trs(t,r,s);
+
+    // Expected matrix: rotation scaled by s
+    REQUIRE(math::approx_equal(mat.linear(0,0), 2.0));
+    REQUIRE(math::approx_equal(mat.linear(0,1), 0.0));
+    REQUIRE(math::approx_equal(mat.linear(0,2), 0.0));
+
+    REQUIRE(math::approx_equal(mat.linear(1,0), 0.0));
+    REQUIRE(math::approx_equal(mat.linear(1,1), -3.0));
+    REQUIRE(math::approx_equal(mat.linear(1,2), 0.0));
+
+    REQUIRE(math::approx_equal(mat.linear(2,0), 0.0));
+    REQUIRE(math::approx_equal(mat.linear(2,1), 0.0));
+    REQUIRE(math::approx_equal(mat.linear(2,2), -4.0));
+
+    // Translation
+    REQUIRE(math::approx_equal(mat.translation[0], 1.0));
+    REQUIRE(math::approx_equal(mat.translation[1], 2.0));
+    REQUIRE(math::approx_equal(mat.translation[2], 3.0));
+}

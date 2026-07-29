@@ -679,6 +679,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
 
 
 };
+
 template<typename... Args>
 VectorN(Args...) -> VectorN<std::common_type_t<Args...>, sizeof...(Args)>;
 

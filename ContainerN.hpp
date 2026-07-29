@@ -1,5 +1,4 @@
 //Michael Effinger
-//Ryan Seavey
 
 #pragma once
 #include <cstddef>
@@ -61,7 +60,7 @@ namespace ES{
         * This is a variadic template constructor that takes exactly N arguments.
         * Each argument is converted to the Container's element type T using static_cast.
         * ContainerN can be constructed using either `()` or `{}` initialization syntax.
-        *
+        *    Matrix<float, 2, 2> m;
         * @tparam Args Parameter pack representing each element of the Container.
         *         Must have exactly N arguments.
         * @param args The values to initialize the Container elements.
@@ -121,6 +120,15 @@ namespace ES{
         /** @overload */
         [[nodiscard]] constexpr const auto&& data() const && noexcept{
             return std::move(data_);
+        }
+
+
+        [[nodiscard]] constexpr pointer ptr() noexcept {
+            return data_.data();
+        }
+
+        [[nodiscard]] constexpr const_pointer ptr() const noexcept {
+            return data_.data();
         }
 
 

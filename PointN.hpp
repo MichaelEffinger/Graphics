@@ -36,7 +36,6 @@ namespace ES {
         constexpr static void can_clamp(){return;};
 
 
-
          /**
         * @brief Construct a ContainerN form an N-J sized Container along with J
         * other parameters

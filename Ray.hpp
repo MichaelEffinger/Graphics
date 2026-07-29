@@ -8,9 +8,10 @@ namespace ES{
     class Ray{
         
         public:
+
         PointN<T, 3> origin;
         VectorN<T,3> direction;
-
+   
         constexpr Ray() = default;
 
         constexpr Ray(PointN<T,3> o, VectorN<T,3> d) noexcept : origin{o}, direction{d}{}
@@ -24,7 +25,7 @@ namespace ES{
             return Ray(origin,direction.normalize());
         }
 
-        [[nodiscard]] constexpr Ray& normalize_in_place() noexcept{
+        constexpr Ray& normalize_in_place() noexcept{
             direction.normalize_in_place();
             return *this;
         }
@@ -41,7 +42,7 @@ namespace ES{
             return Ray(matrix * origin, matrix * direction);
         }
 
-        constexpr Ray& transform_in_place(const Matrix<T,4>& matrix) const noexcept{
+        constexpr Ray& transform_in_place(const Matrix<T,4>& matrix) noexcept{
             origin = matrix * origin;
             direction = matrix * direction;
             return *this;

@@ -2,15 +2,18 @@
 
 #include "Matrix.hpp"
 #include "VectorN.hpp"
+#include "Quaternion.hpp"
 
 
 namespace ES{
     template <typename T>
     class AffineTransform3{
+        
+        public:
+
         Matrix<T,3> linear;
         VectorN<T,3> translation;
-        
-    public:
+
         constexpr AffineTransform3() noexcept : linear(Matrix<T,3>::identity()), translation{0,0,0} { }
 
         constexpr AffineTransform3(const Matrix<T,3>& l, const VectorN<T,3>& t) noexcept{
@@ -74,6 +77,10 @@ namespace ES{
             return translation;
         }
 
+        [[nodiscard]] constexpr Matrix<T,3> get_linear() const noexcept{
+
+        }
+
         [[nodiscard]] constexpr VectorN<T,3> get_scale() const noexcept{
             VectorN<T,3> scale;
             scale[0] = linear.column(0).magnitude(); 
@@ -104,11 +111,92 @@ namespace ES{
             return temp;
         }
 
+        static constexpr AffineTransform3 from_rotation(const Quaternion<T>& quat) noexcept{
+            AffineTransform3 temp;
 
-    // these three rinky dink functions needs me to implement quaternions first
-        // static constexpr AffineTransform3 from_rotation(const Quaternion<T>& quat) noexcept;
-        // static constexpr AffineTransform3 from_trs(const VectorN<T,3>& t,const Quaternion<T>& r,const VectorN<T,3>& s) noexcept;
-        // constexpr Quaternion<T> get_rotation() const noexcept;
-    // the end
+            float xx = quat.x() * quat.x();
+            float yy = quat.y() * quat.y();
+            float zz = quat.z() * quat.z();
+            float xy = quat.x() * quat.y();
+            float xz = quat.x() * quat.z();
+            float yz = quat.y() * quat.z();
+            float wx = quat.w() * quat.x();
+            float wy = quat.w() * quat.y();
+            float wz = quat.w() * quat.z();
+
+            temp.linear(0,0) = 1 - 2 * (yy + zz);
+            temp.linear(0,1) = 2 * (xy - wz);
+            temp.linear(0,2) = 2 * (xz + wy);
+
+            temp.linear(1,0) = 2 * (xy + wz);
+            temp.linear(1,1) = 1 - 2 * (xx + zz);
+            temp.linear(1,2) = 2 * (yz - wx);
+
+            temp.linear(2,0) = 2 * (xz - wy);
+            temp.linear(2,1) = 2 * (yz + wx);
+            temp.linear(2,2) = 1 - 2 * (xx + yy);
+
+            temp.translation = VectorN<T,3>::zero();
+
+            return temp;
+        }
+
+        static constexpr AffineTransform3 from_trs(VectorN<T,3> t, Quaternion<T> r, VectorN<T,3> s)noexcept{
+            AffineTransform3 temp = AffineTransform3::from_rotation(r);
+
+            for (int col = 0; col < 3; ++col) {
+                temp.linear(0,col) *= s[col];
+                temp.linear(1,col) *= s[col];
+                temp.linear(2,col) *= s[col];
+            }
+
+            temp.translation = t;
+
+            return temp;
+            
+        }
+
+        static constexpr AffineTransform3 orthographic(T l, T r, T b, T t, T n, T f){
+            AffineTransform3 result;
+            result.linear = Matrix<T,3>::identity();
+
+            result.linear(0,0) = T(2) / (r - l);
+            result.linear(1,1) = T(2) / (t - b);
+            result.linear(2,2) = T(-2) / (f - n);
+
+            result.translation[0] = -(r + l) / (r - l);
+            result.translation[1] = -(t + b) / (t - b);
+            result.translation[2] = -(f + n) / (f - n);
+
+            return result;
+        }
+
+        static constexpr AffineTransform3 perspective(T fovY, T aspect, T nearZ, T farZ){
+            float f = 1.0f / tanf(fovY * 0.5f);
+
+            AffineTransform3 M;
+
+            M(0,0) = f / aspect;  
+            M(0,1) = 0;  M(0,2) = 0;
+            M(0,3) = 0;
+            M(1,0) = 0;
+            
+            M(1,1) = f;  
+            M(1,2) = 0;
+            M(1,3) = 0;
+
+            M(2,0) = 0;           
+            M(2,1) = 0;
+            M(2,2) = (farZ + nearZ) / (nearZ - farZ);
+            M(2,3) = (2 * farZ * nearZ) / (nearZ - farZ);
+
+            M(3,0) = 0;           
+            M(3,1) = 0;  
+            M(3,2) = -1;                          
+            M(3,3) = 0;
+
+            return M;
+        }
+
     };
 }

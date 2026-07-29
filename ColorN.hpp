@@ -410,8 +410,6 @@ namespace ES{
         }
         
 
-
-
         static constexpr RGBA from_straight_linear(float r, float g, float b, float a) noexcept{
             float R = r * a;
             float G = g * a;
