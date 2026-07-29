@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <functional>
 #include "config.hpp"
+#include "ES_concepts.hpp"
 
 
 namespace ES{
@@ -13,16 +14,20 @@ namespace ES{
 
     protected:
         constexpr Child& derived() {return static_cast<Child&>(*this);}
-        constexpr const Child& derived() const {return static_cast<const Child&>(*this);}   
+        constexpr const Child& derived() const {return static_cast<const Child&>(*this);}  
+ 
 
     public:
-        [[nodiscard]] constexpr Child operator+(Child rhs) const noexcept requires requires { Child::can_component_add(); }{
+        template <typename U = Child>
+        [[nodiscard]] constexpr Child operator+(concepts::pass_type<U> rhs) const noexcept requires requires { Child::can_component_add(); }{
             return derived().zip(rhs,std::plus{});
         }
 
-        constexpr Child& operator+=(Child rhs) noexcept requires requires { Child::can_component_add(); }{
-            return derived().zip_in_place(rhs,std::plus{});
+        template <typename U = Child>
+        constexpr Child& operator+=(concepts::pass_type<U> rhs) noexcept requires requires { Child::can_component_add(); } && std::same_as<U, Child>{
+            return derived().zip_in_place(rhs, std::plus{});
         }
+
 
         [[nodiscard]] constexpr Child operator+(T scalar) const noexcept requires requires {Child::can_scalar_add();}{
             Child temp_col;

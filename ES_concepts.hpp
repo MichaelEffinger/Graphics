@@ -16,4 +16,10 @@ namespace ES::concepts{
         c.cend();
     };
 
+    template<typename T>
+    concept CheapToCopy = std::is_trivially_copy_constructible_v<T> && std::is_trivially_destructible_v<T> && sizeof(T) <= 16;
+
+    template<typename copyType>
+    using pass_type = std::conditional_t<CheapToCopy<copyType>, copyType, const copyType&>;
+
 }
