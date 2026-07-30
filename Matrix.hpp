@@ -53,11 +53,9 @@ namespace ES{
 
         template<class... Args>
         constexpr Matrix(Args... columns) requires(sizeof...(Args) == M && (std::is_same_v<Args, VectorN<T,N>> && ...)){
-            std::size_t col = 0;
-            ((std::memcpy(&data_[col * N], &columns[0], sizeof(T) * N), col++), ...);
+            std::size_t col = 0; 
+            ((std::copy_n(columns.begin(), N, &data_[col * N]), col++), ...);
         }
-
-
 
         constexpr auto&& operator()(this auto&& self, std::size_t row, std::size_t column) noexcept{
             return std::forward_like<decltype(self)>(self[(column*N+row)]);
@@ -126,8 +124,7 @@ namespace ES{
             T m1 =  (*this)[1]*( (*this)[4]* (*this)[10]* (*this)[15] +  (*this)[6]* (*this)[11]* (*this)[12] +  (*this)[7]* (*this)[8]* (*this)[14] -  (*this)[7]* (*this)[10]* (*this)[12] -  (*this)[6]* (*this)[8]* (*this)[15] -  (*this)[4]* (*this)[11]* (*this)[14]);
             T m2 =  (*this)[2]*( (*this)[4]* (*this)[9]* (*this)[15] +  (*this)[5]* (*this)[11]* (*this)[12] +  (*this)[7]* (*this)[8]* (*this)[13] -  (*this)[7]* (*this)[9]* (*this)[12] -  (*this)[5]* (*this)[8]* (*this)[15] -  (*this)[4]* (*this)[11]* (*this)[13]);
             T m3 =  (*this)[3]*( (*this)[4]* (*this)[9]* (*this)[14] +  (*this)[5]* (*this)[10]* (*this)[12] +  (*this)[6]* (*this)[8]* (*this)[13] -  (*this)[6]* (*this)[9]* (*this)[12] -  (*this)[5]* (*this)[8]* (*this)[14] -  (*this)[4]* (*this)[10]* (*this)[13]);
-          return m0 - m1 + m2 - m3;
-
+            return m0 - m1 + m2 - m3;
         }
         
         [[nodiscard]] constexpr T determinant() const noexcept requires (N == M && N > 4 && std::is_floating_point_v<T>) {
@@ -370,7 +367,7 @@ namespace ES{
         }
 
         template<std::size_t O>
-        [[nodiscard]] constexpr VectorN<T,N> operator*(PointN<T,O> rhs) const noexcept requires(O==M){
+        [[nodiscard]] constexpr PointN<T,N> operator*(PointN<T,O> rhs) const noexcept requires(O==M){
             PointN<T,N> temp;
 
             for(std::size_t i =0; i<N; i++){
@@ -382,6 +379,36 @@ namespace ES{
             }
             return temp;
         }
+
+
+    // Sneaky specialization for vec3 times matrix
+    [[nodiscard]] constexpr VectorN<T,3> operator*(VectorN<T,3> rhs) const noexcept requires(N==4 && M==4){
+        VectorN<T,3> temp;
+        for(std::size_t i = 0; i < 3; i++){
+            T accumulate = T{0};
+            for(std::size_t j = 0; j < 3; j++){
+                accumulate += (*this)(i,j) * rhs[j];
+            }
+            temp[i] = accumulate;
+        }
+        return temp;
+    }
+
+    // Sneay specialization for Point3 times matrix
+    [[nodiscard]] constexpr PointN<T,3> operator*(PointN<T,3> rhs) const noexcept requires(N==4 && M==4){
+        PointN<T,3> temp;
+        for(std::size_t i = 0; i < 3; i++){
+            T accumulate = T{0};
+            for(std::size_t j = 0; j < 3; j++){
+                accumulate += (*this)(i,j) * rhs[j];
+            }
+            accumulate += (*this)(i,3);
+            temp[i] = accumulate;
+        }
+        return temp;
+    }
+
+
 
         [[nodiscard]] constexpr Matrix rref() const noexcept{
             Matrix temp((*this));
