@@ -5,8 +5,7 @@
 #include <algorithm>
 #include <functional>
 #include "config.hpp"
-#include "ES_concepts.hpp"
-
+#include "ES_meta.hpp"
 
 namespace ES{
     template<class Child, typename T, std::size_t N>
@@ -21,12 +20,12 @@ namespace ES{
 
         // Template trickery: U = Child is necessary to defer pass_type_t resolution until the type declaration is complete.
         template <typename U = Child>
-        [[nodiscard]] constexpr Child operator+(concepts::pass_type_t<U> rhs) const noexcept requires requires { Child::can_component_add(); }{
+        [[nodiscard]] constexpr Child operator+(meta::const_pass_t<U> rhs) const noexcept requires requires { Child::can_component_add(); }{
             return derived().zip(rhs,std::plus{});
         }
 
         template <typename U = Child>
-        constexpr Child& operator+=(concepts::pass_type_t<U> rhs) noexcept requires requires { Child::can_component_add(); } && std::same_as<U, Child>{
+        constexpr Child& operator+=(meta::const_pass_t<U> rhs) noexcept requires requires { Child::can_component_add(); } {
             return derived().zip_in_place(rhs, std::plus{});
         }
 
@@ -42,12 +41,12 @@ namespace ES{
         }
 
         template <typename U = Child>
-        [[nodiscard]] constexpr Child operator-(concepts::pass_type_t<U> rhs) const noexcept requires requires { Child::can_component_subtract(); }{
+        [[nodiscard]] constexpr Child operator-(meta::const_pass_t<U> rhs) const noexcept requires requires { Child::can_component_subtract(); }{
             return derived().zip(rhs,std::minus{});
         }
 
         template <typename U = Child>
-        constexpr Child& operator-=(concepts::pass_type_t<U> rhs) noexcept requires requires { Child::can_component_subtract(); }{
+        constexpr Child& operator-=(meta::const_pass_t<U> rhs) noexcept requires requires { Child::can_component_subtract(); }{
             return derived().zip_in_place(rhs,std::minus{});
         }
 
@@ -63,12 +62,12 @@ namespace ES{
         }
 
         template <typename U = Child>
-        [[nodiscard]] constexpr Child operator*(concepts::pass_type_t<U> rhs) const noexcept requires requires { Child::can_component_multiply(); }{
+        [[nodiscard]] constexpr Child operator*(meta::const_pass_t<U> rhs) const noexcept requires requires { Child::can_component_multiply(); }{
             return derived().zip(rhs,std::multiplies{});
         }
 
         template <typename U = Child>
-        constexpr Child& operator*=(concepts::pass_type_t<U> rhs) noexcept requires requires { Child::can_component_multiply(); }{
+        constexpr Child& operator*=(meta::const_pass_t<U> rhs) noexcept requires requires { Child::can_component_multiply(); }{
             return derived().zip_in_place(rhs,std::multiplies{});
         }
         
@@ -79,7 +78,7 @@ namespace ES{
         }
         
         template <typename U = Child>
-        [[nodiscard]] friend constexpr Child operator*(T scalar, concepts::pass_type_t<U> pos) requires requires {Child::can_scalar_multiply();}{
+        [[nodiscard]] friend constexpr Child operator*(T scalar, meta::const_pass_t<U> pos) requires requires {Child::can_scalar_multiply();}{
             Child tempPos;
             std::transform(pos.begin(),pos.end(),tempPos.begin(), [scalar](T in){return in * scalar;});
             return tempPos;
@@ -91,12 +90,12 @@ namespace ES{
         }
 
         template <typename U = Child>
-        [[nodiscard]] constexpr Child operator/(concepts::pass_type_t<U> rhs)const noexcept requires requires { Child::can_component_divide(); }{
+        [[nodiscard]] constexpr Child operator/(meta::const_pass_t<U> rhs)const noexcept requires requires { Child::can_component_divide(); }{
             return derived().zip(rhs, [](T a, T b) { assert(b !=0 && "Divide by zero in component division"); return (b != 0) ? (a / b) : T{0}; });
         }
 
         template <typename U = Child>
-        constexpr Child& operator/=(concepts::pass_type_t<U> rhs)noexcept requires requires { Child::can_component_divide(); }{
+        constexpr Child& operator/=(meta::const_pass_t<U> rhs)noexcept requires requires { Child::can_component_divide(); }{
             return derived().zip_in_place(rhs, [](T a, T b) { assert(b !=0 && "Divide by zero in component division"); return (b != 0) ? (a / b) : T{0}; });
         }
 
@@ -112,16 +111,16 @@ namespace ES{
         }
 
         template <typename U = Child>
-        [[nodiscard]] constexpr Child lerp(concepts::pass_type_t<U> rhs, real t) const noexcept requires requires {Child::can_lerp();} {
+        [[nodiscard]] constexpr Child lerp(meta::const_pass_t<U> rhs, real t) const noexcept requires requires {Child::can_lerp();} {
             return derived().zip(rhs,[t](T a, T b) {return a+(b-a)*t;});
         }
 
         template <typename U = Child>
-        constexpr Child& lerp_in_place(concepts::pass_type_t<U> rhs, real t) noexcept requires requires {Child::can_lerp();} {
+        constexpr Child& lerp_in_place(meta::const_pass_t<U> rhs, real t) noexcept requires requires {Child::can_lerp();} {
             return derived().zip_in_place(rhs, [t](T a, T b) { return a + (b - a) * t;});
         }
 
-        [[nodiscard]] constexpr Child clamp(T minVal, T maxVal) noexcept requires requires {Child::can_clamp();}{
+        [[nodiscard]] constexpr Child clamp(T minVal, T maxVal) const noexcept requires requires {Child::can_clamp();}{
             Child tempVec;
             std::transform(derived().begin(),derived().end(), tempVec.begin(),[minVal,maxVal](T in){return std::clamp(in, minVal, maxVal);});
             return tempVec;

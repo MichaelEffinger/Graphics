@@ -1,4 +1,4 @@
-﻿#Welcome to the debug CMakeLists
+﻿# Welcome to the debug CMakeLists
 add_executable(ComputerGraphics_Tests
         VectorN_test.cpp
         Math_test.cpp
@@ -13,12 +13,11 @@ add_executable(ComputerGraphics_Tests
 )
 
 target_compile_definitions(ComputerGraphics_Tests PRIVATE NDEBUG)
-
 target_link_libraries(ComputerGraphics_Tests PRIVATE Catch2::Catch2WithMain)
 ES_enable_CXX26_for_project(ComputerGraphics_Tests)
 
-# Enable testing & integrate Catch2 with CTest
-enable_testing() #THIS is the redundant one...
+enable_testing()
 include(CTest)
-include(Catch) #NOT REDUNDANT!
+list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
+include(Catch)
 catch_discover_tests(ComputerGraphics_Tests)

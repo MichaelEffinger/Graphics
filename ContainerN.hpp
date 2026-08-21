@@ -9,6 +9,7 @@
 #include <algorithm>
 #include "ES_concepts.hpp"
 #include "ES_math.hpp"
+#include "ES_meta.hpp"
 
 
 namespace ES{
@@ -150,8 +151,8 @@ namespace ES{
             return std::move((*this)[N - 1]);
         }
 
-        template<typename other, typename BinaryOp>
-        [[nodiscard]] constexpr Child zip(other rhs, BinaryOp op) const noexcept {
+        template<typename other = Child, typename BinaryOp>
+        [[nodiscard]] constexpr Child zip(meta::const_pass_t<other> rhs, BinaryOp op) const noexcept {
             Child resultant;
             auto liter = cbegin(), riter = rhs.cbegin();
             auto oiter = resultant.begin();
@@ -162,8 +163,8 @@ namespace ES{
             return resultant;
         }
 
-        template<typename other,typename BinaryOp>
-        constexpr Child& zip_in_place(const other rhs, BinaryOp op) noexcept {
+        template<typename other = Child,typename BinaryOp>
+        constexpr Child& zip_in_place(meta::const_pass_t<other> rhs, BinaryOp op) noexcept {
             auto liter = begin();
             auto riter = rhs.cbegin();
             while(liter != end()){
@@ -171,22 +172,21 @@ namespace ES{
                 ++liter, ++riter;
             }
             return static_cast<Child&>(*this);
-            //return reinterpret_cast<Child<T,N>&>(*this);      ///ryan wont let me
             
         }
 
-        [[nodiscard]] constexpr bool operator==(const ContainerN other)const noexcept{
-            if(other.data_ == data_){
-                return true;
-            }
-            return false;
+        template <typename U = Child>
+        [[nodiscard]] constexpr bool operator==(meta::const_pass_t<U> other)const noexcept{
+            return data() == other.data();
         }
 
-        [[nodiscard]] constexpr bool operator!=(const ContainerN other)const noexcept{
+        template <typename U = Child>
+        [[nodiscard]] constexpr bool operator!=(meta::const_pass_t<U> other)const noexcept{
            return !operator==(other);
         }
 
-        [[nodiscard]] bool almost_equal(ContainerN rhs, T epsilon = ES::math::default_epsilon<T>::value) const noexcept{
+        template <typename U = Child>
+        [[nodiscard]] bool almost_equal(meta::const_pass_t<U> rhs, T epsilon = ES::math::default_epsilon<T>::value) const noexcept{
             for (std::size_t i = 0; i < N; ++i) {
             if (!math::approx_equal(data_[i], rhs[i], epsilon))
                 return false;
@@ -194,7 +194,8 @@ namespace ES{
             return true;
         }
 
-        [[nodiscard]] constexpr T zip_reduce(const ContainerN rhs, T initial, ES::concepts::FoldExpr<T> auto&& exp) const noexcept {
+        template <typename U = Child>
+        [[nodiscard]] constexpr T zip_reduce(meta::const_pass_t<U> rhs, T initial, ES::concepts::FoldExpr<T> auto&& exp) const noexcept {
             auto liter = cbegin(), riter = rhs.cbegin();
             while(liter != cend()){
                 initial = exp(initial, *liter, *riter);

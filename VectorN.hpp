@@ -10,6 +10,7 @@
 #include "ContainerN.hpp"
 #include "Angle.hpp"
 #include "ArithmeticOpsMixin.hpp"
+#include "ES_meta.hpp"
 
 namespace ES {
 
@@ -81,12 +82,22 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
      * ContainerN<float,2> v2(1.0f,2.0f);
      * ContainerN<float,5> v5(v2,3.0f,4.0f,5.0f);
      */
-    template <size_t M, typename... U> requires(sizeof...(U) == N - M)
-    constexpr VectorN(const VectorN<T, M> &smaller, U... extras) noexcept((std::is_nothrow_constructible_v<T, U &&> && ...)) : ContainerN<VectorN, T, N>{} {
+    
+    template <size_t M, typename... U> requires(sizeof...(U) == N - M && concepts::CheapToCopy<VectorN<T, M>>)
+    constexpr VectorN(VectorN<T, M> smaller, U... extras) noexcept((std::is_nothrow_constructible_v<T, U &&> && ...)) : ContainerN<VectorN, T, N>{} {
         std::copy(smaller.cbegin(), smaller.cend(), data_.begin());
         size_t index = M;
         ((data_[index++] = T(static_cast<T>(extras))), ...);
     }
+
+    // this is done with requires instead of using the meta::const_pass_t becaues it loses the ability to be auto deduced which ruins code readibility
+    template <size_t M, typename... U> requires(sizeof...(U) == N - M && !concepts::CheapToCopy<VectorN<T, M>>)
+    constexpr VectorN(const VectorN<T, M>& smaller, U... extras) noexcept((std::is_nothrow_constructible_v<T, U &&> && ...)) : ContainerN<VectorN, T, N>{} {
+        std::copy(smaller.cbegin(), smaller.cend(), data_.begin());
+        size_t index = M;
+        ((data_[index++] = T(static_cast<T>(extras))), ...);
+    }
+
 
     /** @defgroup accessors Accessors
     *  @brief Convenient element accessors for VectorN (x, y, z, w, head, tail).
@@ -142,7 +153,9 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *
     * @note Both vectors must have the same dimension `N`.
     */
-    [[nodiscard]] constexpr T dot(const VectorN rhs) const noexcept{
+
+    template <typename U = VectorN>
+    [[nodiscard]] constexpr T dot(meta::const_pass_t<U> rhs) const noexcept{
         return zip_reduce(rhs, 0,[](T accum, T l, T r){return accum+(l*r);});
     }
     
@@ -159,7 +172,8 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
      *
      * @note Both vectors must have N exactly 3
      */
-    [[nodiscard]] constexpr VectorN cross(const VectorN rhs) const noexcept requires (N == 3){
+    template<typename U = VectorN>
+    [[nodiscard]] constexpr VectorN cross(meta::const_pass_t<U> rhs) const noexcept requires (N == 3){
         return VectorN{
         data_[1] * rhs.data_[2] - data_[2] * rhs.data_[1],
         data_[2] * rhs.data_[0] - data_[0] * rhs.data_[2],
@@ -179,7 +193,8 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *
     * @note Both vectors must have N exactly 3.
     */
-     constexpr VectorN& cross_in_place(const VectorN rhs) noexcept requires (N == 3){
+    template <typename U = VectorN>
+    constexpr VectorN& cross_in_place(meta::const_pass_t<U> rhs) noexcept requires (N == 3){
       T xt = data_[1] * rhs.data_[2] - data_[2] * rhs.data_[1],
         yt = data_[2] * rhs.data_[0] - data_[0] * rhs.data_[2],
         zt = data_[0] * rhs.data_[1] - data_[1] * rhs.data_[0];
@@ -267,12 +282,14 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     
 
     /** @brief Component-wise multiplication */
-    [[nodiscard]] constexpr VectorN hadamard_product(const VectorN rhs) const noexcept{
+    template <typename U = VectorN>
+    [[nodiscard]] constexpr VectorN hadamard_product(meta::const_pass_t<U> rhs) const noexcept{
         return zip(rhs, std::multiplies{});
     }
     
     /** @brief In-place component-wise multiplication */
-    constexpr VectorN& hadamard_product_in_place(const VectorN rhs) noexcept{
+    template <typename U = VectorN>
+    constexpr VectorN& hadamard_product_in_place(meta::const_pass_t<U> rhs) noexcept{
         return zip_in_place(rhs, std::multiplies{});
     }
     
@@ -281,7 +298,8 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
      * @note Division by zero triggers an assert in debug mode,
      *       but value becomes zero when divided in release
      */
-    [[nodiscard]] constexpr VectorN hadamard_divide(const VectorN rhs) const noexcept {
+    template <typename U = VectorN>
+    [[nodiscard]] constexpr VectorN hadamard_divide(meta::const_pass_t<U> rhs) const noexcept {
         return zip(rhs, [](T a, T b) { assert(b !=0 && "Divide by zero in hadamardDivide"); return (b != 0) ? (a / b) : T{0}; });
     }
   
@@ -290,7 +308,8 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
      * @note Division by zero triggers an assert in debug mode,
      *       but value becomes zero when divided in release
      */    
-    constexpr VectorN& hadamard_divide_in_place(const VectorN rhs) noexcept {
+    template <typename U = VectorN>
+    constexpr VectorN& hadamard_divide_in_place(meta::const_pass_t<U> rhs) noexcept {
         return zip_in_place(rhs, [](T a, T b) { assert(b !=0 && "Divide by zero in hadamardDivide"); return (b != 0) ? (a / b) : T{0}; });
     }
 
@@ -315,7 +334,8 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @param rhs The vector to compute the angle to.
     * @return The angle between the two vectors in radians (for now).
     */
-    [[nodiscard]] /* TODO: make constexpr*/ AngleRad angle(const VectorN<T, N> rhs) const noexcept{
+    template <typename U = VectorN>
+    [[nodiscard]] /* TODO: make constexpr*/ AngleRad angle(meta::const_pass_t<U> rhs) const noexcept{
         T thisMag = magnitude_squared();
         T thatMag = rhs.magnitude_squared();
         
@@ -396,7 +416,8 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @warning There are **safe** overloads available that internally normalize `rhs`
     *          before computing the reflection. Use those if unsure.
     */
-    [[nodiscard]] constexpr VectorN reflect(VectorN rhs) const noexcept{
+    template <typename U = VectorN>
+    [[nodiscard]] constexpr VectorN reflect(meta::const_pass_t<U> rhs) const noexcept{
         assert(rhs.magnitude() == 1);
         T daught =  dot(rhs);
         return zip(rhs,[daught](T a, T b) {return a - 2 * daught * b;});
@@ -408,7 +429,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *
     * Modifies this vector to be its reflection across the given normal `rhs`.
     * Uses the same formula as `reflect()`, but avoids constructing a temporary.
-    *
+    *VectorN
     * @param rhs The normal vector to reflect across. **Must already be normalized.**
     * @return A reference to this vector after modification.
     *
@@ -417,7 +438,8 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @warning If you are not absolutely certain `rhs` is normalized, use the
     *          corresponding safe normalization-enforcing reflect function.
     */
-    VectorN& reflect_in_place(VectorN rhs)noexcept{
+    template <typename U = VectorN>
+    VectorN& reflect_in_place(meta::const_pass_t<U> rhs)noexcept{
         assert(rhs.magnitude() == 1);
         T daught =  dot(rhs);
         return zip_in_place(rhs,[daught](T a, T b) {return a - 2 * daught * b;});
@@ -435,8 +457,9 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *
     * @note This version is safer but slightly more expensive than `reflect(rhs)`
     *       because it computes normalization.
-    */ 
-    [[nodiscard]] VectorN reflect_safe(VectorN rhs)const noexcept{
+    */
+    template <typename U = VectorN>
+    [[nodiscard]] VectorN reflect_safe(meta::const_pass_t<U> rhs)const noexcept{
         VectorN unitVector = rhs.normalize();
         T  daught = dot(unitVector);
         return zip(unitVector,[daught](T a, T b){return a-2*daught * b;});
@@ -454,7 +477,8 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @note This version avoids temporary allocation but still pays the cost of
     *       normalizing `rhs`. Use this when correctness matters but allocations do not.
     */    
-    VectorN& reflect_in_place_safe(VectorN rhs)noexcept{
+    template <typename U = VectorN>
+    VectorN& reflect_in_place_safe(meta::const_pass_t<U> rhs)noexcept{
         VectorN unitVector = rhs.normalize();
         T daught = dot(unitVector);
         return zip_in_place(unitVector,[daught](T a, T b){return a-2 * daught *b;});
@@ -477,7 +501,8 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @warning This version doesnt normalize `rhs`. If `rhs` is not unit length,
     *          the result will be incorrect. See `refract_safe()` for an automatically normalized version.
     */
-    [[nodiscard]] constexpr VectorN refract(VectorN rhs, T n1, T n2) const noexcept {
+    template <typename U = VectorN>
+    [[nodiscard]] constexpr VectorN refract(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhs));
         T k = T{1} - refractionRatio * refractionRatio * (T{1} - cosi * cosi);
@@ -507,8 +532,8 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @warning This version doesnt normalize `rhs`. If you are not sure `rhs` is
     *          normalized, use `refract_in_place_safe()` instead.
     */
-
-    constexpr VectorN& refract_in_place(VectorN rhs, T n1, T n2) noexcept {
+    template <typename U = VectorN>
+    constexpr VectorN& refract_in_place(meta::const_pass_t<U> rhs, T n1, T n2) noexcept {
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhs));
         T k = T{1} - refractionRatio * refractionRatio * (T{1}- cosi * cosi);
@@ -533,7 +558,8 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @param n2  Refractive index of the medium the vector is entering.
     * @return A refracted VectorN, or a zero vector if no valid refracted direction exists.
     */
-    [[nodiscard]] constexpr VectorN refract_safe(VectorN rhs, T n1, T n2) const noexcept {  
+    template <typename U = VectorN>
+    [[nodiscard]] constexpr VectorN refract_safe(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {  
         VectorN thisUnit = normalize();
         VectorN rhsUnit = rhs.normalize();
 
@@ -564,7 +590,8 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @param n2  Refractive index of the medium the vector is entering.
     * @return A reference to this vector after modification.
     */
-    constexpr VectorN& refract_in_place_safe(VectorN rhs, T n1, T n2)noexcept {
+    template <typename U = VectorN>
+    constexpr VectorN& refract_in_place_safe(meta::const_pass_t<U> rhs, T n1, T n2)noexcept {
         *this = normalize();
         VectorN rhsUnit = rhs.normalize();
 
@@ -590,8 +617,8 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @note This function uses `sqrt`, which can be relatively expensive. 
     *       Use `magnitude_squared()` if you only need comparisons or repeated calculations
     */
-
-    [[nodiscard]] constexpr T distance(VectorN rhs) const noexcept {
+    template <typename U = VectorN>
+    [[nodiscard]] constexpr T distance(meta::const_pass_t<U> rhs) const noexcept {
         return (*this - rhs).magnitude();
     }
 
@@ -605,7 +632,8 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @note This avoids the `sqrt` operation and is therefore cheaper to compute.
     *       Use this for comparisons or repeated calculations where the actual magnitude is not required.
     */
-    [[nodiscard]] constexpr T distance_squared(VectorN rhs) const noexcept {
+    template <typename U = VectorN>
+    [[nodiscard]] constexpr T distance_squared(meta::const_pass_t<U> rhs) const noexcept {
         return (*this - rhs).magnitude_squared();
     }
 
@@ -620,7 +648,8 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *
     * @note Asserts in debug if `rhs` is a zero vector. Release builds may produce undefined behavior.
     */
-    [[nodiscard]] VectorN project_onto(VectorN rhs) const noexcept{
+    template <typename U = VectorN>
+    [[nodiscard]] VectorN project_onto(meta::const_pass_t<U> rhs) const noexcept{
         assert(rhs.dot(rhs) !=0  && "Divide by zero error in Project onto method");
         return dot(rhs)/rhs.dot(rhs) * rhs;
     }
@@ -636,7 +665,8 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *
     * @note Asserts in debug if `rhs` is a zero vector. Release builds may produce undefined behavior.
     */
-    VectorN project_onto_in_place(VectorN rhs)noexcept{
+    template <typename U = VectorN>
+    VectorN project_onto_in_place(meta::const_pass_t<U> rhs)noexcept{
         assert(rhs.dot(rhs)!=0 && "Divide by zero error in Project onto in place method");
         *this = dot(rhs)/rhs.dot(rhs) *rhs;
         return *this;
@@ -655,7 +685,8 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @note If the angle between vectors is very small (< 1e-6), this function returns this vector directly.
     *       This avoids division by near-zero and ensures numerical stability.
     */
-    [[nodiscard]] VectorN slerp(const VectorN rhs, T t)const noexcept{
+    template <typename U = VectorN>
+    [[nodiscard]] VectorN slerp(meta::const_pass_t<U> rhs, T t)const noexcept{
         T daught = dot(rhs);
 
         T theta = std::acos(daught);
