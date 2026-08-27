@@ -212,7 +212,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @note This function uses `sqrt`, which can be relatively expensive. 
     *       Use `magnitude_squared()` if you only need comparisons or repeated calculations.
     */
-    [[nodiscard]] constexpr T magnitude() const noexcept{
+    [[nodiscard]] /*c++ 26 constexpr */ T magnitude() const noexcept{
         //Yes dot product should always be positive but floating point erros can make tiny negative: so I check it 
         return std::sqrt(std::fabs(dot(*this)));
     }
@@ -253,7 +253,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @note This operation involves division by the vector's magnitude, which
     *       may be relatively expensive.
     */
-    constexpr VectorN& normalize_in_place() noexcept{
+    /* TODO: make constexpr*/ VectorN& normalize_in_place() noexcept{
         T mag = magnitude();
         if(mag == 0){
             assert(false && "Divide by zero error in normalize_in_place calculation");
@@ -276,7 +276,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *       relatively expensive. For performance-critical code, consider
     *       checking magnitude before normalizing.
     */
-    [[nodiscard]] constexpr VectorN normalize() const noexcept{
+    [[nodiscard]] /* TODO: make constexpr*/ VectorN normalize() const noexcept{
         return VectorN(*this).normalize_in_place();
     }
     
@@ -459,7 +459,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *       because it computes normalization.
     */
     template <typename U = VectorN>
-    [[nodiscard]] VectorN reflect_safe(meta::const_pass_t<U> rhs)const noexcept{
+    [[nodiscard]] /* TODO: make constexpr*/ VectorN reflect_safe(meta::const_pass_t<U> rhs)const noexcept{
         VectorN unitVector = rhs.normalize();
         T  daught = dot(unitVector);
         return zip(unitVector,[daught](T a, T b){return a-2*daught * b;});
@@ -478,7 +478,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *       normalizing `rhs`. Use this when correctness matters but allocations do not.
     */    
     template <typename U = VectorN>
-    VectorN& reflect_in_place_safe(meta::const_pass_t<U> rhs)noexcept{
+    /* TODO: make constexpr*/ VectorN& reflect_in_place_safe(meta::const_pass_t<U> rhs)noexcept{
         VectorN unitVector = rhs.normalize();
         T daught = dot(unitVector);
         return zip_in_place(unitVector,[daught](T a, T b){return a-2 * daught *b;});
@@ -502,7 +502,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *          the result will be incorrect. See `refract_safe()` for an automatically normalized version.
     */
     template <typename U = VectorN>
-    [[nodiscard]] constexpr VectorN refract(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {
+    [[nodiscard]] /* TODO: make constexpr*/ constexpr VectorN refract(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhs));
         T k = T{1} - refractionRatio * refractionRatio * (T{1} - cosi * cosi);
@@ -533,7 +533,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *          normalized, use `refract_in_place_safe()` instead.
     */
     template <typename U = VectorN>
-    constexpr VectorN& refract_in_place(meta::const_pass_t<U> rhs, T n1, T n2) noexcept {
+    /* TODO: make constexpr*/ VectorN& refract_in_place(meta::const_pass_t<U> rhs, T n1, T n2) noexcept {
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhs));
         T k = T{1} - refractionRatio * refractionRatio * (T{1}- cosi * cosi);
@@ -559,7 +559,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @return A refracted VectorN, or a zero vector if no valid refracted direction exists.
     */
     template <typename U = VectorN>
-    [[nodiscard]] constexpr VectorN refract_safe(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {  
+    [[nodiscard]] /* TODO: make constexpr*/  VectorN refract_safe(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {  
         VectorN thisUnit = normalize();
         VectorN rhsUnit = rhs.normalize();
 
@@ -591,7 +591,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @return A reference to this vector after modification.
     */
     template <typename U = VectorN>
-    constexpr VectorN& refract_in_place_safe(meta::const_pass_t<U> rhs, T n1, T n2)noexcept {
+    /* TODO: make constexpr*/  VectorN& refract_in_place_safe(meta::const_pass_t<U> rhs, T n1, T n2)noexcept {
         *this = normalize();
         VectorN rhsUnit = rhs.normalize();
 
@@ -618,7 +618,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *       Use `magnitude_squared()` if you only need comparisons or repeated calculations
     */
     template <typename U = VectorN>
-    [[nodiscard]] constexpr T distance(meta::const_pass_t<U> rhs) const noexcept {
+    [[nodiscard]] /* TODO: make constexpr*/ T distance(meta::const_pass_t<U> rhs) const noexcept {
         return (*this - rhs).magnitude();
     }
 
@@ -649,7 +649,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @note Asserts in debug if `rhs` is a zero vector. Release builds may produce undefined behavior.
     */
     template <typename U = VectorN>
-    [[nodiscard]] VectorN project_onto(meta::const_pass_t<U> rhs) const noexcept{
+    [[nodiscard]] constexpr VectorN project_onto(meta::const_pass_t<U> rhs) const noexcept{
         assert(rhs.dot(rhs) !=0  && "Divide by zero error in Project onto method");
         return dot(rhs)/rhs.dot(rhs) * rhs;
     }
@@ -666,7 +666,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @note Asserts in debug if `rhs` is a zero vector. Release builds may produce undefined behavior.
     */
     template <typename U = VectorN>
-    VectorN project_onto_in_place(meta::const_pass_t<U> rhs)noexcept{
+    VectorN constexpr project_onto_in_place(meta::const_pass_t<U> rhs)noexcept{
         assert(rhs.dot(rhs)!=0 && "Divide by zero error in Project onto in place method");
         *this = dot(rhs)/rhs.dot(rhs) *rhs;
         return *this;
@@ -686,7 +686,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *       This avoids division by near-zero and ensures numerical stability.
     */
     template <typename U = VectorN>
-    [[nodiscard]] VectorN slerp(meta::const_pass_t<U> rhs, T t)const noexcept{
+    [[nodiscard]] /* TODO not constexpr yet */ VectorN slerp(meta::const_pass_t<U> rhs, T t)const noexcept{
         T daught = dot(rhs);
 
         T theta = std::acos(daught);

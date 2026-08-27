@@ -14,6 +14,9 @@
 namespace ES{
 
 
+    
+
+
 template <typename T>
 class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<VectorH<T>, T, 4> {
     static const int N = 4;
@@ -30,14 +33,14 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     using ContainerN<VectorH,T,N>::cbegin;
     using ContainerN<VectorH,T,N>::ContainerN;
 
-    VectorH(PointN<T,3> point, T w = T{1}){
-        std::copy(point.cbegin(),point.cend(), data_.begin());
-        w() = w;
+    constexpr VectorH(PointN<T,3> point, T wComponent = T{1}) noexcept {
+        std::copy(point.cbegin(), point.cend(), data_.begin());
+        w() = wComponent;
     }
 
-    VectorH(VectorN<T,3> direction, T w = T{0}){
-        std::copy(direction.cbegin(),direction.cend(), data_.begin());
-        w() = w;
+    constexpr VectorH(VectorN<T,3> direction, T wComponent = T{0}) noexcept {
+        std::copy(direction.cbegin(), direction.cend(), data_.begin());
+        w() = wComponent;
     }
     /** @defgroup accessors Accessors
     *  @brief Convenient element accessors for VectorN (x, y, z, w).
@@ -229,7 +232,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     *       Use `magnitude_squared()` if you only need comparisons or repeated calculations.
     * @note needs 2 directions for this function
     */
-    [[nodiscard]] constexpr T magnitude() const noexcept {
+    [[nodiscard]] /* TODO: make constexpr*/ T magnitude() const noexcept {
         assert((!w()) && "magnitude requires a direction" );
         return std::sqrt(std::fabs(zip_reduce(*this, 0,[](T accum, T l, T r){return accum+(l*r);})));
     }
@@ -287,7 +290,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     *       relatively expensive. For performance-critical code, consider
     *       checking magnitude before normalizing.
     */
-    [[nodiscard]]constexpr VectorH normalize() const noexcept {
+    [[nodiscard]] /* TODO: make constexpr*/ VectorH normalize() const noexcept {
         return VectorH(*this).normalize_in_place();
     }
 
@@ -549,7 +552,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     *          the result will be incorrect. See `refract_safe()` for an automatically normalized version.
     */
     template <typename U = VectorH>
-    [[nodiscard]] constexpr VectorH refract(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {
+    [[nodiscard]] /* TODO: make constexpr*/ VectorH refract(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {
         assert(!w() && !rhs.w() && "refract requires two direction vectors");
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhs));
@@ -581,7 +584,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     *          normalized, use `refract_in_place_safe()` instead.
     */
     template <typename U = VectorH>
-    constexpr VectorH& refract_in_place(meta::const_pass_t<U> rhs, T n1, T n2) noexcept {
+    /* TODO: make constexpr*/ VectorH& refract_in_place(meta::const_pass_t<U> rhs, T n1, T n2) noexcept {
         assert(!w() && !rhs.w() && "refract requires two direction vectors");
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhs));
@@ -608,7 +611,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     * @return A refracted VectorN, or a zero vector if no valid refracted direction exists.
     */
     template <typename U = VectorH>
-    [[nodiscard]] constexpr VectorH refract_safe(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {
+    [[nodiscard]] /* TODO: make constexpr*/ VectorH refract_safe(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {
         assert(!w() && !rhs.w() && "refract requires two direction vectors");  
         VectorH thisUnit = normalize();
         VectorH rhsUnit = rhs.normalize();
@@ -642,7 +645,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     * @return A reference to this vector after modification.
     */
     template <typename U = VectorH>
-    constexpr VectorH& refract_in_place_safe(meta::const_pass_t<U> rhs, T n1, T n2)noexcept {
+    /* TODO: make constexpr*/ VectorH& refract_in_place_safe(meta::const_pass_t<U> rhs, T n1, T n2)noexcept {
         assert(!w() && !rhs.w() && "refract requires two direction vectors");
         *this = normalize();
         VectorH rhsUnit = rhs.normalize();

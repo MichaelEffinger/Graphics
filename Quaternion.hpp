@@ -1,8 +1,9 @@
 #pragma once
 
 #include "ContainerN.hpp"
+#include "ES_math.hpp"
 #include "VectorN.hpp"
-
+#include "ES_meta.hpp"
 
 namespace ES{
 
@@ -62,8 +63,8 @@ namespace ES{
             z() = Z;
             w() = W;
         }
-
-        /*c++ 26 constexpr*/ Quaternion(VectorN<T,3> axis, Angle<in_radians,T> angle) noexcept{
+            
+        /*c++ 26 constexpr*/ Quaternion(meta::const_pass_t<VectorN<T,3>> axis, Angle<in_radians,T> angle) noexcept{
             VectorN<T,3> normalized = axis.normalize();
             T angle_half = angle.get() * T{0.5};
             T sine = std::sin(angle_half);
@@ -74,7 +75,7 @@ namespace ES{
         }
         
 
-        constexpr Quaternion(VectorN<T,4> vec) noexcept{
+        constexpr Quaternion(meta::const_pass_t<VectorN<T,4>> vec) noexcept{
             x() = vec.x();
             y() = vec.y();
             z() = vec.z();
@@ -87,8 +88,10 @@ namespace ES{
         }
 
 
+
         //hamilton product 
-        [[nodiscard]] constexpr Quaternion operator*(Quaternion rhs) const noexcept{
+        template <typename U = Quaternion>
+        [[nodiscard]] constexpr Quaternion operator*(meta::const_pass_t<U> rhs) const noexcept{
             Quaternion temp;
             temp.w() = (w()*rhs.w() - x()*rhs.x() - y()*rhs.y() - z()*rhs.z());
             temp.x() = (w()*rhs.x() + x()*rhs.w() + y()*rhs.z() - z()*rhs.y());
@@ -96,8 +99,9 @@ namespace ES{
             temp.z() = (w()*rhs.z() + x()*rhs.y() - y()*rhs.x() + z()*rhs.w());
             return temp;
         }
-        //in place hamilton product, tomorrow is my election day
-        constexpr Quaternion& operator*=(Quaternion rhs) noexcept{   
+
+        template <typename U = Quaternion>
+        constexpr Quaternion& operator*=(meta::const_pass_t<U> rhs) noexcept{   
             T W = (w()*rhs.w() - x()*rhs.x() - y()*rhs.y() - z()*rhs.z());
             T X = (w()*rhs.x() + x()*rhs.w() + y()*rhs.z() - z()*rhs.y());
             T Y = (w()*rhs.y() - x()*rhs.z() + y()*rhs.w() - z()*rhs.x());
@@ -109,21 +113,21 @@ namespace ES{
             return *this;
         }
 
-        [[nodiscard]] constexpr T length() const noexcept{
+        [[nodiscard]] /*TODO make constexpr*/ T length() const noexcept{
             return std::sqrt(length_squared());
         }
         [[nodiscard]] constexpr T length_squared() const noexcept{
             return (x()*x() + y()*y() + z()*z() + w()*w());
         }
 
-        [[nodiscard]] constexpr Quaternion normalize() const noexcept{
+        [[nodiscard]] /*TODO make constexpr*/ Quaternion normalize() const noexcept{
             T len = length();
             assert(len != T{0} && "Zero length quaternion divide in normalize");
             if(len == T{0}) return Quaternion(T{0},T{0},T{0},T{0});
             return Quaternion(w()/len,x()/len,y()/len,z()/len);
         }
 
-        constexpr Quaternion& normalize_in_place() noexcept{
+        /*TODO make constexpr*/ Quaternion& normalize_in_place() noexcept{
             T len = length();
             assert(len != T{0} && "Zero length quaternion divide is normalize_in_place");
             if(len == T{0}){
@@ -177,45 +181,50 @@ namespace ES{
         }
 
 
-        [[nodiscard]] constexpr T dot(Quaternion rhs) const noexcept{
+        template <typename U = Quaternion>
+        [[nodiscard]] constexpr T dot(meta::const_pass_t<U> rhs) const noexcept{
             return w()*rhs.w() + x()*rhs.x() + y()*rhs.y() + z()*rhs.z();
         }
 
 
-        [[nodiscard]] constexpr VectorN<T,3> rotate(VectorN<T,3> vec) const noexcept{
+        [[nodiscard]] constexpr VectorN<T,3> rotate(meta::const_pass_t<VectorN<T,3>> vec) const noexcept{
             VectorN<T,3> q_vec(x(),y(),z());
             VectorN<T,3> crossed = q_vec.cross(vec)*T{2};
             return vec + crossed * w() + q_vec.cross(crossed);
         }
         
-
-        [[nodiscard]] /* constexpr in c++26*/ Quaternion nlerp(Quaternion rhs, T t) const noexcept {
+        template <typename U = Quaternion>
+        [[nodiscard]] /* constexpr in c++26*/ Quaternion nlerp(meta::const_pass_t<U> rhs, T t) const noexcept {
+            
+            Quaternion temp;
             if (dot(rhs) < T{0}){
-                rhs = -rhs;
+                temp = -rhs;
             }
-            Quaternion q = lerp(rhs, t); 
+            Quaternion q = lerp(temp, t); 
             T qlen = q.length();
-            return q.normalized();
+            return q.normalize();
         }
 
-        [[nodiscard]] /* constexpr in c++26*/ Quaternion slerp(Quaternion rhs, T t) const {
-            T dotv = dot(rhs);
-
-            if (dotv < T(0)) {
-                rhs = -rhs;
+        template <typename U = Quaternion>
+        [[nodiscard]] /* constexpr in c++26*/ Quaternion slerp(meta::const_pass_t<U> rhs, T t) const {
+            Quaternion temp = rhs;
+            T dotv = dot(temp);
+            
+            if (dotv < T{0}) {
+                temp = -temp;
                 dotv = -dotv;
             }
 
             dotv = std::clamp(dotv, T{-1}, T{1});
 
-            if (dotv > T{0.9995}) {
-                return nlerp(rhs, t);
+            if (dotv > 1 - math::default_epsilon<T>::value) {
+                return nlerp(temp, t);
             }
 
             T theta = std::acos(dotv);
             T sin_theta = std::sin(theta);
 
-            return (std::sin((T(1) - t) * theta) / sin_theta) * (*this) + (std::sin(t * theta) / sin_theta) * rhs;
+            return (std::sin((T(1) - t) * theta) / sin_theta) * (*this) + (std::sin(t * theta) / sin_theta) * temp;
         }
 
        

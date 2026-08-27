@@ -151,8 +151,8 @@ namespace ES{
             return std::move((*this)[N - 1]);
         }
 
-        template<typename other = Child, typename BinaryOp>
-        [[nodiscard]] constexpr Child zip(meta::const_pass_t<other> rhs, BinaryOp op) const noexcept {
+        template<typename U = Child, typename BinaryOp>
+        [[nodiscard]] constexpr Child zip(meta::const_pass_t<U> rhs, BinaryOp op) const noexcept {
             Child resultant;
             auto liter = cbegin(), riter = rhs.cbegin();
             auto oiter = resultant.begin();
@@ -163,8 +163,8 @@ namespace ES{
             return resultant;
         }
 
-        template<typename other = Child,typename BinaryOp>
-        constexpr Child& zip_in_place(meta::const_pass_t<other> rhs, BinaryOp op) noexcept {
+        template<typename U = Child,typename BinaryOp>
+        constexpr Child& zip_in_place(meta::const_pass_t<U> rhs, BinaryOp op) noexcept {
             auto liter = begin();
             auto riter = rhs.cbegin();
             while(liter != end()){
@@ -186,7 +186,7 @@ namespace ES{
         }
 
         template <typename U = Child>
-        [[nodiscard]] bool almost_equal(meta::const_pass_t<U> rhs, T epsilon = ES::math::default_epsilon<T>::value) const noexcept{
+        [[nodiscard]] constexpr bool almost_equal(meta::const_pass_t<U> rhs, T epsilon = ES::math::default_epsilon<T>::value) const noexcept{
             for (std::size_t i = 0; i < N; ++i) {
             if (!math::approx_equal(data_[i], rhs[i], epsilon))
                 return false;

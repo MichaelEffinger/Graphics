@@ -171,7 +171,7 @@ namespace ES{
         }
 
         [[nodiscard]] constexpr VectorN<T,N> column(std::size_t column) const noexcept{
-            assert(column < N);
+            assert(column < M);
             VectorN<T,N> temp;
 
             for(std::size_t i =0; i<N;i++){
@@ -238,7 +238,7 @@ namespace ES{
         }
 
 
-        constexpr Matrix inverse_in_place() noexcept requires(N==M && N >4){
+        constexpr Matrix& inverse_in_place() noexcept requires(N==M && N >4){
             Matrix temp((*this));
 
             Matrix inverse = Matrix::identity();
@@ -273,15 +273,16 @@ namespace ES{
                 }
             }
 
-            for(int l= N-1;l>=0;l--){ 
+            for(int l = N-1;l>=0;l--){ 
+                const T pivot_value = temp(l,l);
                 for (std::size_t m = 0; m < N; m++) {
-                    temp(l,m) /= temp(l,l);
-                    inverse(l,m) /=  temp(l,l);
+                    temp(l,m) /= pivot_value;
+                    inverse(l,m) /=  pivot_value;
                 }
 
 
                 for (int n = l - 1; n >= 0; n--) {
-                    T scale = temp(n,l) / temp(l,l);
+                    T scale = temp(n,l);
                     temp.add_scaled_row_in_place(l, -scale, n);   
                     inverse.add_scaled_row_in_place(l, -scale, n); 
                  }
@@ -613,7 +614,7 @@ namespace ES{
             return temp;
         }
         
-        [[nodiscard]] constexpr Matrix orthonormalize() const noexcept{
+        [[nodiscard]] /*TODO make constexpr*/ Matrix orthonormalize() const noexcept{
 
             std::array<VectorN<T,N>,M> temp_array;
             for(std::size_t i =0;i<M;i++){
@@ -685,13 +686,13 @@ namespace ES{
         }
 
 
-        [[nodiscard]] constexpr Matrix normalize() const noexcept {
+        [[nodiscard]] /*TODO make constexpr*/ Matrix normalize() const noexcept {
             Matrix result = *this;
             result.normalize_in_place(); 
             return result;
         }
 
-        constexpr Matrix& normalize_in_place() noexcept {
+        /*TODO constexpr also memcpy must go too once we switch to constexpr*/ Matrix& normalize_in_place() noexcept {
             for (std::size_t col = 0; col < M; ++col) {
                 VectorN<T,N> vec;
                 std::memcpy(&vec[0], &data_[col * N], sizeof(T) * N);
@@ -721,7 +722,7 @@ namespace ES{
         }
 
         constexpr Matrix& set_column_in_place(std::size_t col, meta::const_pass_t<VectorN<T,N>> vec) noexcept {
-            std::memcpy(&data_[col * N], &vec[0], sizeof(T) * N);
+            std::copy(vec.begin(), vec.end(), &data_[col * N]);
             return *this;
         }
 

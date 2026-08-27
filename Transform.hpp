@@ -82,9 +82,8 @@ namespace ES{
 
         [[nodiscard]] static constexpr Transform translation(const VectorN<T,N-1> t) noexcept{
             Transform temp;
-            std::memcpy(&temp.mat(0,N-1),&t.data(),sizeof(T) * (N-1));
+            std::copy(t.cbegin(), t.cend(), &temp.mat(0, N-1));
             temp.inv = temp.mat.inverse();
-            
             return temp;
         }
 

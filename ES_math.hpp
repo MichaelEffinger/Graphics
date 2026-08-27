@@ -23,7 +23,7 @@ template <typename T> struct default_epsilon;
     };
 
     template <typename T, typename H> requires(std::is_arithmetic_v<T>)
-    inline bool approx_equal(T lhs, H rhs,T epsilon = default_epsilon<T>::value) noexcept {
+    inline constexpr bool approx_equal(T lhs, H rhs,T epsilon = default_epsilon<T>::value) noexcept {
         return std::fabs(lhs - static_cast<T>(rhs)) <= epsilon;
     }
 
