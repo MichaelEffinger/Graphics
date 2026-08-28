@@ -219,7 +219,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
 
 
     //see magnitude
-    [[nodiscard]] constexpr T length() const noexcept{
+    [[nodiscard]] /*c++ 26 constexpr */ T length() const noexcept{
         return std::sqrt(std::fabs(dot(*this)));
     }
 

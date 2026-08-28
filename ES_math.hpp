@@ -22,9 +22,14 @@ template <typename T> struct default_epsilon;
         static constexpr T value = 0;
     };
 
-    template <typename T, typename H> requires(std::is_arithmetic_v<T>)
-    inline constexpr bool approx_equal(T lhs, H rhs,T epsilon = default_epsilon<T>::value) noexcept {
-        return std::fabs(lhs - static_cast<T>(rhs)) <= epsilon;
+    template <typename T>
+    inline constexpr T constexpr_abs(T value) noexcept {
+        return value < T{0} ? -value : value;
+    }
+
+    template <typename T, typename H>
+    inline constexpr bool approx_equal(T lhs, H rhs, T epsilon = default_epsilon<T>::value) noexcept {
+        return constexpr_abs(lhs - static_cast<T>(rhs)) <= epsilon;
     }
 
     template <typename Container1, typename Container2, typename BinaryOp> requires(concepts::Iterable<Container1> && concepts::Iterable<Container2>)

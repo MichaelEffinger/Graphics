@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ArithmeticOpsMixin.hpp"
+#include "ES_math.hpp"
 #include "ES_meta.hpp"
 #include "VectorN.hpp"
 #include "PointN.hpp"
@@ -250,7 +251,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     */
     [[nodiscard]] constexpr T magnitudeSquared() const noexcept {
         assert((!w()) && "Magnitude requires a direction");
-        return std::fabs(zip_reduce(*this, 0,[](T accum, T l, T r){return accum+(l*r);}));
+        return math::constexpr_abs(zip_reduce(*this, 0,[](T accum, T l, T r){return accum+(l*r);}));
     }
 
 
