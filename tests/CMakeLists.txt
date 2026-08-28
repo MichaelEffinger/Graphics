@@ -20,7 +20,8 @@ add_executable(ComputerGraphics_Tests
         ES_math_module_test.cpp
         ../ES_math.ixx
 )
-        
+
+if(NOT MSVC) #more MSVC cutouts!
 target_sources(ComputerGraphics_Tests
   PUBLIC
     FILE_SET CXX_MODULES
@@ -29,6 +30,7 @@ target_sources(ComputerGraphics_Tests
     FILES
       ${CMAKE_SOURCE_DIR}/ES_math.ixx
 )
+endif ()
 
 target_compile_definitions(ComputerGraphics_Tests PRIVATE NDEBUG)
 target_link_libraries(ComputerGraphics_Tests PRIVATE Catch2::Catch2WithMain)
