@@ -20,7 +20,18 @@ add_executable(ComputerGraphics_Tests ../ES_math.ixx
 #        Random_test.cpp
        ES_math_module_test.cpp
 )
-        
+
+if(NOT MSVC) #more MSVC cutouts!
+target_sources(ComputerGraphics_Tests
+  PUBLIC
+    FILE_SET CXX_MODULES
+    BASE_DIRS
+      ${CMAKE_SOURCE_DIR}      # the common root, e.g. /home/Michael/Graphics
+    FILES
+      ${CMAKE_SOURCE_DIR}/ES_math.ixx
+)
+endif ()
+
 target_compile_definitions(ComputerGraphics_Tests PRIVATE NDEBUG)
 target_link_libraries(ComputerGraphics_Tests PRIVATE Catch2::Catch2WithMain)
 ES_enable_CXX26_for_project(ComputerGraphics_Tests)

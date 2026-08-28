@@ -1,9 +1,15 @@
+module; 
 //
 // Created by Ryan Seavey on 8/27/2026.
 //
 
+#include <type_traits>
+#include <compare>
+#include <stdexcept>
+#include <limits>
+
+
 export module ES_math;
-import std;
 
 #define NDCR [[nodiscard]] constexpr
 
