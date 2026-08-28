@@ -17,7 +17,9 @@ add_executable(ComputerGraphics_Tests
         EulerAngles_test.cpp
         Quaternion_test.cpp
         Quaternion_constexpr_test.cpp
-        )
+        ES_math_module_test.cpp
+        ../ES_math.ixx
+)
         
 target_compile_definitions(ComputerGraphics_Tests PRIVATE NDEBUG)
 target_link_libraries(ComputerGraphics_Tests PRIVATE Catch2::Catch2WithMain)

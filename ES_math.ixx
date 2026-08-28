@@ -16,6 +16,36 @@ export namespace ES::math {
         using std::logic_error::logic_error;
     };
 
+    /**
+     * Technically a spaceship operator tester under the hood.
+     * @return True if the number is ±NaN, False otherwise.
+     */
+    template<typename T>
+    NDCR bool is_NaN(const T N) noexcept {
+        return N <=> static_cast<T>(0) == std::partial_ordering::unordered;
+    }
+
+    /**
+     * @note Does not indicate signedness, at all.
+     * @return True if N is ±inf, False otherwise.
+     */
+    template<typename T>
+    NDCR bool is_infinity(const T N) noexcept {
+        return std::numeric_limits<T>::max() < N
+        || std::numeric_limits<T>::lowest() > N;
+    }
+
+    /**
+    * Literally just `return is_infinity(N) || is_NaN(N);` with a catchy name.
+    * @tparam T Hopefully a type that could be hideous.
+    * @param N Our (possibly) ugly duckling.
+    * @return True the input is ±inf or ±NaN, False otherwise.
+    */
+    template<typename T>
+    NDCR bool is_hideous(const T N) noexcept {
+        return is_infinity(N) || is_NaN(N);
+    }
+
 
     /**
      * Absolute value written by yours truly.
@@ -87,34 +117,5 @@ export namespace ES::math {
         return pow<T, U>(base, exp);
     }
 
-    /**
-     * Literally just `return is_infinity(N) || is_NaN(N);` with a catchy name.
-     * @tparam T Hopefully a type that could be hideous.
-     * @param N Our (possibly) ugly duckling.
-     * @return True the input is ±inf or ±NaN, False otherwise.
-     */
-    template<typename T>
-    NDCR bool is_hideous(const T N) noexcept {
-        return is_infinity(N) || is_NaN(N);
-    }
-
-    /**
-     * Technically a spaceship operator tester under the hood.
-     * @return True if the number is ±NaN, False otherwise.
-     */
-    template<typename T>
-    NDCR bool is_NaN(const T N) noexcept {
-        return N <=> static_cast<T>(0) == std::partial_ordering::unordered;
-    }
-
-    /**
-     * @note Does not indicate signedness, at all.
-     * @return True if N is ±inf, False otherwise.
-     */
-    template<typename T>
-    NDCR bool is_infinity(const T N) noexcept {
-        return std::numeric_limits<T>::max() < N
-        || std::numeric_limits<T>::lowest() > N;
-    }
 
 }
