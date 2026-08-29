@@ -165,8 +165,8 @@ namespace ES {
         * @param rhs the other position to mesure distance to
         * @return Scalar distance between the two positions
         */
-        [[nodiscard]] /* TODO: make constexpr*/ T distance(const PointN& rhs) const noexcept {
-             return std::sqrt(zip_reduce(rhs, T{0}, [](T accum, T l, T r){T d = l - r; return accum + d*d;}));
+        [[nodiscard]] constexpr T distance(const PointN& rhs) const noexcept {
+             return ES::math::sqrt(zip_reduce(rhs, T{0}, [](T accum, T l, T r){T d = l - r; return accum + d*d;}));
         }
 
         /**

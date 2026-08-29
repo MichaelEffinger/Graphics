@@ -10,6 +10,7 @@
 #include "VectorN.hpp"
 #include "PointN.hpp"
 #include "ES_meta.hpp"
+#include <bit>
 
 import ES_math;
 
@@ -616,7 +617,7 @@ namespace ES{
             return temp;
         }
         
-        [[nodiscard]] /*TODO make constexpr*/ Matrix orthonormalize() const noexcept{
+        [[nodiscard]] constexpr Matrix orthonormalize() const noexcept{
 
             std::array<VectorN<T,N>,M> temp_array;
             for(std::size_t i =0;i<M;i++){
@@ -688,18 +689,20 @@ namespace ES{
         }
 
 
-        [[nodiscard]] /*TODO make constexpr*/ Matrix normalize() const noexcept {
+        [[nodiscard]] constexpr Matrix normalize() const noexcept {
             Matrix result = *this;
             result.normalize_in_place(); 
             return result;
         }
 
-        /*TODO constexpr also memcpy must go too once we switch to constexpr*/ Matrix& normalize_in_place() noexcept {
+        constexpr Matrix& normalize_in_place() noexcept {
             for (std::size_t col = 0; col < M; ++col) {
                 VectorN<T,N> vec;
-                std::memcpy(&vec[0], &data_[col * N], sizeof(T) * N);
+                //std::memcpy(&vec[0], &data_[col * N], sizeof(T) * N);
+                std::copy(this->begin() + col * N, this->begin() + col * N + N, vec.begin());
                 vec.normalize_in_place();
-                std::memcpy(&data_[col * N], &vec[0], sizeof(T) * N);
+                //std::memcpy(&data_[col * N], &vec[0], sizeof(T) * N);
+                std::copy(vec.begin(), vec.end(), this->begin() + col * N);
             }
             return *this;
         }

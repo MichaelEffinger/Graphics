@@ -129,14 +129,13 @@ constexpr bool test_length() {
     CONSTEXPR_REQUIRE(ES::math::approx_equal(scaled.length_squared(), 4.0f));
 
     Quaternion<float> q(1.0f, 2.0f, 3.0f, 4.0f);
-    CONSTEXPR_REQUIRE(ES::math::approx_equal(q.length(), std::sqrt(30.0f)));
+    CONSTEXPR_REQUIRE(ES::math::approx_equal(q.length(), ES::math::sqrt(30.0f)));
 
     return true;
 }
-/* TODO
-make constexpr
+
 static_assert(test_length());
-*/
+
 
 // ---------------------------------------------------------------------
 // normalize / normalize_in_place
@@ -159,10 +158,9 @@ constexpr bool test_normalize() {
 
     return true;
 }
-/* TODO
-make constexpr
+
 static_assert(test_normalize());
-*/
+
 
 // ---------------------------------------------------------------------
 // conjugate / conjugate_in_place

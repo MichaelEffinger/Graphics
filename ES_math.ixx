@@ -7,6 +7,7 @@ module;
 #include <compare>
 #include <stdexcept>
 #include <limits>
+#include <numbers>
 
 
 export module ES_math;
@@ -124,4 +125,96 @@ export namespace ES::math {
     }
 
 
+////////////////////
+//Trigtastic time! (and sqrt too!)
+/////////////////
+
+    /**
+     * Thank you, Newton.
+     * @tparam T That which you would like the square root of.
+     * @param N The number to be square rooted.
+     * @return Take a wild guess.
+     */
+    template<typename T>
+    NDCR T sqrt(const T N){
+        if (is_hideous(N)) throw std::invalid_argument("ES::math::sqrt(), `N` must be a number.");
+        if (N < 0) throw std::invalid_argument("ES::math::sqrt(), the square root of a negative is impossible to find!");
+        if (N == 0 || N == 1) return N;
+        T step1 = N > static_cast<T>(1) ? N : static_cast<T>(1);
+        T step2 = (N / step1 + step1) / static_cast<T>(2);
+
+        while (step2 < step1) {
+            step1 = step2;
+            step2 = (N / step1 + step1) / static_cast<T>(2);
+        }
+
+        return step2;
+    }
+
+    /**
+     * O(n) factorial function. Not winning any awards here.
+     * @param N that to be factorialized.
+     * @return N factorial.
+     */
+    template<typename T>
+    NDCR T factorial(T N) {
+        T retval = N--;
+        while (N != 0) retval *= N--;
+        return retval;
+    }
+
+    template<typename T>
+    NDCR T sin(const T N){
+        constexpr static auto probably_close_enough_to_infinity = 12uz;
+        T retval{};
+        for (auto k = 0uz; k < probably_close_enough_to_infinity; ++k) {
+            retval +=
+                ( ES::math::pow(static_cast<T>(-1), k))
+                / ES::math::factorial(T{2} * k + T{1})
+                * ES::math::pow(N, T{2} * k + T{1});
+        }
+        return retval;
+    }
+
+    template<typename T>
+    NDCR T cos(const T N) {
+        return ES::math::sin(static_cast<T>(std::numbers::pi) / T{2} - N);
+    }
+
+    template<typename T>
+    NDCR T acos(const T N) {
+        T step1 = N;
+        T step2 = N;
+
+        while (step2 < step1) {
+            step1 = step2;
+            step2 = N - (ES::math::sin(step1) - N) / ES::math::cos(step1);
+        }
+
+        return step2;
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

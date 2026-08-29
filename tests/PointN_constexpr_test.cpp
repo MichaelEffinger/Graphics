@@ -127,10 +127,9 @@ constexpr bool test_distance() {
 
     return true;
 }
-/* TODO
-    Not constexpr yet
+
     static_assert(test_distance());
-*/
+
 
 // ---------------------------------------------------------------------
 // mid_point (depends on inherited lerp)

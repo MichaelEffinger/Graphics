@@ -463,20 +463,18 @@ static_assert(test_identity());
 // ---------------------------------------------------------------------
 // orthonormalize
 // ---------------------------------------------------------------------
-constexpr bool test_orthonormalize() {
-    Matrix<float, 2, 2> m(Vector2<float>{2.0f, 0.0f}, Vector2<float>{0.0f, 4.0f});
-    auto ortho = m.orthonormalize();
-
-    CONSTEXPR_REQUIRE(ES::math::approx_equal(ortho(0, 0), 1.0f));
-    CONSTEXPR_REQUIRE(ES::math::approx_equal(ortho(1, 1), 1.0f));
-    CONSTEXPR_REQUIRE(ES::math::approx_equal(ortho(0, 1), 0.0f));
-
-    return true;
-}
-/* TODO 
-    make constexpr
-    static_assert(test_orthonormalize());
-*/
+// constexpr bool test_orthonormalize() {
+//     Matrix<float, 2, 2> m(Vector2<float>{2.0f, 0.0f}, Vector2<float>{0.0f, 4.0f});
+//     auto ortho = m.orthonormalize();
+//
+//     CONSTEXPR_REQUIRE(ES::math::approx_equal(ortho(0, 0), 1.0f));
+//     CONSTEXPR_REQUIRE(ES::math::approx_equal(ortho(1, 1), 1.0f));
+//     CONSTEXPR_REQUIRE(ES::math::approx_equal(ortho(0, 1), 0.0f));
+//
+//     return true;
+// }
+//
+//    static_assert(test_orthonormalize()); EXTREMELY BORKED, BE WARNED!!!!!
 
 // ---------------------------------------------------------------------
 // is_symmetric
@@ -531,10 +529,8 @@ constexpr bool test_normalize() {
     CONSTEXPR_REQUIRE(ES::math::approx_equal(normalized(1, 1), 1.0f));
     return true;
 }
-/* TODO 
-    make constexpr
-    static_assert(test_normalize());
-*/
+static_assert(test_normalize());
+
 
 // ---------------------------------------------------------------------
 // set_row / set_row_in_place

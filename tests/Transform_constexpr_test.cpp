@@ -516,7 +516,6 @@ constexpr bool test_normal_matrix() {
     return true;
 }
 
-/*TODO
-    make constexpr someday
+
     static_assert(test_normal_matrix());
-*/
+

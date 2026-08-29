@@ -2,7 +2,8 @@
 #include <cmath>
 #include "ES_concepts.hpp"
 #include <type_traits>
-#include <limits> //TODO: in house? To what end? I cry.
+#include <limits> //Do we do this in house? To what end? I cry.
+import ES_math;
 
 namespace ES::math {
 template <typename T> struct default_epsilon;
@@ -22,14 +23,10 @@ template <typename T> struct default_epsilon;
         static constexpr T value = 0;
     };
 
-    template <typename T>
-    inline constexpr T constexpr_abs(T value) noexcept {
-        return value < T{0} ? -value : value;
-    }
 
     template <typename T, typename H>
-    inline constexpr bool approx_equal(T lhs, H rhs, T epsilon = default_epsilon<T>::value) noexcept {
-        return constexpr_abs(lhs - static_cast<T>(rhs)) <= epsilon;
+    constexpr bool approx_equal(T lhs, H rhs, T epsilon = default_epsilon<T>::value) noexcept {
+        return ES::math::abs(lhs - static_cast<T>(rhs)) <= epsilon;
     }
 
     template <typename Container1, typename Container2, typename BinaryOp> requires(concepts::Iterable<Container1> && concepts::Iterable<Container2>)

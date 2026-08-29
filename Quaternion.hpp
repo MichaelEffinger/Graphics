@@ -5,6 +5,8 @@
 #include "VectorN.hpp"
 #include "ES_meta.hpp"
 
+import ES_math;
+
 namespace ES{
 
     template <typename T>
@@ -113,21 +115,21 @@ namespace ES{
             return *this;
         }
 
-        [[nodiscard]] /*TODO make constexpr*/ T length() const noexcept{
-            return std::sqrt(length_squared());
+        [[nodiscard]] constexpr T length() const noexcept{
+            return ES::math::sqrt(length_squared());
         }
         [[nodiscard]] constexpr T length_squared() const noexcept{
             return (x()*x() + y()*y() + z()*z() + w()*w());
         }
 
-        [[nodiscard]] /*TODO make constexpr*/ Quaternion normalize() const noexcept{
+        [[nodiscard]] constexpr Quaternion normalize() const noexcept{
             T len = length();
             assert(len != T{0} && "Zero length quaternion divide in normalize");
             if(len == T{0}) return Quaternion(T{0},T{0},T{0},T{0});
             return Quaternion(w()/len,x()/len,y()/len,z()/len);
         }
 
-        /*TODO make constexpr*/ Quaternion& normalize_in_place() noexcept{
+        constexpr  Quaternion& normalize_in_place() noexcept{
             T len = length();
             assert(len != T{0} && "Zero length quaternion divide is normalize_in_place");
             if(len == T{0}){

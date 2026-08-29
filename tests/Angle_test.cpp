@@ -3,7 +3,7 @@
 #include "ES_test_util.hpp"
 
 
-constexpr float PIE = std::numbers::pi_v<float>; //TODO: use the promised in-house ES::math pi.
+constexpr float PIE = std::numbers::pi_v<float>;
 constexpr float PINF = std::numeric_limits<float>::infinity();
 
 

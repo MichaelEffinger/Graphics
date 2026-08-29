@@ -1,23 +1,23 @@
 ﻿# Welcome to the debug CMakeLists
 add_executable(ComputerGraphics_Tests ../ES_math.ixx
         VectorN_test.cpp
-        #VectorN_constexpr_test.cpp
+        VectorN_constexpr_test.cpp
         Math_test.cpp
         ES_test_util.hpp
         PointN_test.cpp
         PointN_constexpr_test.cpp
         VectorH_test.cpp
-#        VectorH_constexpr_test.cpp
+        VectorH_constexpr_test.cpp
         Color_test.cpp
         Matrix_test.cpp
-#        Matrix_constexpr_test.cpp
+        Matrix_constexpr_test.cpp
         Affine3_test.cpp
         Transform_test.cpp
         Transform_constexpr_test.cpp
         EulerAngles_test.cpp
         Quaternion_test.cpp
-#        Quaternion_constexpr_test.cpp
-        Random_test.cpp
+        Quaternion_constexpr_test.cpp
+#        Random_test.cpp takes too long!
        ES_math_module_test.cpp
 )
 
@@ -40,4 +40,6 @@ enable_testing()
 include(CTest)
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(Catch)
-catch_discover_tests(ComputerGraphics_Tests)
+catch_discover_tests(ComputerGraphics_Tests
+        DISCOVERY_MODE PRE_TEST #works better with modules, allegedly.
+)

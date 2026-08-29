@@ -12,6 +12,8 @@
 #include "ArithmeticOpsMixin.hpp"
 #include "ES_meta.hpp"
 
+import ES_math;
+
 namespace ES {
 
 /**
@@ -212,15 +214,15 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @note This function uses `sqrt`, which can be relatively expensive. 
     *       Use `magnitude_squared()` if you only need comparisons or repeated calculations.
     */
-    [[nodiscard]] /*c++ 26 constexpr */ T magnitude() const noexcept{
+    [[nodiscard]] constexpr T magnitude() const noexcept{
         //Yes dot product should always be positive but floating point erros can make tiny negative: so I check it 
-        return std::sqrt(std::fabs(dot(*this)));
+        return ES::math::sqrt(ES::math::abs(dot(*this)));
     }
 
 
     //see magnitude
-    [[nodiscard]] /*c++ 26 constexpr */ T length() const noexcept{
-        return std::sqrt(std::fabs(dot(*this)));
+    [[nodiscard]] constexpr T length() const noexcept{
+        return ES::math::sqrt(ES::math::abs(dot(*this)));
     }
 
     /**
@@ -253,7 +255,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @note This operation involves division by the vector's magnitude, which
     *       may be relatively expensive.
     */
-    /* TODO: make constexpr*/ VectorN& normalize_in_place() noexcept{
+    constexpr VectorN& normalize_in_place() noexcept{
         T mag = magnitude();
         if(mag == 0){
             assert(false && "Divide by zero error in normalize_in_place calculation");
@@ -276,7 +278,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *       relatively expensive. For performance-critical code, consider
     *       checking magnitude before normalizing.
     */
-    [[nodiscard]] /* TODO: make constexpr*/ VectorN normalize() const noexcept{
+    [[nodiscard]] constexpr VectorN normalize() const noexcept{
         return VectorN(*this).normalize_in_place();
     }
     
@@ -335,7 +337,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @return The angle between the two vectors in radians (for now).
     */
     template <typename U = VectorN>
-    [[nodiscard]] /* TODO: make constexpr*/ AngleRad angle(meta::const_pass_t<U> rhs) const noexcept{
+    [[nodiscard]] constexpr AngleRad angle(meta::const_pass_t<U> rhs) const noexcept{
         T thisMag = magnitude_squared();
         T thatMag = rhs.magnitude_squared();
         
@@ -343,7 +345,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
             assert(false && "Divide by zero error in angle calculation");
             return {T{0}};
         }
-        return ES::AngleRad{std::acos(std::clamp(dot(rhs) / std::sqrt(thisMag * thatMag), T{-1}, T{1}))};
+        return ES::AngleRad{ES::math::acos(std::clamp(dot(rhs) / ES::math::sqrt(thisMag * thatMag), T{-1}, T{1}))};
     }
 
     /**
@@ -439,7 +441,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *          corresponding safe normalization-enforcing reflect function.
     */
     template <typename U = VectorN>
-    VectorN& reflect_in_place(meta::const_pass_t<U> rhs)noexcept{
+    constexpr VectorN& reflect_in_place(meta::const_pass_t<U> rhs)noexcept{
         assert(rhs.magnitude() == 1);
         T daught =  dot(rhs);
         return zip_in_place(rhs,[daught](T a, T b) {return a - 2 * daught * b;});
@@ -459,7 +461,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *       because it computes normalization.
     */
     template <typename U = VectorN>
-    [[nodiscard]] /* TODO: make constexpr*/ VectorN reflect_safe(meta::const_pass_t<U> rhs)const noexcept{
+    [[nodiscard]] constexpr VectorN reflect_safe(meta::const_pass_t<U> rhs)const noexcept{
         VectorN unitVector = rhs.normalize();
         T  daught = dot(unitVector);
         return zip(unitVector,[daught](T a, T b){return a-2*daught * b;});
@@ -478,7 +480,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *       normalizing `rhs`. Use this when correctness matters but allocations do not.
     */    
     template <typename U = VectorN>
-    /* TODO: make constexpr*/ VectorN& reflect_in_place_safe(meta::const_pass_t<U> rhs)noexcept{
+    constexpr VectorN& reflect_in_place_safe(meta::const_pass_t<U> rhs)noexcept{
         VectorN unitVector = rhs.normalize();
         T daught = dot(unitVector);
         return zip_in_place(unitVector,[daught](T a, T b){return a-2 * daught *b;});
@@ -502,7 +504,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *          the result will be incorrect. See `refract_safe()` for an automatically normalized version.
     */
     template <typename U = VectorN>
-    [[nodiscard]] /* TODO: make constexpr*/ constexpr VectorN refract(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {
+    [[nodiscard]] constexpr VectorN refract(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhs));
         T k = T{1} - refractionRatio * refractionRatio * (T{1} - cosi * cosi);
@@ -511,7 +513,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
             std::fill(tempVec.begin(),tempVec.end(),T{0});
             return tempVec;
         }
-        T sqrtK = std::sqrt(k);
+        T sqrtK = ES::math::sqrt(k);
 
         return zip(rhs, [refractionRatio, cosi, sqrtK](T i, T n) {return i * refractionRatio + n * (refractionRatio * cosi - sqrtK);});
     }
@@ -533,7 +535,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *          normalized, use `refract_in_place_safe()` instead.
     */
     template <typename U = VectorN>
-    /* TODO: make constexpr*/ VectorN& refract_in_place(meta::const_pass_t<U> rhs, T n1, T n2) noexcept {
+    constexpr VectorN& refract_in_place(meta::const_pass_t<U> rhs, T n1, T n2) noexcept {
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhs));
         T k = T{1} - refractionRatio * refractionRatio * (T{1}- cosi * cosi);
@@ -541,7 +543,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
             std::fill(begin(),end(),T{0});
             return *this;
         }       
-        T sqrtK = std::sqrt(k);
+        T sqrtK = ES::math::sqrt(k);
         return zip_in_place(rhs, [refractionRatio, cosi, sqrtK](T i, T n) {return i * refractionRatio + n * (refractionRatio * cosi - sqrtK);});
     }
     
@@ -559,7 +561,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @return A refracted VectorN, or a zero vector if no valid refracted direction exists.
     */
     template <typename U = VectorN>
-    [[nodiscard]] /* TODO: make constexpr*/  VectorN refract_safe(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {  
+    [[nodiscard]] constexpr  VectorN refract_safe(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {
         VectorN thisUnit = normalize();
         VectorN rhsUnit = rhs.normalize();
 
@@ -573,7 +575,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
             return tempVec;
         }
 
-        T sqrtK = std::sqrt(k);
+        T sqrtK = ES::math::sqrt(k);
         return thisUnit.zip(rhsUnit, [refractionRatio, cosi, sqrtK](T i, T n) {return i * refractionRatio + n * (refractionRatio * cosi - sqrtK);});
     }
 
@@ -591,7 +593,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     * @return A reference to this vector after modification.
     */
     template <typename U = VectorN>
-    /* TODO: make constexpr*/  VectorN& refract_in_place_safe(meta::const_pass_t<U> rhs, T n1, T n2)noexcept {
+    constexpr VectorN& refract_in_place_safe(meta::const_pass_t<U> rhs, T n1, T n2)noexcept {
         *this = normalize();
         VectorN rhsUnit = rhs.normalize();
 
@@ -603,7 +605,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
             std::fill(begin(),end(),T{0});
             return *this;
         }
-        T sqrtK = std::sqrt(k);
+        T sqrtK = ES::math::sqrt(k);
         return zip_in_place(rhsUnit, [refractionRatio, cosi, sqrtK](T i, T n) {return i * refractionRatio + n * (refractionRatio * cosi - sqrtK);});
     }
 
@@ -618,7 +620,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *       Use `magnitude_squared()` if you only need comparisons or repeated calculations
     */
     template <typename U = VectorN>
-    [[nodiscard]] /* TODO: make constexpr*/ T distance(meta::const_pass_t<U> rhs) const noexcept {
+    [[nodiscard]] constexpr  T distance(meta::const_pass_t<U> rhs) const noexcept {
         return (*this - rhs).magnitude();
     }
 
@@ -686,19 +688,19 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     *       This avoids division by near-zero and ensures numerical stability.
     */
     template <typename U = VectorN>
-    [[nodiscard]] /* TODO not constexpr yet */ VectorN slerp(meta::const_pass_t<U> rhs, T t)const noexcept{
+    [[nodiscard]] constexpr VectorN slerp(meta::const_pass_t<U> rhs, T t)const noexcept{
         T daught = dot(rhs);
 
-        T theta = std::acos(daught);
+        T theta = ES::math::acos(daught);
         if (theta < math::default_epsilon<T>::value) {
             return *this;
         }
 
-        T sinTheta = std::sin(theta);
-        T w1 = std::sin((1 - t) * theta) / sinTheta;
-        T w2 = std::sin(t * theta) / sinTheta;
+        T sinTheta = ES::math::sin(theta);
+        T w1 = ES::math::sin((1 - t) * theta) / sinTheta;
+        T w2 = ES::math::sin(t * theta) / sinTheta;
 
-        return zip(rhs, [w1, w2](T a, T b) {return std::fma(w1, a, w2 * b);});
+        return zip(rhs, [w1, w2](T a, T b) {return w1 * a + w2 * b;});
     }
 
     /** @brief returns a vector of size N with all Zero values*/
