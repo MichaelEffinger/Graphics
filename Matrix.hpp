@@ -11,6 +11,8 @@
 #include "PointN.hpp"
 #include "ES_meta.hpp"
 
+import ES_math;
+
 namespace ES{
 
 
@@ -134,9 +136,9 @@ namespace ES{
 
             for (std::size_t i = 0; i < N; i++) {
                 std::size_t pivot = i;
-                T max_value = std::abs(temp(i,i));
+                T max_value = ES::math::abs(temp(i,i));
                 for (std::size_t j = i + 1; j < N; j++) {
-                    T value = std::abs(temp(j,i));
+                    T value = ES::math::abs(temp(j,i));
                     if (value > max_value) {
                         max_value = value;
                         pivot = j;
@@ -245,10 +247,10 @@ namespace ES{
 
             for (std::size_t i = 0;i<N;i++){
                 std::size_t pivot = i;
-                T max_value = std::abs(temp(i,i));
+                T max_value = ES::math::abs(temp(i,i));
 
                 for(std::size_t j = i+1; j<N; j++){
-                    T value = std::abs(temp(j,i));
+                    T value = ES::math::abs(temp(j,i));
                     if(value > max_value){
                         max_value = value;
                         pivot = j;
@@ -420,10 +422,10 @@ namespace ES{
             std::size_t col = 0;
             while(row<N && col <M){
                 std::size_t pivot = row;
-                T max_value = std::abs(temp(row,col));
+                T max_value = ES::math::abs(temp(row,col));
 
                 for(std::size_t r = row +1; r<N;r++){
-                    T value = std::abs(temp(r,col));
+                    T value = ES::math::abs(temp(r,col));
                     if(value>max_value){
                         max_value = value;
                         pivot = r;
@@ -463,10 +465,10 @@ namespace ES{
             std::size_t col = 0;
             while(row<N && col <M){
                 std::size_t pivot = row;
-                T max_value = std::abs((*this)(row,col));
+                T max_value = ES::math::abs((*this)(row,col));
 
                 for(std::size_t r = row +1; r<N;r++){
-                    T value = std::abs((*this)(r,col));
+                    T value = ES::math::abs((*this)(r,col));
                     if(value>max_value){
                         max_value = value;
                         pivot = r;
@@ -507,10 +509,10 @@ namespace ES{
             std::size_t col = 0;
             while(row<N && col <M){
                 std::size_t pivot = row;
-                T max_value = std::abs(temp(row,col));
+                T max_value = ES::math::abs(temp(row,col));
 
                 for(std::size_t r = row +1; r<N;r++){
-                    T value = std::abs(temp(r,col));
+                    T value = ES::math::abs(temp(r,col));
                     if(value>max_value){
                         max_value = value;
                         pivot = r;
@@ -539,10 +541,10 @@ namespace ES{
             std::size_t col = 0;
             while(row<N && col <M){
                 std::size_t pivot = row;
-                T max_value = std::abs((*this)(row,col));
+                T max_value = ES::math::abs((*this)(row,col));
 
                 for(std::size_t r = row +1; r<N;r++){
-                    T value = std::abs((*this)(r,col));
+                    T value = ES::math::abs((*this)(r,col));
                     if(value>max_value){
                         max_value = value;
                         pivot = r;
