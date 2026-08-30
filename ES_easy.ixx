@@ -5,6 +5,7 @@ module;
 #include <ranges>
 #include <iostream>
 #include <stacktrace>
+#include <chrono>
 
 export module ES_easy;
 
@@ -17,6 +18,9 @@ export module ES_easy;
  *@namespace ES::easy Your one-stop-shop for hard things that require thought turned one line!
  */
 export namespace ES::easy {
+    ///////////////////
+    ///Easy random!
+    //////////////////
     template<typename L, typename  R>
     [[nodiscard]] std::common_type_t<L,R> random(L low, R high);
 
@@ -35,20 +39,39 @@ export namespace ES::easy {
     template<std::floating_point F, std::size_t Bits>
     [[nodiscard]] auto random_seeded_callable(std::uint32_t);
 
+    template<typename T>
+    [[nodiscard]] bool coin_flip(T odds_of_heads = 0.5);
+
+    ///////////////////
+    ///Easy ranges!
+    //////////////////
     template<std::ranges::range R>
     NDCRAO sum_range(R &&);
 
     template<std::ranges::range R>
     void shuffle(R&&);
 
+    ///////////////////
+    ///Easy debug!
+    //////////////////
     void snap_stacktrace(std::ostream &where_to_print = std::cerr, const std::stacktrace& trace = std::stacktrace::current());
 
+    /**
+     * Easy timer that takes a function and returns how many seconds it took.
+     * @tparam func The callable to be tested.
+     * @tparam Args The (optional) args to send to the callable.
+     * @return The time, in seconds, it took for this function to complete.
+     */
+    template<std::invocable func, typename... Args>
+    [[nodiscard]] double time_it(func&&, Args&&...);
 }
 
 namespace ES::easy::Secret {
-    inline std::minstd_rand &get_quick_engine();
-
     using quick_engine = std::minstd_rand;
+    std::minstd_rand &get_quick_engine() {
+        thread_local quick_engine eng{std::random_device()()};
+        return eng;
+    }
 
     template<typename L, typename R>
     using uniform_dist = std::conditional_t<std::is_integral_v<std::common_type_t<L, R>>, std::uniform_int_distribution<std::common_type_t<L, R>>, std::uniform_real_distribution<std::common_type_t<L, R>>>;
@@ -96,9 +119,10 @@ auto ES::easy::random_seeded_callable(std::uint32_t seed) {
     };
 }
 
-std::minstd_rand& ES::easy::Secret::get_quick_engine() {
-    thread_local quick_engine eng{std::random_device()()};
-    return eng;
+template<typename T>
+bool ES::easy::coin_flip(T const odds_of_heads) {
+    std::bernoulli_distribution dist(odds_of_heads);
+    return dist(Secret::get_quick_engine());
 }
 
 template<std::ranges::range R>
@@ -114,5 +138,13 @@ void ES::easy::snap_stacktrace(std::ostream &where_to_print, const std::stacktra
 template<std::ranges::range R>
 void ES::easy::shuffle(R && arr) {
     std::shuffle(std::ranges::begin(arr), std::ranges::end(arr), Secret::get_quick_engine());
+}
+
+template<std::invocable func, typename... Args>
+double ES::easy::time_it(func&& f, Args&&... args) {
+    auto begin = std::chrono::steady_clock::now();
+    (void) f(std::forward<Args>(args)...);
+    auto end = std::chrono::steady_clock::now();
+    return std::chrono::duration<double>{end-begin}.count();
 }
 
