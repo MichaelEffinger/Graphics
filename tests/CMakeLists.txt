@@ -1,5 +1,5 @@
 ﻿# Welcome to the debug CMakeLists
-add_executable(ComputerGraphics_Tests ../ES_math.ixx
+add_executable(ComputerGraphics_Tests
         VectorN_test.cpp
         VectorN_constexpr_test.cpp
         Math_test.cpp
@@ -17,8 +17,9 @@ add_executable(ComputerGraphics_Tests ../ES_math.ixx
         EulerAngles_test.cpp
         Quaternion_test.cpp
         Quaternion_constexpr_test.cpp
-#        Random_test.cpp takes too long!
+        Random_test.cpp
        ES_math_module_test.cpp
+        ../ES_math.ixx
         ../ES_except.ixx
         ../ES_easy.ixx
 )

@@ -1,9 +1,16 @@
 module;
 
 #include <random>
-
+#include <numeric>
+#include <ranges>
+#include <iostream>
+#include <stacktrace>
 
 export module ES_easy;
+
+#define NDCR [[nodiscard]] constexpr
+#define NDAO [[nodiscard]] auto
+#define NDCRAO [[nodiscard]] constexpr auto
 
 
 /**
@@ -27,6 +34,11 @@ export namespace ES::easy {
 
     template<std::floating_point F, std::size_t Bits>
     [[nodiscard]] auto random_seeded_callable(std::uint32_t);
+
+    template<std::ranges::range R>
+    NDCRAO sum_range(R &&);
+
+    void snap_stacktrace(std::ostream &where_to_print = std::cerr, const std::stacktrace& trace = std::stacktrace::current());
 
 }
 
@@ -86,4 +98,13 @@ std::minstd_rand& ES::easy::Secret::get_quick_engine() {
     return eng;
 }
 
+template<std::ranges::range R>
+constexpr auto ES::easy::sum_range(R &&arr) {
+    return std::reduce(std::ranges::begin(arr), std::ranges::end(arr));
+}
+
+
+void ES::easy::snap_stacktrace(std::ostream &where_to_print, const std::stacktrace& trace) {
+    where_to_print << std::to_string(trace);
+}
 

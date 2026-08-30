@@ -3,17 +3,18 @@
 #include <catch2/generators/catch_generators_range.hpp>
 #include "ES_test_util.hpp"
 #include <climits>
+#include <stacktrace>
 
 import ES_easy;
 
-TEST_CASE("ES::easy::random correct period", "[Random][easy::random][Unseeded Randomness]") {
-    SECTION("Ensure that the period is correct") {
-        auto z = ES::easy::random<std::uint32_t>(0, UINT_MAX);
-        static constexpr unsigned PERIOD{std::minstd_rand::modulus}; // 2^31-1 is the period of minstd_rand
-        for (unsigned y = 0; y < PERIOD; ++y) void (ES::easy::random<std::uint32_t>(0, UINT_MAX));
-        REQUIRE(z == ES::easy::random<std::uint32_t>(0, UINT_MAX));
-    }
-}
+// TEST_CASE("ES::easy::random correct period", "[Random][easy::random][Unseeded Randomness]") {
+//     SECTION("Ensure that the period is correct") {
+//         auto z = ES::easy::random<std::uint32_t>(0, UINT_MAX);
+//         static constexpr unsigned PERIOD{std::minstd_rand::modulus}; // 2^31-1 is the period of minstd_rand
+//         for (unsigned y = 0; y < PERIOD; ++y) void (ES::easy::random<std::uint32_t>(0, UINT_MAX));
+//         REQUIRE(z == ES::easy::random<std::uint32_t>(0, UINT_MAX));
+//     }
+// }
 
 TEST_CASE("ES::Random::_easy_seeded_callable (All overloads)", "[Random][easy::random][Seeded Randomness]") {
     SECTION("check if two callables with the same seed give the same value for the first overload (canonical)") {
