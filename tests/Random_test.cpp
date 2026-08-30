@@ -2,8 +2,6 @@
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 #include "ES_test_util.hpp"
-#include <climits>
-#include <stacktrace>
 
 import ES_easy;
 
@@ -37,4 +35,8 @@ TEST_CASE("ES::Random::_easy_seeded_callable (All overloads)", "[Random][easy::r
     }
 }
 
-
+TEST_CASE("ES::easy::shuffle","[ES::easy::shuffle]") {
+    std::vector arr{1,2,3,4,5,6,7,8,9,0}, arr2(arr);
+    ES::easy::shuffle(arr);
+    CHECK(arr != arr2);
+}

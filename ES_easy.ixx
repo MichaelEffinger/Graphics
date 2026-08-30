@@ -38,6 +38,9 @@ export namespace ES::easy {
     template<std::ranges::range R>
     NDCRAO sum_range(R &&);
 
+    template<std::ranges::range R>
+    void shuffle(R&&);
+
     void snap_stacktrace(std::ostream &where_to_print = std::cerr, const std::stacktrace& trace = std::stacktrace::current());
 
 }
@@ -106,5 +109,10 @@ constexpr auto ES::easy::sum_range(R &&arr) {
 
 void ES::easy::snap_stacktrace(std::ostream &where_to_print, const std::stacktrace& trace) {
     where_to_print << std::to_string(trace);
+}
+
+template<std::ranges::range R>
+void ES::easy::shuffle(R && arr) {
+    std::shuffle(std::ranges::begin(arr), std::ranges::end(arr), Secret::get_quick_engine());
 }
 
