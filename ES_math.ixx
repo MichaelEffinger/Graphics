@@ -12,7 +12,7 @@ module;
 
 export module ES_math;
 
-import ES_debug;
+import ES_except;
 
 #define NDCR [[nodiscard]] constexpr
 
@@ -109,7 +109,7 @@ export namespace ES::math {
         if (round(exp) != exp) throw std::invalid_argument("ES::math::pow(), `exp` must be a whole number.");
         if (round(exp) < static_cast<U>(0)) throw std::invalid_argument("ES::math::pow(), `exp` must be non-negative.");
         if (is_hideous(base) || is_hideous(exp)) throw std::invalid_argument("ES::math::pow(), an argument (or both) must be a number.");
-        if constexpr (not std::is_integral_v<U>) if (exp - 1 == exp) throw ES::debug::precision_exhausted("ES::math::pow(), `exp` must decrement even in extremis. (Presumably, it is so large that it has run out of precision.)");
+        if constexpr (not std::is_integral_v<U>) if (exp - 1 == exp) throw ES::precision_exhausted("ES::math::pow(), `exp` must decrement even in extremis. (Presumably, it is so large that it has run out of precision.)");
         if (exp == static_cast<U>(0)) return static_cast<T>(1); //x^0 where the result is always one.
         if (exp == static_cast<U>(1)) return base; //x^1 where the result is always x. Technically redundant in this function, oh well.
         if (base == static_cast<T>(0) || base == static_cast<T>(1)) return base; //0^n or 1^n always is just itself.
@@ -188,18 +188,18 @@ export namespace ES::math {
      * @return N factorial.
      */
     template<typename T>
-    NDCR T factorial(T N) {
+    [[deprecated("Horrible implementation.")]] NDCR T factorial(T N) {
         if (N < 0) throw std::invalid_argument("ES::math::factorial(), `N` must be non-negative.");
         if (N != ES::math::round(N) || is_hideous(N)) throw std::invalid_argument("ES::math::factorial(), `N` must be a whole number.");
         if (N == 0) return T{1};
         T retval = N--;
-        if (N == retval) throw ES::debug::precision_exhausted("ES::math::factorial(), `N` must decrement even in extremis. (Presumably, it is so large that it has run out of precision.)");
+        if (N == retval) throw ES::precision_exhausted("ES::math::factorial(), `N` must decrement even in extremis. (Presumably, it is so large that it has run out of precision.)");
         while (N != 0) retval *= N--;
         return retval;
     }
 
     template<typename T>
-    NDCR T sin(T N){
+    [[deprecated("Horrible implementation.")]] NDCR T sin(T N){
         if (is_hideous(N)) throw std::invalid_argument("ES::math::sin(), `N` has to be a real number, in radians.");
         constexpr static auto probably_close_enough_to_infinity = 12uz;
         N = ES::math::modulo(N, T{2} * std::numbers::pi_v<T>);
@@ -219,9 +219,9 @@ export namespace ES::math {
     }
 
     template<typename T>
-    NDCR T acos(const T N) {
+    [[deprecated("Not even implemented.")]] NDCR T acos(const T N) {
 #ifndef NDEBUG
-        throw ES::debug::parker_not_implemented("ES::math::acos(), too hard to implement!");
+        throw ES::parker_not_implemented("ES::math::acos(), too hard to implement!");
 #endif
         return N; //doesn't even work at all, lol.
     }

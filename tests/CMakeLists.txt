@@ -19,7 +19,7 @@ add_executable(ComputerGraphics_Tests ../ES_math.ixx
         Quaternion_constexpr_test.cpp
 #        Random_test.cpp takes too long!
        ES_math_module_test.cpp
-        ../ES_debug.ixx
+        ../ES_except.ixx
 )
 
 if(NOT MSVC) #more MSVC cutouts!
@@ -30,7 +30,7 @@ target_sources(ComputerGraphics_Tests
       ${CMAKE_SOURCE_DIR}      # the common root, e.g. /home/Michael/Graphics
     FILES
         ${CMAKE_SOURCE_DIR}/ES_math.ixx
-        ${CMAKE_SOURCE_DIR}/ES_debug.ixx
+        ${CMAKE_SOURCE_DIR}/ES_except.ixx
 )
 endif ()
 
