@@ -20,6 +20,7 @@ add_executable(ComputerGraphics_Tests ../ES_math.ixx
 #        Random_test.cpp takes too long!
        ES_math_module_test.cpp
         ../ES_except.ixx
+        ../ES_easy.ixx
 )
 
 if(NOT MSVC) #more MSVC cutouts!
@@ -31,6 +32,7 @@ target_sources(ComputerGraphics_Tests
     FILES
         ${CMAKE_SOURCE_DIR}/ES_math.ixx
         ${CMAKE_SOURCE_DIR}/ES_except.ixx
+        ${CMAKE_SOURCE_DIR}/ES_easy.ixx
 )
 endif ()
 
