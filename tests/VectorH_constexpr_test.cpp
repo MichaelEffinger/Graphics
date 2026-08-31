@@ -201,6 +201,7 @@ constexpr bool test_magnitude_squared() {
 }
 static_assert(test_magnitude_squared());
 
+/* TODO
 constexpr bool test_magnitude_normalize() {
     VectorH<float> a{3.0f, 4.0f, 0.0f, 0.0f};
 
@@ -214,7 +215,6 @@ constexpr bool test_magnitude_normalize() {
 
     return true;
 }
-/* TODO
     not constexpr yet
     static_assert(test_magnitude_normalize());
 
@@ -279,6 +279,7 @@ static_assert(test_clamp());
 // ---------------------------------------------------------------------
 // refract / refract_in_place / refract_safe / refract_in_place_safe
 // ---------------------------------------------------------------------
+/* TODO
 constexpr bool test_refract() {
     VectorH<float> incoming{0.0f, -1.0f, 0.0f, 0.0f};
     VectorH<float> normal{0.0f, 1.0f, 0.0f, 0.0f};
@@ -299,7 +300,6 @@ constexpr bool test_refract() {
 
     return true;
 }
-/* TODO
     Not constexpr yet
     static_assert(test_refract());
 */

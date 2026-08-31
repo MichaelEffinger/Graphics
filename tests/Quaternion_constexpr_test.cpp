@@ -121,6 +121,7 @@ static_assert(test_non_commutativity());
 // ---------------------------------------------------------------------
 // length / length_squared
 // ---------------------------------------------------------------------
+/* TODO
 constexpr bool test_length() {
     Quaternion<float> unit(1.0f, 0.0f, 0.0f, 0.0f);
     CONSTEXPR_REQUIRE(ES::math::approx_equal(unit.length(), 1.0f));
@@ -133,7 +134,6 @@ constexpr bool test_length() {
 
     return true;
 }
-/* TODO
 make constexpr
 static_assert(test_length());
 */
@@ -141,6 +141,7 @@ static_assert(test_length());
 // ---------------------------------------------------------------------
 // normalize / normalize_in_place
 // ---------------------------------------------------------------------
+/* TODO
 constexpr bool test_normalize() {
     Quaternion<float> q(2.0f, 0.0f, 0.0f, 0.0f);
 
@@ -159,7 +160,6 @@ constexpr bool test_normalize() {
 
     return true;
 }
-/* TODO
 make constexpr
 static_assert(test_normalize());
 */

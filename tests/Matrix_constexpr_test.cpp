@@ -463,6 +463,7 @@ static_assert(test_identity());
 // ---------------------------------------------------------------------
 // orthonormalize
 // ---------------------------------------------------------------------
+/* TODO 
 constexpr bool test_orthonormalize() {
     Matrix<float, 2, 2> m(Vector2<float>{2.0f, 0.0f}, Vector2<float>{0.0f, 4.0f});
     auto ortho = m.orthonormalize();
@@ -473,7 +474,6 @@ constexpr bool test_orthonormalize() {
 
     return true;
 }
-/* TODO 
     make constexpr
     static_assert(test_orthonormalize());
 */
@@ -524,6 +524,7 @@ static_assert(test_is_invertible());
 // ---------------------------------------------------------------------
 // normalize
 // ---------------------------------------------------------------------
+/* TODO 
 constexpr bool test_normalize() {
     Matrix<float, 2, 2> m(Vector2<float>{2.0f, 0.0f}, Vector2<float>{0.0f, 4.0f});
     auto normalized = m.normalize();
@@ -531,7 +532,6 @@ constexpr bool test_normalize() {
     CONSTEXPR_REQUIRE(ES::math::approx_equal(normalized(1, 1), 1.0f));
     return true;
 }
-/* TODO 
     make constexpr
     static_assert(test_normalize());
 */

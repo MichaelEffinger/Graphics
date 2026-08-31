@@ -168,6 +168,7 @@ static_assert(test_dot_and_cross());
 // ---------------------------------------------------------------------
 // magnitude, normalize, almost_equal, math::approx_equal
 // ---------------------------------------------------------------------
+/* TODO
 constexpr bool test_magnitude_normalize_almost_equal() {
     Vector3<float> a{3.0f, 4.0f, 0.0f};
     Vector3<float> b = a * .1f;
@@ -189,7 +190,6 @@ constexpr bool test_magnitude_normalize_almost_equal() {
 
     return true;
 }
-/* TODO
     not constexpr yet
     static_assert(test_magnitude_normalize_almost_equal());
 */
@@ -227,6 +227,7 @@ static_assert(test_hadamard());
 // ---------------------------------------------------------------------
 // angle between vectors
 // ---------------------------------------------------------------------
+/* TODO
 constexpr bool test_angle() {
     Vector3<float> a{1.0f, 0.0f, 0.0f};
     Vector3<float> b{0.0f, 1.0f, 0.0f};
@@ -245,7 +246,6 @@ constexpr bool test_angle() {
 
     return true;
 }
-/* TODO
  not constexpr yet
  static_assert(test_angle());
 */
@@ -303,6 +303,7 @@ static_assert(test_clamp_and_almost_equal());
 // ---------------------------------------------------------------------
 // projection, reflection, refraction
 // ---------------------------------------------------------------------
+/* TODO
 constexpr bool test_project_reflect_refract() {
     Vector3<float> a{1.0f, 0.0f, 0.0f};
     Vector3<float> b{0.0f, 1.0f, 0.0f};
@@ -322,7 +323,6 @@ constexpr bool test_project_reflect_refract() {
     return true;
 }
 
-/* TODO
     not constexpr yet
     static_assert(test_project_reflect_refract());
 */
@@ -365,6 +365,7 @@ static_assert(test_lerp_in_place());
 // ---------------------------------------------------------------------
 // reflect
 // ---------------------------------------------------------------------
+/* TODO
 constexpr bool test_reflect() {
     Vector3<float> incoming{1.0f, -1.0f, 0.0f};
     incoming.normalize_in_place();
@@ -377,7 +378,6 @@ constexpr bool test_reflect() {
 
     return true;
 }
-/* TODO
     not constexpr yet
     static_assert(test_reflect());
 */
@@ -385,6 +385,7 @@ constexpr bool test_reflect() {
 // ---------------------------------------------------------------------
 // reflect_in_place
 // ---------------------------------------------------------------------
+/* TODO
 constexpr bool test_reflect_in_place() {
     Vector3<float> incoming{1.0f, -1.0f, 0.0f};
     incoming.normalize_in_place();
@@ -397,7 +398,6 @@ constexpr bool test_reflect_in_place() {
 
     return true;
 }
-/* TODO
     not constexpr yet
     static_assert(test_reflect_in_place());
 */
@@ -405,6 +405,7 @@ constexpr bool test_reflect_in_place() {
 // ---------------------------------------------------------------------
 // reflect_safe
 // ---------------------------------------------------------------------
+/* TODO
 constexpr bool test_reflect_safe() {
     Vector3<float> incoming{1.0f, -1.0f, 0.0f};
     Vector3<float> normal{0.0f, 5.0f, 0.0f};
@@ -415,7 +416,6 @@ constexpr bool test_reflect_safe() {
 
     return true;
 }
-/* TODO
     not constexpr yet
     static_assert(test_reflect_safe());
 */
@@ -423,6 +423,7 @@ constexpr bool test_reflect_safe() {
 // ---------------------------------------------------------------------
 // reflect_in_place_safe
 // ---------------------------------------------------------------------
+/* TODO
 constexpr bool test_reflect_in_place_safe() {
     Vector3<float> incoming{1.0f, -1.0f, 0.0f};
     Vector3<float> normal{0.0f, 5.0f, 0.0f};
@@ -433,7 +434,6 @@ constexpr bool test_reflect_in_place_safe() {
 
     return true;
 }
-/* TODO
     not constexpr yet
     static_assert(test_reflect_in_place_safe());
 */
@@ -441,6 +441,7 @@ constexpr bool test_reflect_in_place_safe() {
 // ---------------------------------------------------------------------
 // refract
 // ---------------------------------------------------------------------
+/* TODO
 constexpr bool test_refract() {
     Vector3<float> incoming{0.0f, -1.0f, 0.0f};
     Vector3<float> normal{0.0f, 1.0f, 0.0f};
@@ -455,7 +456,6 @@ constexpr bool test_refract() {
 
     return true;
 }
-/* TODO
     not constexpr yet
     static_assert(test_refract());
 */
@@ -463,6 +463,7 @@ constexpr bool test_refract() {
 // ---------------------------------------------------------------------
 // refract_in_place
 // ---------------------------------------------------------------------
+/* TODO
 constexpr bool test_refract_in_place() {
     Vector3<float> incoming{0.0f, -1.0f, 0.0f};
     Vector3<float> normal{0.0f, 1.0f, 0.0f};
@@ -473,7 +474,6 @@ constexpr bool test_refract_in_place() {
 
     return true;
 }
-/* TODO
     not constexpr yet
     static_assert(test_refract_in_place());
 */
@@ -481,6 +481,7 @@ constexpr bool test_refract_in_place() {
 // ---------------------------------------------------------------------
 // refract_safe
 // ---------------------------------------------------------------------
+/* TODO
 constexpr bool test_refract_safe() {
     Vector3<float> incoming{0.0f, -5.0f, 0.0f};
     Vector3<float> normal{0.0f, 3.0f, 0.0f};
@@ -491,7 +492,6 @@ constexpr bool test_refract_safe() {
 
     return true;
 }
-/* TODO
     not constexpr yet
 static_assert(test_refract_safe());
 */
@@ -499,6 +499,7 @@ static_assert(test_refract_safe());
 // ---------------------------------------------------------------------
 // refract_in_place_safe
 // ---------------------------------------------------------------------
+/* TODO
 constexpr bool test_refract_in_place_safe() {
     Vector3<float> incoming{0.0f, -5.0f, 0.0f};
     Vector3<float> normal{0.0f, 3.0f, 0.0f};
@@ -509,7 +510,6 @@ constexpr bool test_refract_in_place_safe() {
 
     return true;
 }
-/* TODO
     not constexpr yet
 static_assert(test_refract_in_place_safe());
 */
@@ -517,6 +517,7 @@ static_assert(test_refract_in_place_safe());
 // ---------------------------------------------------------------------
 // distance
 // ---------------------------------------------------------------------
+/* TODO
 constexpr bool test_distance() {
     Vector3<float> a{0.0f, 0.0f, 0.0f};
     Vector3<float> b{3.0f, 4.0f, 0.0f};
@@ -527,7 +528,6 @@ constexpr bool test_distance() {
 
     return true;
 }
-/* TODO
     not constexpr yet
 static_assert(test_distance());
 */
@@ -580,6 +580,7 @@ static_assert(test_project_onto_in_place());
 // ---------------------------------------------------------------------
 // slerp
 // ---------------------------------------------------------------------
+/* TODO
 constexpr bool test_slerp() {
     Vector3<float> a{1.0f, 0.0f, 0.0f};
     Vector3<float> b{0.0f, 1.0f, 0.0f};
@@ -598,7 +599,6 @@ constexpr bool test_slerp() {
 
     return true;
 }
-/* TODO
     not constexpr yet
 static_assert(test_slerp());
 */
@@ -627,6 +627,7 @@ static_assert(test_zero());
 // ---------------------------------------------------------------------
 // comprehensive edge cases
 // ---------------------------------------------------------------------
+/* TODO
 constexpr bool test_edge_cases() {
     Vector3<float> zero{0.0f, 0.0f, 0.0f};
     auto normalized = zero.normalize();
@@ -640,7 +641,6 @@ constexpr bool test_edge_cases() {
 
     return true;
 }
-/* TODO
     not constexpr yet
 static_assert(test_edge_cases());
 */ 

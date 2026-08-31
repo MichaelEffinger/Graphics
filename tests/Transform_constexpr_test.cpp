@@ -507,6 +507,7 @@ static_assert(test_double_invert());
 // ---------------------------------------------------------------------
 // normal_matrix
 // ---------------------------------------------------------------------
+/*TODO
 constexpr bool test_normal_matrix() {
     Vector3<float> s(2.0f, 4.0f, 8.0f);
     auto scaled = Transform<float, 3>::scale(s);
@@ -516,7 +517,6 @@ constexpr bool test_normal_matrix() {
     return true;
 }
 
-/*TODO
     make constexpr someday
     static_assert(test_normal_matrix());
 */

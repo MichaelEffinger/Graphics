@@ -83,7 +83,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
      * ContainerN<float,5> v5(v2,3.0f,4.0f,5.0f);
      */
     
-    template <size_t M, typename... U> requires(sizeof...(U) == N - M && concepts::CheapToCopy<VectorN<T, M>>)
+    template <size_t M, typename... U> requires(M < N && sizeof...(U) == N - M && concepts::CheapToCopy<VectorN<T, M>>)
     constexpr VectorN(VectorN<T, M> smaller, U... extras) noexcept((std::is_nothrow_constructible_v<T, U &&> && ...)) : ContainerN<VectorN, T, N>{} {
         std::copy(smaller.cbegin(), smaller.cend(), data_.begin());
         size_t index = M;
@@ -91,7 +91,7 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     }
 
     // this is done with requires instead of using the meta::const_pass_t becaues it loses the ability to be auto deduced which ruins code readibility
-    template <size_t M, typename... U> requires(sizeof...(U) == N - M && !concepts::CheapToCopy<VectorN<T, M>>)
+    template <size_t M, typename... U> requires(M < N && sizeof...(U) == N - M && !concepts::CheapToCopy<VectorN<T, M>>)
     constexpr VectorN(const VectorN<T, M>& smaller, U... extras) noexcept((std::is_nothrow_constructible_v<T, U &&> && ...)) : ContainerN<VectorN, T, N>{} {
         std::copy(smaller.cbegin(), smaller.cend(), data_.begin());
         size_t index = M;
