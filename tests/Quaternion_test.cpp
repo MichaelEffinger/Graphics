@@ -1,4 +1,3 @@
-#define NDEBUG
 #include <catch2/catch_test_macros.hpp>
 #include "../ES_math.hpp"
 #include "../Quaternion.hpp"
@@ -535,7 +534,7 @@ TEST_CASE("Quaternion non-commutativity", "[Quaternion]"){
     auto result2 = q2 * q1;
     
     REQUIRE(result1.w() == result2.w());
-    REQUIRE(result1.x() != result2.x() || result1.y() != result2.y() || result1.z() != result2.z());
+    REQUIRE((result1.x() != result2.x() ||result1.y() != result2.y() ||result1.z() != result2.z()));
 }
 
 TEST_CASE("Quaternion rotation composition", "[Quaternion]"){

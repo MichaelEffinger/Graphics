@@ -16,4 +16,7 @@ namespace ES::concepts{
         c.cend();
     };
 
+    template<typename T>
+    concept CheapToCopy = std::is_trivially_copy_constructible_v<T> && std::is_trivially_destructible_v<T> && sizeof(T) <= 2*sizeof(void*);
+
 }

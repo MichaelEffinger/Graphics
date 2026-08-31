@@ -1,6 +1,8 @@
 #pragma once
 
 #include "ArithmeticOpsMixin.hpp"
+#include "ES_math.hpp"
+#include "ES_meta.hpp"
 #include "VectorN.hpp"
 #include "PointN.hpp"
 #include <cmath>
@@ -11,6 +13,9 @@
 
 
 namespace ES{
+
+
+    
 
 
 template <typename T>
@@ -29,14 +34,14 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     using ContainerN<VectorH,T,N>::cbegin;
     using ContainerN<VectorH,T,N>::ContainerN;
 
-    VectorH(PointN<T,3> point, T w = T{1}){
-        std::copy(point.cbegin(),point.cend(), data_.begin());
-        w() = w;
+    constexpr VectorH(PointN<T,3> point, T wComponent = T{1}) noexcept {
+        std::copy(point.cbegin(), point.cend(), data_.begin());
+        w() = wComponent;
     }
 
-    VectorH(VectorN<T,3> direction, T w = T{0}){
-        std::copy(direction.cbegin(),direction.cend(), data_.begin());
-        w() = w;
+    constexpr VectorH(VectorN<T,3> direction, T wComponent = T{0}) noexcept {
+        std::copy(direction.cbegin(), direction.cend(), data_.begin());
+        w() = wComponent;
     }
     /** @defgroup accessors Accessors
     *  @brief Convenient element accessors for VectorN (x, y, z, w).
@@ -67,25 +72,29 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
 
 
     /** @brief Component-wise additoin */
-    [[nodiscard]] constexpr VectorH operator+(const VectorH rhs) const noexcept {
+    template <typename U = VectorH>
+    [[nodiscard]] constexpr VectorH operator+(meta::const_pass_t<U> rhs) const noexcept {
         assert((!w() || !rhs.w()) && "Cannot add point to point");
         return zip(rhs,std::plus{});
     }
 
     /** @brief Component-wise in place addition */
-    constexpr VectorH& operator+=(VectorH rhs) noexcept {
+    template <typename U = VectorH>
+    constexpr VectorH& operator+=(meta::const_pass_t<U> rhs) noexcept {
         assert((!w() || !rhs.w()) && "Cannot add point to point");
         return zip_in_place(rhs,std::plus());
     }
 
     /** @brief Component-wise subtraction */
-    [[nodiscard]] constexpr VectorH operator-(const VectorH rhs) const noexcept {
+    template <typename U = VectorH>
+    [[nodiscard]] constexpr VectorH operator-(meta::const_pass_t<U> rhs) const noexcept {
         assert((w() || !rhs.w()) && "Cannot subtract point from direction");
         return zip(rhs,std::minus());
     }
 
     /** @brief Component-wise in place subtraction */
-    constexpr VectorH& operator-=(const VectorH rhs) noexcept {
+    template <typename U = VectorH>
+    constexpr VectorH& operator-=(meta::const_pass_t<U> rhs) noexcept {
         assert((w() || !rhs.w())&& "Cannot subtract point from direction");
         return zip_in_place(rhs,std::minus());
     }
@@ -125,24 +134,28 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     }
 
     /** @brief Component-wise multiplication */
-    constexpr VectorH hadamard_product(const VectorH rhs) const noexcept {
+    template <typename U = VectorH>
+    constexpr VectorH hadamard_product(meta::const_pass_t<U> rhs) const noexcept {
         assert((!w() && !rhs.w())  && "Hadamard product requires both Hvectors be directions");
         return zip(rhs,std::multiplies());
     }
     /** @brief Component-wise in place multiplication */
-    constexpr VectorH& hadamard_product_in_place(const VectorH rhs) noexcept {
+    template <typename U = VectorH>
+    constexpr VectorH& hadamard_product_in_place(meta::const_pass_t<U> rhs) noexcept {
         assert((!w() && !rhs.w())  && "Hadamard product requires both Hvecotrs be directions");
         return zip_in_place(rhs,std::multiplies());
     }
 
     /** @brief Component-wise division */
+    template <typename U = VectorH>
     [[nodiscard]] constexpr VectorH hadamard_divide(const VectorH rhs) const noexcept {
         assert((!w() && !rhs.w()) && "Hadamard divide requires both Hvectors be directions");
         return zip(rhs, [](T a, T b) { assert(b !=0 && "Divide by zero in hadamardDivide"); return (b != 0) ? (a / b) : T{0}; });
     }
 
     /** @brief Component-wise in place division */
-    constexpr VectorH& hadamard_divide_in_place(const VectorH rhs) noexcept {
+    template <typename U = VectorH>
+    constexpr VectorH& hadamard_divide_in_place(meta::const_pass_t<U> rhs) noexcept {
         assert((!w() && !rhs.w()) && "Hadamard divide requires both Hvectors be directions");
         return zip_in_place(rhs, [](T a, T b) { assert(b !=0 && "Divide by zero in hadamardDivide"); return (b != 0) ? (a / b) : T{0}; });
     }
@@ -158,7 +171,8 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     *
     * @note Both vectors must be directions.
     */
-    constexpr T dot(const VectorH rhs) const noexcept {
+    template <typename U = VectorH>
+    constexpr T dot(meta::const_pass_t<U> rhs) const noexcept {
         assert((!w() && !rhs.w()) && "Dot product requires two directions");
         return zip_reduce(rhs, 0,[](T accum, T l, T r){return accum+(l*r);});
     }
@@ -176,7 +190,8 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
      *
      * @note Both vectors must be directions
      */
-    [[nodiscard]] constexpr VectorH cross(const VectorH rhs) const noexcept {
+    template <typename U = VectorH>
+    [[nodiscard]] constexpr VectorH cross(meta::const_pass_t<U> rhs) const noexcept {
         assert((!w() && !rhs.w()) && "Cross product requires two directions" );
         return VectorH{
         data_[1] * rhs.data_[2] - data_[2] * rhs.data_[1],
@@ -197,7 +212,8 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     *
     * @note Both vectors must be directions
     */
-    constexpr VectorH& cross_in_place(const VectorH rhs) noexcept {
+    template <typename U = VectorH>
+    constexpr VectorH& cross_in_place(meta::const_pass_t<U> rhs) noexcept {
         assert((!w() && !rhs.w()) && "Cross product requires two directions" );
         T tx = data_[1] * rhs.data_[2] - data_[2] * rhs.data_[1];
         T ty = data_[2] * rhs.data_[0] - data_[0] * rhs.data_[2];
@@ -217,7 +233,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     *       Use `magnitude_squared()` if you only need comparisons or repeated calculations.
     * @note needs 2 directions for this function
     */
-    [[nodiscard]] constexpr T magnitude() const noexcept {
+    [[nodiscard]] /* TODO: make constexpr*/ T magnitude() const noexcept {
         assert((!w()) && "magnitude requires a direction" );
         return std::sqrt(std::fabs(zip_reduce(*this, 0,[](T accum, T l, T r){return accum+(l*r);})));
     }
@@ -235,7 +251,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     */
     [[nodiscard]] constexpr T magnitudeSquared() const noexcept {
         assert((!w()) && "Magnitude requires a direction");
-        return std::fabs(zip_reduce(*this, 0,[](T accum, T l, T r){return accum+(l*r);}));
+        return math::constexpr_abs(zip_reduce(*this, 0,[](T accum, T l, T r){return accum+(l*r);}));
     }
 
 
@@ -245,7 +261,8 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     * @return Scalar vector between the two positions
     * @note needs 2 points 
     */
-    [[nodiscard]] T distance(VectorH rhs) const noexcept{
+    template <typename U = VectorH>
+    [[nodiscard]] T distance(meta::const_pass_t<U> rhs) const noexcept{
         assert((w()&& rhs.w()) && "distance requires two points");
         return std::sqrt(zip_reduce(rhs, T{0}, [](T accum, T l, T r){T d = l - r; return accum + d*d;}));
     }
@@ -256,7 +273,8 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     * @return Scalar vector between the two positions
     * @note needs 2 points avoids pricey sqrt function
     */
-    [[nodiscard]] T distance_squared(VectorH rhs) const noexcept{
+    template <typename U = VectorH>
+    [[nodiscard]] T distance_squared(meta::const_pass_t<U> rhs) const noexcept{
         assert((w() && rhs.w()) && "distance requires two points");
         return zip_reduce(rhs, T{0}, [](T accum, T l, T r){T d = l - r; return accum + d*d;});
     }
@@ -273,7 +291,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     *       relatively expensive. For performance-critical code, consider
     *       checking magnitude before normalizing.
     */
-    [[nodiscard]]constexpr VectorH normalize() const noexcept {
+    [[nodiscard]] /* TODO: make constexpr*/ VectorH normalize() const noexcept {
         return VectorH(*this).normalize_in_place();
     }
 
@@ -350,7 +368,8 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     *       This avoids division by near-zero and ensures numerical stability.
     * @note This function requires both vectors be directions
     */
-    [[nodiscard]] VectorH slerp(const VectorH rhs, T t){
+    template <typename U = VectorH>
+    [[nodiscard]] VectorH slerp(meta::const_pass_t<U> rhs, T t){
         assert(!w() && !rhs.w() && "slerp needs 2 direction vectors");
         T daught = dot(rhs);
 
@@ -380,7 +399,8 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     * @warning There are **safe** overloads available that internally normalize `rhs`
     *          before computing the reflection. Use those if unsure.
     */
-    [[nodiscard]] VectorH reflect(const VectorH rhs){
+    template <typename U = VectorH>
+    [[nodiscard]] VectorH reflect(meta::const_pass_t<U> rhs){
         assert(((!w() && !rhs.w())||(w() && rhs.w())) && "reflection must have matching hvector types");
         assert(rhs.magnitude() == 1 && "parameter vector must be a unit vector");
         T daught =  dot(rhs);
@@ -401,7 +421,8 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     * @warning If you are not absolutely certain `rhs` is normalized, use the
     *          corresponding safe normalization-enforcing reflect function.
     */
-    VectorH& reflect_in_place(const VectorH rhs){
+    template <typename U = VectorH>
+    VectorH& reflect_in_place(meta::const_pass_t<U> rhs){
         assert(((!w() && !rhs.w())||(w() && rhs.w())) && "reflection must have matching hvector types");
         assert(rhs.magnitude() == 1 && "parameter vector must be a unit vector");
         T daught =  dot(rhs);
@@ -421,7 +442,8 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     * @note This version is safer but slightly more expensive than `reflect(rhs)`
     *       because it computes normalization.
     */ 
-    [[nodiscard]] VectorH reflect_safe(const VectorH rhs){
+    template <typename U = VectorH>
+    [[nodiscard]] VectorH reflect_safe(meta::const_pass_t<U> rhs){
         assert(((!w() && !rhs.w())||(w() && rhs.w())) && "reflection must have matching hvector types");
         VectorH unitVector = rhs.normalize();
         T  daught = dot(unitVector);
@@ -439,8 +461,9 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     *
     * @note This version avoids temporary allocation but still pays the cost of
     *       normalizing `rhs`. Use this when correctness matters but allocations do not.
-    */    
-    VectorH& reflect_in_place_safe(const VectorH rhs){
+    */ 
+    template <typename U = VectorH>
+    VectorH& reflect_in_place_safe(meta::const_pass_t<U> rhs){
         assert(((!w() && !rhs.w())||(w() && rhs.w())) && "reflection must have matching hvector types");
         VectorH unitVector = rhs.normalize();
         T daught = dot(unitVector);
@@ -462,7 +485,8 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     *
     * @note This is a component-wise operation.
     */
-    constexpr VectorH lerp(VectorH rhs, T t) const noexcept{
+    template <typename U = VectorH>
+    constexpr VectorH lerp(meta::const_pass_t<U> rhs, T t) const noexcept{
         assert(((!w() && !rhs.w())||(w() && rhs.w())) && "lerp must have matching hvector types");
         return zip(rhs,[t](T a, T b) {return a+(b-a)*t;});
     }
@@ -479,7 +503,8 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     *
     * @note Use this when avoiding temporaries matters.
     */
-    constexpr VectorH& lerp_in_place(VectorH rhs, T t) noexcept {
+    template <typename U = VectorH>
+    constexpr VectorH& lerp_in_place(meta::const_pass_t<U> rhs, T t) noexcept {
         assert(((!w() && !rhs.w())||(w() && rhs.w())) && "lerp must have matching hvector types");
         return zip_in_place(rhs, [t](T a, T b) { return a + (b - a) * t;});
     }   
@@ -527,7 +552,8 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     * @warning This version doesnt normalize `rhs`. If `rhs` is not unit length,
     *          the result will be incorrect. See `refract_safe()` for an automatically normalized version.
     */
-    [[nodiscard]] constexpr VectorH refract(VectorH rhs, T n1, T n2) const noexcept {
+    template <typename U = VectorH>
+    [[nodiscard]] /* TODO: make constexpr*/ VectorH refract(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {
         assert(!w() && !rhs.w() && "refract requires two direction vectors");
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhs));
@@ -558,7 +584,8 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     * @warning This version doesnt normalize `rhs`. If you are not sure `rhs` is
     *          normalized, use `refract_in_place_safe()` instead.
     */
-    constexpr VectorH& refract_in_place(VectorH rhs, T n1, T n2) noexcept {
+    template <typename U = VectorH>
+    /* TODO: make constexpr*/ VectorH& refract_in_place(meta::const_pass_t<U> rhs, T n1, T n2) noexcept {
         assert(!w() && !rhs.w() && "refract requires two direction vectors");
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhs));
@@ -584,7 +611,8 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     * @param n2  Refractive index of the medium the vector is entering.
     * @return A refracted VectorN, or a zero vector if no valid refracted direction exists.
     */
-    [[nodiscard]] constexpr VectorH refract_safe(VectorH rhs, T n1, T n2) const noexcept {
+    template <typename U = VectorH>
+    [[nodiscard]] /* TODO: make constexpr*/ VectorH refract_safe(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {
         assert(!w() && !rhs.w() && "refract requires two direction vectors");  
         VectorH thisUnit = normalize();
         VectorH rhsUnit = rhs.normalize();
@@ -617,7 +645,8 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     * @param n2  Refractive index of the medium the vector is entering.
     * @return A reference to this vector after modification.
     */
-    constexpr VectorH& refract_in_place_safe(VectorH rhs, T n1, T n2)noexcept {
+    template <typename U = VectorH>
+    /* TODO: make constexpr*/ VectorH& refract_in_place_safe(meta::const_pass_t<U> rhs, T n1, T n2)noexcept {
         assert(!w() && !rhs.w() && "refract requires two direction vectors");
         *this = normalize();
         VectorH rhsUnit = rhs.normalize();

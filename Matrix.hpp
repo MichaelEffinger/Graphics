@@ -9,6 +9,9 @@
 #include "ArithmeticOpsMixin.hpp"
 #include "VectorN.hpp"
 #include "PointN.hpp"
+#include "ES_meta.hpp"
+
+import ES_math;
 
 namespace ES{
 
@@ -53,11 +56,9 @@ namespace ES{
 
         template<class... Args>
         constexpr Matrix(Args... columns) requires(sizeof...(Args) == M && (std::is_same_v<Args, VectorN<T,N>> && ...)){
-            std::size_t col = 0;
-            ((std::memcpy(&data_[col * N], &columns[0], sizeof(T) * N), col++), ...);
+            std::size_t col = 0; 
+            ((std::copy_n(columns.begin(), N, &data_[col * N]), col++), ...);
         }
-
-
 
         constexpr auto&& operator()(this auto&& self, std::size_t row, std::size_t column) noexcept{
             return std::forward_like<decltype(self)>(self[(column*N+row)]);
@@ -126,8 +127,7 @@ namespace ES{
             T m1 =  (*this)[1]*( (*this)[4]* (*this)[10]* (*this)[15] +  (*this)[6]* (*this)[11]* (*this)[12] +  (*this)[7]* (*this)[8]* (*this)[14] -  (*this)[7]* (*this)[10]* (*this)[12] -  (*this)[6]* (*this)[8]* (*this)[15] -  (*this)[4]* (*this)[11]* (*this)[14]);
             T m2 =  (*this)[2]*( (*this)[4]* (*this)[9]* (*this)[15] +  (*this)[5]* (*this)[11]* (*this)[12] +  (*this)[7]* (*this)[8]* (*this)[13] -  (*this)[7]* (*this)[9]* (*this)[12] -  (*this)[5]* (*this)[8]* (*this)[15] -  (*this)[4]* (*this)[11]* (*this)[13]);
             T m3 =  (*this)[3]*( (*this)[4]* (*this)[9]* (*this)[14] +  (*this)[5]* (*this)[10]* (*this)[12] +  (*this)[6]* (*this)[8]* (*this)[13] -  (*this)[6]* (*this)[9]* (*this)[12] -  (*this)[5]* (*this)[8]* (*this)[14] -  (*this)[4]* (*this)[10]* (*this)[13]);
-          return m0 - m1 + m2 - m3;
-
+            return m0 - m1 + m2 - m3;
         }
         
         [[nodiscard]] constexpr T determinant() const noexcept requires (N == M && N > 4 && std::is_floating_point_v<T>) {
@@ -136,9 +136,9 @@ namespace ES{
 
             for (std::size_t i = 0; i < N; i++) {
                 std::size_t pivot = i;
-                T max_value = std::abs(temp(i,i));
+                T max_value = ES::math::abs(temp(i,i));
                 for (std::size_t j = i + 1; j < N; j++) {
-                    T value = std::abs(temp(j,i));
+                    T value = ES::math::abs(temp(j,i));
                     if (value > max_value) {
                         max_value = value;
                         pivot = j;
@@ -173,7 +173,7 @@ namespace ES{
         }
 
         [[nodiscard]] constexpr VectorN<T,N> column(std::size_t column) const noexcept{
-            assert(column < N);
+            assert(column < M);
             VectorN<T,N> temp;
 
             for(std::size_t i =0; i<N;i++){
@@ -240,17 +240,17 @@ namespace ES{
         }
 
 
-        constexpr Matrix inverse_in_place() noexcept requires(N==M && N >4){
+        constexpr Matrix& inverse_in_place() noexcept requires(N==M && N >4){
             Matrix temp((*this));
 
             Matrix inverse = Matrix::identity();
 
             for (std::size_t i = 0;i<N;i++){
                 std::size_t pivot = i;
-                T max_value = std::abs(temp(i,i));
+                T max_value = ES::math::abs(temp(i,i));
 
                 for(std::size_t j = i+1; j<N; j++){
-                    T value = std::abs(temp(j,i));
+                    T value = ES::math::abs(temp(j,i));
                     if(value > max_value){
                         max_value = value;
                         pivot = j;
@@ -259,7 +259,8 @@ namespace ES{
 
                 if(max_value == T{0}){
                     std::fill(inverse.begin(), inverse.end(), T{0});
-                    return inverse;
+                    (*this) = inverse;
+                    return (*this);
                 }
 
                 if(pivot != i){
@@ -274,21 +275,23 @@ namespace ES{
                 }
             }
 
-            for(int l= N-1;l>=0;l--){ 
+            for(int l = N-1;l>=0;l--){ 
+                const T pivot_value = temp(l,l);
                 for (std::size_t m = 0; m < N; m++) {
-                    temp(l,m) /= temp(l,l);
-                    inverse(l,m) /=  temp(l,l);
+                    temp(l,m) /= pivot_value;
+                    inverse(l,m) /=  pivot_value;
                 }
 
 
                 for (int n = l - 1; n >= 0; n--) {
-                    T scale = temp(n,l) / temp(l,l);
+                    T scale = temp(n,l);
                     temp.add_scaled_row_in_place(l, -scale, n);   
                     inverse.add_scaled_row_in_place(l, -scale, n); 
                  }
 
             }
-            return inverse;
+            (*this) = inverse;
+            return (*this);
         }
 
         [[nodiscard]] constexpr Matrix<T,M,N> pseudo_inverse() const noexcept requires(N>=M) {
@@ -320,16 +323,16 @@ namespace ES{
         }
         
         [[nodiscard]] constexpr Matrix adjugate() const noexcept requires(N==M){
-            Matrix<T,N> adjugate;
+            Matrix<T,N> result;
             
             for(std::size_t i = 0; i<N; i++){
                 for(std::size_t j = 0; j<N; j++){
                     Matrix<T,N-1,N-1> m = minor(i,j);
                     const T negative = ((i+j)&1) ? T{-1} : T{1};
-                    adjugate(j,i) =negative * m.determinant();
+                    result(j,i) =negative * m.determinant();
                 }
             }
-            return adjugate;
+            return result;
         }    
 
         [[nodiscard]] constexpr Matrix cofactor() const noexcept requires(N==M){
@@ -340,7 +343,7 @@ namespace ES{
         
         
         template <std::size_t O, std::size_t P>
-        [[nodiscard]] constexpr Matrix<T,N,P> operator*(Matrix<T,O,P> rhs) const noexcept requires(O==M){
+        [[nodiscard]] constexpr Matrix<T,N,P> operator*(const Matrix<T,O,P>& rhs) const noexcept requires(O==M){
 
             Matrix<T,N,P> temp;
             for(std::size_t i =0; i<N; i++){
@@ -356,7 +359,7 @@ namespace ES{
         }
 
         template<std::size_t O>
-        [[nodiscard]] constexpr VectorN<T,N> operator*(VectorN<T,O> rhs) const noexcept requires(O==M){
+        [[nodiscard]] constexpr VectorN<T,N> operator*(const VectorN<T,O>& rhs) const noexcept requires(O==M){
             VectorN<T,N> temp;
 
             for(std::size_t i =0; i<N; i++){
@@ -370,7 +373,7 @@ namespace ES{
         }
 
         template<std::size_t O>
-        [[nodiscard]] constexpr VectorN<T,N> operator*(PointN<T,O> rhs) const noexcept requires(O==M){
+        [[nodiscard]] constexpr PointN<T,N> operator*(const PointN<T,O>& rhs) const noexcept requires(O==M){
             PointN<T,N> temp;
 
             for(std::size_t i =0; i<N; i++){
@@ -383,16 +386,46 @@ namespace ES{
             return temp;
         }
 
+
+    // Sneaky specialization for vec3 times matrix
+    [[nodiscard]] constexpr VectorN<T,3> operator*(meta::const_pass_t<VectorN<T,3>> rhs) const noexcept requires(N==4 && M==4){
+        VectorN<T,3> temp;
+        for(std::size_t i = 0; i < 3; i++){
+            T accumulate = T{0};
+            for(std::size_t j = 0; j < 3; j++){
+                accumulate += (*this)(i,j) * rhs[j];
+            }
+            temp[i] = accumulate;
+        }
+        return temp;
+    }
+
+    // Sneay specialization for Point3 times matrix
+    [[nodiscard]] constexpr PointN<T,3> operator*(meta::const_pass_t<PointN<T,3>> rhs) const noexcept requires(N==4 && M==4){
+        PointN<T,3> temp;
+        for(std::size_t i = 0; i < 3; i++){
+            T accumulate = T{0};
+            for(std::size_t j = 0; j < 3; j++){
+                accumulate += (*this)(i,j) * rhs[j];
+            }
+            accumulate += (*this)(i,3);
+            temp[i] = accumulate;
+        }
+        return temp;
+    }
+
+
+
         [[nodiscard]] constexpr Matrix rref() const noexcept{
             Matrix temp((*this));
             std::size_t row = 0;
             std::size_t col = 0;
             while(row<N && col <M){
                 std::size_t pivot = row;
-                T max_value = std::abs(temp(row,col));
+                T max_value = ES::math::abs(temp(row,col));
 
                 for(std::size_t r = row +1; r<N;r++){
-                    T value = std::abs(temp(r,col));
+                    T value = ES::math::abs(temp(r,col));
                     if(value>max_value){
                         max_value = value;
                         pivot = r;
@@ -432,10 +465,10 @@ namespace ES{
             std::size_t col = 0;
             while(row<N && col <M){
                 std::size_t pivot = row;
-                T max_value = std::abs((*this)(row,col));
+                T max_value = ES::math::abs((*this)(row,col));
 
                 for(std::size_t r = row +1; r<N;r++){
-                    T value = std::abs((*this)(row,col));
+                    T value = ES::math::abs((*this)(r,col));
                     if(value>max_value){
                         max_value = value;
                         pivot = r;
@@ -476,10 +509,10 @@ namespace ES{
             std::size_t col = 0;
             while(row<N && col <M){
                 std::size_t pivot = row;
-                T max_value = std::abs(temp(row,col));
+                T max_value = ES::math::abs(temp(row,col));
 
                 for(std::size_t r = row +1; r<N;r++){
-                    T value = std::abs(temp(row,col));
+                    T value = ES::math::abs(temp(r,col));
                     if(value>max_value){
                         max_value = value;
                         pivot = r;
@@ -508,10 +541,10 @@ namespace ES{
             std::size_t col = 0;
             while(row<N && col <M){
                 std::size_t pivot = row;
-                T max_value = std::abs((*this)(row,col));
+                T max_value = ES::math::abs((*this)(row,col));
 
                 for(std::size_t r = row +1; r<N;r++){
-                    T value = std::abs((*this)(row,col));
+                    T value = ES::math::abs((*this)(r,col));
                     if(value>max_value){
                         max_value = value;
                         pivot = r;
@@ -583,7 +616,7 @@ namespace ES{
             return temp;
         }
         
-        [[nodiscard]] constexpr Matrix orthonormalize() const noexcept{
+        [[nodiscard]] /*TODO make constexpr*/ Matrix orthonormalize() const noexcept{
 
             std::array<VectorN<T,N>,M> temp_array;
             for(std::size_t i =0;i<M;i++){
@@ -655,13 +688,13 @@ namespace ES{
         }
 
 
-        [[nodiscard]] constexpr Matrix normalize() const noexcept {
+        [[nodiscard]] /*TODO make constexpr*/ Matrix normalize() const noexcept {
             Matrix result = *this;
             result.normalize_in_place(); 
             return result;
         }
 
-        constexpr Matrix& normalize_in_place() noexcept {
+        /*TODO constexpr also memcpy must go too once we switch to constexpr*/ Matrix& normalize_in_place() noexcept {
             for (std::size_t col = 0; col < M; ++col) {
                 VectorN<T,N> vec;
                 std::memcpy(&vec[0], &data_[col * N], sizeof(T) * N);
@@ -671,27 +704,27 @@ namespace ES{
             return *this;
         }
 
-        [[nodiscard]] constexpr Matrix set_row(std::size_t row, const VectorN<T,M>& vec) const noexcept {
+        [[nodiscard]] constexpr Matrix set_row(std::size_t row, meta::const_pass_t<VectorN<T,M>> vec) const noexcept {
             Matrix result = *this;
             result.set_row_in_place(row, vec);
             return result;
         }
 
-        constexpr Matrix& set_row_in_place(std::size_t row, const VectorN<T,M>& vec) noexcept {
+        constexpr Matrix& set_row_in_place(std::size_t row, meta::const_pass_t<VectorN<T,M>> vec) noexcept {
             for (std::size_t col = 0; col < M; ++col) {
                 data_[col * N + row] = vec[col];
             }
             return *this;
         }
 
-        [[nodiscard]] constexpr Matrix set_column(std::size_t col, const VectorN<T,N>& vec) const noexcept {
+        [[nodiscard]] constexpr Matrix set_column(std::size_t col, meta::const_pass_t<VectorN<T,N>> vec) const noexcept {
             Matrix result = *this;
             result.set_column_in_place(col, vec);
             return result;
         }
 
-        constexpr Matrix& set_column_in_place(std::size_t col, const VectorN<T,N>& vec) noexcept {
-            std::memcpy(&data_[col * N], &vec[0], sizeof(T) * N);
+        constexpr Matrix& set_column_in_place(std::size_t col, meta::const_pass_t<VectorN<T,N>> vec) noexcept {
+            std::copy(vec.begin(), vec.end(), &data_[col * N]);
             return *this;
         }
 

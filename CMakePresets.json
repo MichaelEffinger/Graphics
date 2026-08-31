@@ -5,8 +5,8 @@
             "name": "linux-base",
             "hidden": true,
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/out/build/${presetName}",
-            "installDir": "${sourceDir}/out/install/${presetName}",
+            "binaryDir": "${presetName}",
+            "installDir": "${presetName}",
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "gcc",
                 "CMAKE_CXX_COMPILER": "g++"
