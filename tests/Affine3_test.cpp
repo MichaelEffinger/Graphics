@@ -1,8 +1,9 @@
 #include <catch2/catch_test_macros.hpp>
 #include "../ES_math.hpp"
 #include "../Matrix.hpp"
-#include "../VectorN.hpp"
 #include "../AffineTransform3.hpp"
+
+import ES.VectorN;
 
 using namespace ES;
 

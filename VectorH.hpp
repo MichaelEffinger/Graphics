@@ -1,15 +1,16 @@
 #pragma once
 
-#include "ArithmeticOpsMixin.hpp"
 #include "ES_math.hpp"
 #include "ES_meta.hpp"
-#include "VectorN.hpp"
 #include "PointN.hpp"
 #include <cmath>
 #include <algorithm>
 #include <cassert>
-#include "ContainerN.hpp"
 #include "PointN.hpp"
+
+import ES.ContainerN;
+import ES.ArithmeticOpsMixin;
+import ES.VectorN;
 
 
 namespace ES{

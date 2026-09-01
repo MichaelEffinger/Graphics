@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Matrix.hpp"
-#include "VectorN.hpp"
 
+import ES.VectorN;
 
 namespace ES{
     template <typename T>

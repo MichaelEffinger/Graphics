@@ -1,7 +1,9 @@
-#pragma once
+module;
 #include <concepts>
 
-namespace ES::concepts{
+export module ES.concepts;
+
+export namespace ES::concepts{
 
     template<typename Op, typename T>
     concept FoldExpr = requires(Op op, T accum, T l, T r){

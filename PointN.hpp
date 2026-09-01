@@ -1,11 +1,15 @@
+#pragma once
+
 #include <type_traits>
 #include <cassert>
 #include <functional>
-#include "ES_math.hpp"
-#include "VectorN.hpp"
-#include "ContainerN.hpp"
 
-#pragma once
+#include "ES_math.hpp"
+
+import ES.ContainerN;
+import ES.ArithmeticOpsMixin;
+import ES.VectorN;
+
 
 
 namespace ES {

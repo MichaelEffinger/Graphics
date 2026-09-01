@@ -1,7 +1,7 @@
 //Michael Effinger
 //Ryan Seavey
+module;
 
-#pragma once
 #include <cstddef>
 #include <type_traits>
 #include <array>
@@ -11,8 +11,9 @@
 #include "ES_math.hpp"
 #include "ES_meta.hpp"
 
+export module ES.ContainerN;
 
-namespace ES{
+export namespace ES{
     //hmmmmm. this is curious 
     template<class Child, typename T, std::size_t N>
     class ContainerN{

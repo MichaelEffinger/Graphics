@@ -5,11 +5,11 @@
 #include <algorithm>
 #include <functional>
 #include <string>
-#include "ContainerN.hpp"
 #include <cstdint>
-#include "ArithmeticOpsMixin.hpp"
 
 import ES_math;
+import ES.ContainerN;
+import ES.ArithmeticOpsMixin;
 
 namespace ES{
 

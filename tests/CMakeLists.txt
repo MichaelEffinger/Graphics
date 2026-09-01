@@ -1,5 +1,5 @@
 ﻿# Welcome to the debug CMakeLists
-add_executable(ComputerGraphics_Tests ../ES_math.ixx
+add_executable(ComputerGraphics_Tests
         VectorN_test.cpp
         VectorN_constexpr_test.cpp
         Math_test.cpp
@@ -29,6 +29,12 @@ target_sources(ComputerGraphics_Tests
       ${CMAKE_SOURCE_DIR}      # the common root, e.g. /home/Michael/Graphics
     FILES
       ${CMAKE_SOURCE_DIR}/ES_math.ixx
+      ${CMAKE_SOURCE_DIR}/ContainerN.cppm
+      ${CMAKE_SOURCE_DIR}/ArithmeticOpsMixin.cppm;
+      ${CMAKE_SOURCE_DIR}/VectorN.cppm;
+      ${CMAKE_SOURCE_DIR}/ES_concepts.cppm;
+      
+
 )
 endif ()
 

@@ -1,9 +1,12 @@
 #pragma once
 
-#include "ContainerN.hpp"
+
 #include "ES_math.hpp"
-#include "VectorN.hpp"
 #include "ES_meta.hpp"
+
+import ES.ContainerN;
+import ES.ArithmeticOpsMixin;
+import ES.VectorN;
 
 namespace ES{
 

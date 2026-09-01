@@ -1,7 +1,9 @@
 #pragma once
+
 #include "Angle.hpp"
-#include "ContainerN.hpp"
-#include "ArithmeticOpsMixin.hpp"
+
+import ES.ContainerN;
+import ES.ArithmeticOpsMixin;
 
 namespace ES{
     template <ES::radian_or_degree Unit, typename T>

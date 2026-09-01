@@ -5,13 +5,13 @@
 #include <cmath>
 #include <algorithm>
 #include <cstring>
-#include "ContainerN.hpp"
-#include "ArithmeticOpsMixin.hpp"
-#include "VectorN.hpp"
 #include "PointN.hpp"
 #include "ES_meta.hpp"
 
 import ES_math;
+import ES.ContainerN;
+import ES.ArithmeticOpsMixin;
+import ES.VectorN;
 
 namespace ES{
 

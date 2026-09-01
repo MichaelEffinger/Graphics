@@ -1,13 +1,14 @@
+module;
 
-
-#pragma once
 #include <cassert>
 #include <algorithm>
 #include <functional>
 #include "config.hpp"
 #include "ES_meta.hpp"
 
-namespace ES{
+export module ES.ArithmeticOpsMixin;
+
+export namespace ES{
     template<class Child, typename T, std::size_t N>
     class ArithmeticOpsMixin{
 

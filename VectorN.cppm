@@ -1,18 +1,20 @@
 // Michael Effinger
-
-#pragma once
+module;
 
 #include <type_traits>
 #include <cassert>
 #include <cmath>
 #include <algorithm>
 #include <functional>
-#include "ContainerN.hpp"
 #include "Angle.hpp"
-#include "ArithmeticOpsMixin.hpp"
 #include "ES_meta.hpp"
 
-namespace ES {
+export module ES.VectorN;
+
+import ES.ContainerN;
+import ES.ArithmeticOpsMixin;
+
+export namespace ES {
 
 /**
  * @brief Fixed-size N-dimensional mathematical vector.
