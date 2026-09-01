@@ -1,6 +1,8 @@
 ﻿{
     "version": 3,
+
     "configurePresets": [
+
         {
             "name": "linux-base",
             "hidden": true,
@@ -17,6 +19,24 @@
                 "rhs": "Linux"
             }
         },
+
+        {
+            "name": "linux-clang-base",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${presetName}",
+            "installDir": "${presetName}",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+
         {
             "name": "x64-debug",
             "displayName": "x64 Debug",
@@ -29,6 +49,20 @@
                 "CMAKE_BUILD_TYPE": "Debug"
             }
         },
+
+        {
+            "name": "clang-x64-debug",
+            "displayName": "Clang x64 Debug",
+            "inherits": "linux-clang-base",
+            "architecture": {
+                "value": "x86_64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        },
+
         {
             "name": "x64-release",
             "displayName": "x64 Release",
@@ -37,6 +71,7 @@
                 "CMAKE_BUILD_TYPE": "Release"
             }
         },
+
         {
             "name": "x86-debug",
             "displayName": "x86 Debug",
@@ -49,6 +84,7 @@
                 "CMAKE_BUILD_TYPE": "Debug"
             }
         },
+
         {
             "name": "x86-release",
             "displayName": "x86 Release",
@@ -57,5 +93,6 @@
                 "CMAKE_BUILD_TYPE": "Release"
             }
         }
+
     ]
 }
