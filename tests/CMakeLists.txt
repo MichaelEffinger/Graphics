@@ -22,6 +22,7 @@ add_executable(ComputerGraphics_Tests
         ../ES_math.ixx
         ../ES_except.ixx
         ../ES_easy.ixx
+        Easy_test.cpp
 )
 
 if(NOT MSVC) #more MSVC cutouts!

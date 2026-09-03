@@ -2,7 +2,9 @@
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 #include "ES_test_util.hpp"
-
+#include <forward_list>
+#include <numeric>
+#include <ranges>
 import ES_easy;
 
 // TEST_CASE("ES::easy::random correct period", "[Random][easy::random][Unseeded Randomness]") {
@@ -39,4 +41,16 @@ TEST_CASE("ES::easy::shuffle","[ES::easy::shuffle]") {
     std::vector arr{1,2,3,4,5,6,7,8,9,0}, arr2(arr);
     ES::easy::shuffle(arr);
     CHECK(arr != arr2);
+}
+
+
+TEST_CASE("ES::easy::raffle", "[ES::easy::raffle]") {
+    std::forward_list<char> nasty(26);
+    std::ranges::iota(nasty, 'a');
+
+    std::vector<char> random_man(26);
+
+    for (auto& e : random_man) e = ES::easy::raffle(nasty);
+
+    CHECK_FALSE(random_man == (nasty | std::ranges::to<std::vector>()));
 }
