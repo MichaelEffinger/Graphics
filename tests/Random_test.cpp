@@ -6,8 +6,11 @@
 #include <forward_list>
 #include <numeric>
 #include <ranges>
+#include <random>
 import ES_easy;
 
+// #pragma optimize("t", on)
+// [[gnu::optimize("O3")]]
 // TEST_CASE("ES::easy::random correct period", "[Random][easy::random][Unseeded Randomness]") {
 //     SECTION("Ensure that the period is correct") {
 //         auto z = ES::easy::random<std::uint32_t>(0, UINT_MAX);
@@ -16,6 +19,7 @@ import ES_easy;
 //         REQUIRE(z == ES::easy::random<std::uint32_t>(0, UINT_MAX));
 //     }
 // }
+// #pragma optimize("", on)
 
 TEST_CASE("ES::Random::_easy_seeded_callable (All overloads)", "[Random][easy::random][Seeded Randomness]") {
     SECTION("check if two callables with the same seed give the same value for the first overload (canonical)") {
