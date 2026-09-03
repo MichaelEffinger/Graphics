@@ -5,6 +5,7 @@
 #include "ES_meta.hpp"
 #include "Angle.hpp"
 #include <bits/stl_algo.h>
+#include <assert.h>
 
 import ES.ContainerN;
 import ES.ArithmeticOpsMixin;
