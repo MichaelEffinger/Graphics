@@ -1,4 +1,5 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/interfaces/catch_interfaces_config.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 #include "ES_test_util.hpp"
@@ -44,6 +45,14 @@ TEST_CASE("ES::easy::random(float)","[random]") {
     CHECK(first() == second());
     CHECK(first() < 1.0);
     CHECK(second() < 1.0);
+}
+
+TEST_CASE("ES::easy::random tied to Catch2's seed!","[random]") {
+    unsigned i = GENERATE(range(0u, ENOUGH_ITERATIONS));
+    const unsigned s = Catch::getCurrentContext().getConfig()->rngSeed();
+    auto two_args = ES::easy::random_seeded_callable(s, 0u, i);
+    auto one_args = ES::easy::random_seeded_callable(s,  i);
+    CHECK(two_args() == one_args());
 }
 
 TEST_CASE("ES::easy::shuffle","[ES::easy::shuffle]") {
