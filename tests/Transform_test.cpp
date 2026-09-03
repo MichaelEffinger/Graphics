@@ -4,7 +4,6 @@
 #include "../Transform.hpp"
 
 import ES.VectorN;
-
 using namespace ES;
 
 TEST_CASE("Transform default constructor", "[Transform]"){

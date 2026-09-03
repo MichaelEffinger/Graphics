@@ -3,6 +3,8 @@
 
 #include "ES_math.hpp"
 #include "ES_meta.hpp"
+#include "Angle.hpp"
+#include <bits/stl_algo.h>
 
 import ES.ContainerN;
 import ES.ArithmeticOpsMixin;

@@ -1,8 +1,9 @@
 #pragma once
 #include <cmath>
-#include "ES_concepts.hpp"
 #include <type_traits>
 #include <limits> //TODO: in house? To what end? I cry.
+
+import ES.concepts;
 
 namespace ES::math {
 template <typename T> struct default_epsilon;

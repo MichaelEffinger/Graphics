@@ -7,11 +7,13 @@ module;
 #include <array>
 #include <cassert>
 #include <algorithm>
-#include "ES_concepts.hpp"
 #include "ES_math.hpp"
 #include "ES_meta.hpp"
 
 export module ES.ContainerN;
+
+import ES.concepts;
+
 
 export namespace ES{
     //hmmmmm. this is curious 

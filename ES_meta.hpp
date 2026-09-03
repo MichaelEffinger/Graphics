@@ -1,6 +1,6 @@
 #pragma once
-#include "ES_concepts.hpp"
 
+import ES.concepts;
 
 
 namespace ES::meta{

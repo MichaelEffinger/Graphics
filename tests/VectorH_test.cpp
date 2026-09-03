@@ -1,7 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 #include "../ES_math.hpp"
-#include "../VectorH.hpp"
+#include "../PointN.hpp"
 
+import ES.VectorH;
 using namespace ES;
 
 TEST_CASE("VectorH accessors x, y, z, w", "[VectorH]") {

@@ -30,9 +30,10 @@ target_sources(ComputerGraphics_Tests
     FILES
       ${CMAKE_SOURCE_DIR}/ES_math.ixx
       ${CMAKE_SOURCE_DIR}/ContainerN.cppm
-      ${CMAKE_SOURCE_DIR}/ArithmeticOpsMixin.cppm;
-      ${CMAKE_SOURCE_DIR}/VectorN.cppm;
-      ${CMAKE_SOURCE_DIR}/ES_concepts.cppm;
+      ${CMAKE_SOURCE_DIR}/ArithmeticOpsMixin.cppm
+      ${CMAKE_SOURCE_DIR}/VectorN.cppm
+      ${CMAKE_SOURCE_DIR}/VectorH.cppm
+      ${CMAKE_SOURCE_DIR}/ES_concepts.cppm
       
 
 )
