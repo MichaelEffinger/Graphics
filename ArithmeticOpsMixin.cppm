@@ -4,9 +4,10 @@ module;
 #include <algorithm>
 #include <functional>
 #include "config.hpp"
-#include "ES_meta.hpp"
 
 export module ES.ArithmeticOpsMixin;
+
+import ES.meta;
 
 export namespace ES{
     template<class Child, typename T, std::size_t N>

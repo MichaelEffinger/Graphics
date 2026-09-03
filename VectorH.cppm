@@ -1,18 +1,17 @@
 module;
 
-#include "ES_math.hpp"
-#include "ES_meta.hpp"
-#include "PointN.hpp"
 #include <cmath>
 #include <algorithm>
 #include <cassert>
-#include "PointN.hpp"
 
 export module ES.VectorH;
 
+import ES_math;
+import ES.meta;
 import ES.ContainerN;
 import ES.ArithmeticOpsMixin;
 import ES.VectorN;
+import ES.PointN;
 
 
 export namespace ES{

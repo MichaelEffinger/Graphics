@@ -1,9 +1,10 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
-#include "../ES_random.hpp"
 #include "ES_test_util.hpp"
 #include <climits>
+
+import ES.random;
 
 TEST_CASE("ES::Random::Easy correct period", "[Random][Random::Easy][Unseeded Randomness]") {
     SECTION("Ensure that the period is correct") {

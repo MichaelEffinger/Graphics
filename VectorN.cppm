@@ -6,11 +6,11 @@ module;
 #include <cmath>
 #include <algorithm>
 #include <functional>
-#include "Angle.hpp"
-#include "ES_meta.hpp"
 
 export module ES.VectorN;
 
+import ES.meta;
+import ES.Angle;
 import ES.ContainerN;
 import ES.ArithmeticOpsMixin;
 

@@ -1,8 +1,8 @@
 #include "constexpr_require.hpp"
-#include "../ES_math.hpp"
-#include "../Quaternion.hpp"
 
+import ES_math;
 import ES.VectorN;
+import ES.Quaternion;
 
 using namespace ES;
 

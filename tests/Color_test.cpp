@@ -1,9 +1,10 @@
 #include <catch2/catch_test_macros.hpp>
-#include "../ES_math.hpp"
-#include "../ColorN.hpp"
 
 
+import ES.ColorN;
+import ES_math;
 using namespace ES;
+
 
 
 

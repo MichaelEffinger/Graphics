@@ -1,11 +1,12 @@
-#pragma once
+module;
 
-#include "Angle.hpp"
+export module ES.EulerAngles;
 
 import ES.ContainerN;
 import ES.ArithmeticOpsMixin;
+import ES.Angle;
 
-namespace ES{
+export namespace ES{
     template <ES::radian_or_degree Unit, typename T>
     class EulerAngles : public ContainerN<EulerAngles<Unit,T>,Angle<Unit,T>,3>, public ArithmeticOpsMixin<EulerAngles<Unit,T>, Angle<Unit,T>,3>{
         

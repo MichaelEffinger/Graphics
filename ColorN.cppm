@@ -1,4 +1,5 @@
-#pragma once
+module;
+
 #include <type_traits>
 #include <cassert>
 #include <cmath>
@@ -7,11 +8,13 @@
 #include <string>
 #include <cstdint>
 
+export module ES.ColorN;
+
 import ES_math;
 import ES.ContainerN;
 import ES.ArithmeticOpsMixin;
 
-namespace ES{
+export namespace ES{
 
     template <typename T> struct max_color;
 

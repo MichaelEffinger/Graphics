@@ -34,7 +34,15 @@ target_sources(ComputerGraphics_Tests
       ${CMAKE_SOURCE_DIR}/VectorN.cppm
       ${CMAKE_SOURCE_DIR}/VectorH.cppm
       ${CMAKE_SOURCE_DIR}/ES_concepts.cppm
-      
+      ${CMAKE_SOURCE_DIR}/PointN.cppm
+      ${CMAKE_SOURCE_DIR}/Matrix.cppm
+      ${CMAKE_SOURCE_DIR}/Transform.cppm
+      ${CMAKE_SOURCE_DIR}/Quaternion.cppm
+      ${CMAKE_SOURCE_DIR}/EulerAngles.cppm
+      ${CMAKE_SOURCE_DIR}/ES_random.cppm
+      ${CMAKE_SOURCE_DIR}/ES_meta.cppm
+      ${CMAKE_SOURCE_DIR}/ColorN.cppm
+      ${CMAKE_SOURCE_DIR}/Angle.cppm
 
 )
 endif ()

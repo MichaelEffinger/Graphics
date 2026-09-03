@@ -1,18 +1,18 @@
-#pragma once
+module;
 
 #include <type_traits>
 #include <cassert>
 #include <functional>
 
-#include "ES_math.hpp"
+export module ES.PointN;
 
+import ES_math;
+import ES.meta;
 import ES.ContainerN;
 import ES.ArithmeticOpsMixin;
 import ES.VectorN;
 
-
-
-namespace ES {
+export namespace ES {
     template <typename T, std::size_t N> requires(std::is_arithmetic_v<T>)
     class PointN: public ContainerN<PointN<T,N>,T,N>, public ArithmeticOpsMixin<PointN<T,N>,T,N>  {
     

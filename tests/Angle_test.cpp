@@ -1,7 +1,7 @@
-#include "../Angle.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include "ES_test_util.hpp"
 
+import ES.Angle;
 
 constexpr float PIE = std::numbers::pi_v<float>; //TODO: use the promised in-house ES::math pi.
 constexpr float PINF = std::numeric_limits<float>::infinity();

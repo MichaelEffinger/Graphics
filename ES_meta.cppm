@@ -1,9 +1,10 @@
-#pragma once
+module;
+
+export module ES.meta;
 
 import ES.concepts;
 
-
-namespace ES::meta{
+export namespace ES::meta{
 
     template<typename copyType>
     using const_pass_t = std::conditional_t<concepts::CheapToCopy<copyType>, const copyType, const copyType&>;

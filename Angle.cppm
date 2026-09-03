@@ -1,12 +1,13 @@
-#ifndef COMPUTERGRAPHICS_ES_ANGLE_HPP
-#define COMPUTERGRAPHICS_ES_ANGLE_HPP
+module;
+
 #include <type_traits>
 #include <numbers>
 #include <utility>
 
-#include "ES_math.hpp"
+export module ES.Angle;
+import ES_math;
 
-namespace ES {
+export namespace ES {
     namespace Secret {
         class radian{};
         class degree{};
@@ -175,5 +176,3 @@ template <typename T> [[nodiscard]] constexpr T ES::Secret::normalize_angle_coef
     }
     return x;
 }
-
-#endif //COMPUTERGRAPHICS_ES_ANGLE_HPP

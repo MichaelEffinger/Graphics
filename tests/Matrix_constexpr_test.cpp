@@ -1,9 +1,10 @@
 #include "constexpr_require.hpp"
-#include "../ES_math.hpp"
-#include "../Matrix.hpp"
-#include "../PointN.hpp"
 
+import ES_math;
 import ES.VectorN;
+import ES.PointN;
+import ES.Matrix;
+
 using namespace ES;
 
 // ---------------------------------------------------------------------

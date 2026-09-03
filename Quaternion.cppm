@@ -1,17 +1,18 @@
-#pragma once
+module;
 
-
-#include "ES_math.hpp"
-#include "ES_meta.hpp"
-#include "Angle.hpp"
 #include <bits/stl_algo.h>
 #include <assert.h>
 
+export module ES.Quaternion;
+
+imoprt ES.math;
+import ES.meta;
+import ES.Angle;
 import ES.ContainerN;
 import ES.ArithmeticOpsMixin;
 import ES.VectorN;
 
-namespace ES{
+export namespace ES{
 
     template <typename T>
     class Quaternion: public ContainerN<Quaternion<T>,T,4>, public ArithmeticOpsMixin<Quaternion<T>,T,4>{

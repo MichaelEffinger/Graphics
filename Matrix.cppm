@@ -1,19 +1,21 @@
-#pragma once
+module;
 
 #include <type_traits>
 #include <cassert>
 #include <cmath>
 #include <algorithm>
 #include <cstring>
-#include "PointN.hpp"
-#include "ES_meta.hpp"
+
+export module ES.Matrix;
 
 import ES_math;
+import ES_meta;
 import ES.ContainerN;
 import ES.ArithmeticOpsMixin;
 import ES.VectorN;
+import ES.PointN;
 
-namespace ES{
+export namespace ES{
 
 
 

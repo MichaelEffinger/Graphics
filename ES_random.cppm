@@ -1,10 +1,11 @@
-#ifndef COMPUTERGRAPHICS_ESRANDOM_HPP
-#define COMPUTERGRAPHICS_ESRANDOM_HPP
+module;
 
 #include <random>
 
+export module ES.random;
+
 //SIGNATURES AND FRIENDS
-namespace ES::random {
+export namespace ES::random {
     template<typename L, typename  R>
     [[nodiscard]] std::common_type_t<L,R> easy(L low, R high);
 
@@ -83,8 +84,3 @@ std::minstd_rand& ES::random::Secret::get_quick_engine() {
 
 
 
-
-
-
-
-#endif //COMPUTERGRAPHICS_ESRANDOM_HPP

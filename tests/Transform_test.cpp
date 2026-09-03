@@ -1,9 +1,10 @@
 #include <catch2/catch_test_macros.hpp>
-#include "../ES_math.hpp"
-#include "../Matrix.hpp"
-#include "../Transform.hpp"
 
+import ES_math;
 import ES.VectorN;
+import ES.Matrix;
+import ES.Transform;
+
 using namespace ES;
 
 TEST_CASE("Transform default constructor", "[Transform]"){
