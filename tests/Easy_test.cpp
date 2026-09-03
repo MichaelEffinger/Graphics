@@ -1,3 +1,7 @@
+#include <algorithm>
+#include <deque>
+#include <numeric>
+#include <array>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
@@ -20,6 +24,21 @@ TEST_CASE("ES capitalizing and lowercasing ranges") {
         std::string stemp{"Long string that would have to call new."}, st4{stemp}, st3{ES::easy::lowercase_range(std::move(stemp))};
         ES::easy::lowercase_range_in_place(st4);
         CHECK(st4 == st3);
+    }
+
+    SECTION("Empty!?") {
+        std::string empty;
+        CHECK(ES::easy::lowercase_range(empty).empty());
+    }
+
+    SECTION("Not neccessairly a string!?") {
+        std::deque<char> deck;
+        std::array<char, 26> alpha{};
+        std::ranges::iota(alpha, 'A');
+        ES::easy::lowercase_range_in_place(alpha);
+        CHECK_FALSE(std::ranges::equal(alpha, ES::easy::capitalize_range(alpha)));
+        std::ranges::copy(alpha, std::back_inserter(deck));
+        CHECK(std::ranges::equal(ES::easy::capitalize_range_in_place(alpha), ES::easy::capitalize_range_in_place(deck)));
     }
 
 }

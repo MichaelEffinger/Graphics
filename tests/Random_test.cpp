@@ -37,20 +37,44 @@ TEST_CASE("ES::Random::_easy_seeded_callable (All overloads)", "[Random][easy::r
     }
 }
 
+TEST_CASE("ES::easy::random(float)","[random]") {
+    auto i = GENERATE(range(0u, ENOUGH_ITERATIONS));
+    auto first = ES::easy::random_seeded_callable(i),
+    second = ES::easy::random_seeded_callable(i);
+    CHECK(first() == second());
+    CHECK(first() < 1.0);
+    CHECK(second() < 1.0);
+}
+
 TEST_CASE("ES::easy::shuffle","[ES::easy::shuffle]") {
-    std::vector arr{1,2,3,4,5,6,7,8,9,0}, arr2(arr);
-    ES::easy::shuffle(arr);
-    CHECK(arr != arr2);
+    SECTION("Basic test!"){
+        std::vector arr{1,2,3,4,5,6,7,8,9,0}, arr2(arr);
+        ES::easy::shuffle(arr);
+        CHECK(arr != arr2);
+    }
+
+    SECTION("Empty!") {
+        std::string x;
+        CHECK_NOTHROW(ES::easy::shuffle(x));
+    }
 }
 
 
 TEST_CASE("ES::easy::raffle", "[ES::easy::raffle]") {
-    std::forward_list<char> nasty(26);
-    std::ranges::iota(nasty, 'a');
+    SECTION("Alphabet soup!"){
+        std::forward_list<char> nasty(26);
+        std::ranges::iota(nasty, 'a');
 
-    std::vector<char> random_man(26);
+        std::vector<char> random_man(26);
 
-    for (auto& e : random_man) e = ES::easy::raffle(nasty);
+        for (auto& e : random_man) e = ES::easy::raffle(nasty);
 
-    CHECK_FALSE(random_man == (nasty | std::ranges::to<std::vector>()));
+        CHECK_FALSE(random_man == (nasty | std::ranges::to<std::vector>()));
+    }
+
+    SECTION("Empty!") {
+        std::vector<int> zed{'2'};
+        zed.clear();
+        CHECK_THROWS_AS(ES::easy::raffle(zed), std::out_of_range);
+    }
 }

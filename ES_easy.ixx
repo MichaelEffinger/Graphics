@@ -126,7 +126,7 @@ namespace ES::easy::Secret {
 
 template<typename L, typename R>
 std::common_type_t<L, R> ES::easy::random(const L low, const R high) {
-    Secret::uniform_dist<L,R> dist(low, high);
+    auto dist = low <= high ? Secret::uniform_dist<L,R>(low, high) : Secret::uniform_dist<L,R>(high, low);
     return dist(Secret::get_quick_engine());
 }
 
@@ -195,16 +195,18 @@ void ES::easy::shuffle(R && arr) {
 template<std::ranges::range R>
 decltype(auto) ES::easy::raffle(R &r) {
     if constexpr (std::ranges::random_access_range<R>){
+        if (std::ranges::empty(r)) throw std::out_of_range("ES::easy::raffle(), we can't throw a raffle with an empty range!");
         const auto size = std::ranges::distance(r);
         return r[ES::easy::random(size - decltype(size){1})];
+    } else {
+        std::ranges::range_value_t<R> chosen{};
+        std::size_t count = 0;
+        for (auto&& element : r) {
+            ++count;
+            if (ES::easy::random(count - 1uz) == 0) chosen = std::forward<decltype(element)>(element);
+        }
+        return chosen;
     }
-    std::ranges::range_value_t<R> chosen{};
-    std::size_t count = 0;
-    for (auto&& element : r) {
-        ++count;
-        if (ES::easy::random(count - 1uz) == 0) chosen = std::forward<decltype(element)>(element);
-    }
-    return chosen;
 }
 
 template<std::invocable func, typename... Args>
