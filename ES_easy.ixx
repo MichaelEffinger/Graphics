@@ -226,7 +226,7 @@ constexpr auto ES::easy::capitalize_range(R &&r) {
 
 template<std::ranges::range R>
 constexpr R& ES::easy::capitalize_range_in_place(R &r) {
-    std::ranges::transform(r, std::ranges::begin(r), Secret::to_upper);
+    r = capitalize_range(std::move(r));
     return r;
 }
 
@@ -239,7 +239,7 @@ constexpr auto ES::easy::lowercase_range(R &&r) {
 
 template<std::ranges::range R>
 constexpr R & ES::easy::lowercase_range_in_place(R &r) {
-    std::ranges::transform(r, std::ranges::begin(r), Secret::to_lower);
+    return r = lowercase_range(std::move(r));
     return r;
 }
 
