@@ -98,7 +98,7 @@ export namespace ES::easy {
     R& lowercase_range_in_place(R &, std::locale const &rules = std::locale());
 
     template<std::ranges::range R>
-    NDCRAO trim_whitespace(R&&);
+    [[nodiscard]] constexpr auto trim_whitespace(R&&);
 
     template<std::ranges::range R>
     constexpr R& trim_whitespace_in_place(R&);
@@ -117,9 +117,9 @@ namespace ES::easy::Secret {
     template<typename L, typename R>
     using uniform_dist = std::conditional_t<std::is_integral_v<std::common_type_t<L, R>>, std::uniform_int_distribution<std::common_type_t<L, R>>, std::uniform_real_distribution<std::common_type_t<L, R>>>;
 
-    constexpr auto to_upper = [](const unsigned char c){return static_cast<char>(std::toupper(c));};
-    constexpr auto to_lower = [](const unsigned char c){return static_cast<char>(std::tolower(c));};
-    constexpr auto is_whitespace = [](const unsigned char c){return static_cast<bool>(std::isspace(c));};
+    [[maybe_unused]] [[deprecated("Use the std::locale equivalent.")]] constexpr auto to_upper = [](const unsigned char c){return static_cast<char>(std::toupper(c));};
+    [[maybe_unused]] [[deprecated("Use the std::locale equivalent.")]] constexpr auto to_lower = [](const unsigned char c){return static_cast<char>(std::tolower(c));};
+    [[maybe_unused]] [[deprecated("Use the std::locale equivalent.")]] constexpr auto is_whitespace = [](const unsigned char c){return static_cast<bool>(std::isspace(c));};
 }
 
 //--------------------DEFINITIONS------------------------
