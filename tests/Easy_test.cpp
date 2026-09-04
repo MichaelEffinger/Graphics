@@ -2,6 +2,7 @@
 #include <deque>
 #include <numeric>
 #include <array>
+#include <ranges>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
@@ -29,6 +30,7 @@ TEST_CASE("ES capitalizing and lowercasing ranges") {
     SECTION("Empty!?") {
         std::string empty;
         CHECK(ES::easy::lowercase_range(empty).empty());
+        CHECK(ES::easy::capitalize_range(empty).empty());
     }
 
     SECTION("Not neccessairly a string!?") {

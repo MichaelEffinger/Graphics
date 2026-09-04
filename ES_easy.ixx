@@ -86,16 +86,16 @@ export namespace ES::easy {
 
 //----------------- FORMATTING CHARACTERS ---------------
     template<std::ranges::range R>
-    NDCRAO capitalize_range(R&&);
+    [[nodiscard]] auto capitalize_range(R&&, std::locale const &rules = std::locale());
 
     template<std::ranges::range R>
-    constexpr R& capitalize_range_in_place(R &);
+    R& capitalize_range_in_place(R &, std::locale const &rules = std::locale());
 
     template<std::ranges::range R>
-    NDCRAO lowercase_range(R&&);
+    [[nodiscard]] auto lowercase_range(R&&, std::locale const &rules = std::locale());
 
     template<std::ranges::range R>
-    constexpr R& lowercase_range_in_place(R &);
+    R& lowercase_range_in_place(R &, std::locale const &rules = std::locale());
 
     template<std::ranges::range R>
     NDCRAO trim_whitespace(R&&);
@@ -218,29 +218,48 @@ double ES::easy::time_it(func&& f, Args&&... args) {
 }
 
 template<std::ranges::range R>
-constexpr auto ES::easy::capitalize_range(R &&r) {
+auto ES::easy::capitalize_range(R &&r, std::locale const &rules) {
+    using objtype = std::ranges::range_value_t<R>;
     std::remove_cvref_t<R> retval(std::forward<R>(r));
-    std::ranges::transform(retval, std::ranges::begin(retval), Secret::to_upper);
+    const auto& capitalization_rule = std::use_facet<std::ctype<objtype>>(rules);
+    if (not std::ranges::empty(retval))
+        if constexpr (std::ranges::contiguous_range<R>) {
+            objtype* const start_pointer = std::addressof(*std::ranges::begin(retval));
+            auto const len = std::ranges::size(retval);
+            capitalization_rule.toupper(start_pointer, start_pointer + len);
+        } else {
+            const auto internal_to_upper = [&](objtype const c){return capitalization_rule.toupper(c);};
+            std::ranges::transform(retval, std::begin(retval), internal_to_upper);
+        }
     return retval;
 }
 
 template<std::ranges::range R>
-constexpr R& ES::easy::capitalize_range_in_place(R &r) {
-    r = capitalize_range(std::move(r));
+R& ES::easy::capitalize_range_in_place(R &r, std::locale const &rules) {
+    r = capitalize_range(std::move(r), rules);
     return r;
 }
 
 template<std::ranges::range R>
-constexpr auto ES::easy::lowercase_range(R &&r) {
+auto ES::easy::lowercase_range(R &&r, std::locale const &rules)  {
+    using objtype = std::ranges::range_value_t<R>;
     std::remove_cvref_t<R> retval(std::forward<R>(r));
-    std::ranges::transform(retval, std::ranges::begin(retval), Secret::to_lower);
+    const auto& capitalization_rule = std::use_facet<std::ctype<objtype>>(rules);
+    if (not std::ranges::empty(retval))
+        if constexpr (std::ranges::contiguous_range<R>) {
+            objtype* const start_pointer = std::addressof(*std::ranges::begin(retval));
+            auto const len = std::ranges::size(retval);
+            capitalization_rule.tolower(start_pointer, start_pointer + len);
+        } else {
+            const auto internal_to_lower = [&](objtype const c){return capitalization_rule.tolower(c);};
+            std::ranges::transform(retval, std::begin(retval), internal_to_lower);
+        }
     return retval;
 }
 
 template<std::ranges::range R>
-constexpr R & ES::easy::lowercase_range_in_place(R &r) {
-    return r = lowercase_range(std::move(r));
-    return r;
+R & ES::easy::lowercase_range_in_place(R &r, std::locale const &rules) {
+    return r = lowercase_range(std::move(r), rules);
 }
 
 template<std::ranges::range R>
