@@ -80,13 +80,30 @@ export namespace ES::math {
      * @return Take a wild guess.
      */
     template<typename T>
-    NDCR T round(const T N) noexcept {
+    NDCR T round(const T N) noexcept(std::is_arithmetic_v<T>)
+    {
         if constexpr (std::is_integral_v<T>) return N;
         if (is_hideous(N)) return N;
-        if (N == static_cast<T>(0)) return N;
+        if (N == static_cast<T>(0.0)) return N;
         const T neg = N < 0 ? -1 : 1;
         if (N + neg * std::numeric_limits<T>::round_error() == N) return N;
         return static_cast<T>(static_cast<long long>(N + neg * static_cast<T>(0.5)));
+    }
+
+    /**
+     * ES::math::round's technically more correct younger brother. static_cast's way more correct even younger brother.
+     * @tparam To the type which you want to cast to.
+     * @tparam From the type which you are casting from
+     * @param N the castee.
+     * @return Your perfectly rounded--not truncated, no siree--value as the correct type.
+     */
+    template<typename To, typename From>
+    NDCR To round_cast(const From N){
+        if constexpr (not std::is_integral_v<From>) if (is_hideous(N)) throw std::domain_error("ES::math::round_cast(), cannot cast a non-number.");
+        if (N > static_cast<To>(std::numeric_limits<To>::max()) ||
+            N < static_cast<To>(std::numeric_limits<To>::min()))
+            throw std::domain_error("ES::math::round_cast(), the casted value is too large to fit in the return type.");
+        return static_cast<To>(ES::math::round(N));
     }
 
     /**
