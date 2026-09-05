@@ -1,7 +1,9 @@
 #include <catch2/catch_test_macros.hpp>
-#include "../ES_math.hpp"
-#include "../Matrix.hpp"
-#include "../VectorN.hpp"
+
+import ES_math;
+import ES.VectorN;
+import ES.PointN;
+import ES.Matrix;
 
 using namespace ES;
 

@@ -1,7 +1,9 @@
-#pragma once
+module;
 #include <concepts>
 
-namespace ES::concepts{
+export module ES.concepts;
+
+export namespace ES::concepts{
 
     template<typename Op, typename T>
     concept FoldExpr = requires(Op op, T accum, T l, T r){
@@ -15,8 +17,6 @@ namespace ES::concepts{
         c.cbegin();
         c.cend();
     };
-
     template<typename T>
     concept CheapToCopy = std::is_trivially_copy_constructible_v<T> && std::is_trivially_destructible_v<T> && sizeof(T) <= 2*sizeof(void*);
-
 }

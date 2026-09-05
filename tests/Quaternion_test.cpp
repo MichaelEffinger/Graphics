@@ -1,8 +1,9 @@
 #include <catch2/catch_test_macros.hpp>
-#include "../ES_math.hpp"
-#include "../Quaternion.hpp"
-#include "../VectorN.hpp"
-#include "../Angle.hpp"
+
+import ES_math;
+import ES.Angle;
+import ES.VectorN;
+import ES.Quaternion;
 
 using namespace ES;
 
@@ -351,7 +352,7 @@ TEST_CASE("Quaternion slerp", "[Quaternion]"){
     
     auto result = q1.slerp(q2, 0.5f);
     
-    REQUIRE(math::approx_equal(result.length(), 1.0f, 0.001f));
+    CHECK(math::approx_equal(result.length(), 1.0f, 0.001f));
 }
 
 TEST_CASE("Quaternion slerp at t=0", "[Quaternion]"){

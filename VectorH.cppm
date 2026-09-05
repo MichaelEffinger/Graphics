@@ -1,21 +1,21 @@
-#pragma once
+module;
 
-#include "ArithmeticOpsMixin.hpp"
-#include "ES_math.hpp"
-#include "ES_meta.hpp"
-#include "VectorN.hpp"
-#include "PointN.hpp"
 #include <cmath>
 #include <algorithm>
 #include <cassert>
-#include "ContainerN.hpp"
-#include "PointN.hpp"
+
+export module ES.VectorH;
+
+import ES_math;
+import ES.meta;
+import ES.ContainerN;
+import ES.ArithmeticOpsMixin;
+import ES.VectorN;
+import ES.PointN;
 
 
-namespace ES{
 
-
-    
+export namespace ES{
 
 
 template <typename T>
@@ -233,9 +233,9 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     *       Use `magnitude_squared()` if you only need comparisons or repeated calculations.
     * @note needs 2 directions for this function
     */
-    [[nodiscard]] /* TODO: make constexpr*/ T magnitude() const noexcept {
+    [[nodiscard]] constexpr T magnitude() const noexcept {
         assert((!w()) && "magnitude requires a direction" );
-        return std::sqrt(std::fabs(zip_reduce(*this, 0,[](T accum, T l, T r){return accum+(l*r);})));
+        return ES::math::sqrt(ES::math::abs(zip_reduce(*this, 0,[](T accum, T l, T r){return accum+(l*r);})));
     }
 
     /**
@@ -251,7 +251,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     */
     [[nodiscard]] constexpr T magnitudeSquared() const noexcept {
         assert((!w()) && "Magnitude requires a direction");
-        return math::constexpr_abs(zip_reduce(*this, 0,[](T accum, T l, T r){return accum+(l*r);}));
+        return math::abs(zip_reduce(*this, 0,[](T accum, T l, T r){return accum+(l*r);}));
     }
 
 
@@ -291,7 +291,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     *       relatively expensive. For performance-critical code, consider
     *       checking magnitude before normalizing.
     */
-    [[nodiscard]] /* TODO: make constexpr*/ VectorH normalize() const noexcept {
+    [[nodiscard]] constexpr VectorH normalize() const noexcept {
         return VectorH(*this).normalize_in_place();
     }
 
@@ -347,7 +347,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
         return operator/=(w());
     }
 
-    [[nodiscard]] /*TODO: make constexpr*/ auto angle(const VectorH rhs) noexcept{
+    [[nodiscard]] constexpr auto angle(const VectorH rhs) noexcept{
         VectorN thisH = this->homogenize();
         VectorN thatH = rhs.homogenize();
         return thisH.angle(thatH);
@@ -369,18 +369,18 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     * @note This function requires both vectors be directions
     */
     template <typename U = VectorH>
-    [[nodiscard]] VectorH slerp(meta::const_pass_t<U> rhs, T t){
+    [[nodiscard]] constexpr VectorH slerp(meta::const_pass_t<U> rhs, T t){
         assert(!w() && !rhs.w() && "slerp needs 2 direction vectors");
         T daught = dot(rhs);
 
-        T theta = std::acos(daught);
+        T theta = ES::math::acos(daught);
         if (theta < math::default_epsilon<T>::value) {
             return *this;
         }
 
-        T sinTheta = std::sin(theta);
-        T w1 = std::sin((1 - t) * theta) / sinTheta;
-        T w2 = std::sin(t * theta) / sinTheta;
+        T sinTheta = ES::math::sin(theta);
+        T w1 = ES::math::sin((1 - t) * theta) / sinTheta;
+        T w2 = ES::math::sin(t * theta) / sinTheta;
 
         return zip(rhs, [w1, w2](T a, T b) {return std::fma(w1, a, w2 * b);});
     }
@@ -553,7 +553,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     *          the result will be incorrect. See `refract_safe()` for an automatically normalized version.
     */
     template <typename U = VectorH>
-    [[nodiscard]] /* TODO: make constexpr*/ VectorH refract(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {
+    [[nodiscard]] constexpr VectorH refract(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {
         assert(!w() && !rhs.w() && "refract requires two direction vectors");
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhs));
@@ -563,7 +563,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
             std::fill(tempVec.begin(),tempVec.end(),T{0});
             return tempVec;
         }
-        T sqrtK = std::sqrt(k);
+        T sqrtK = ES::math::sqrt(k);
 
         return zip(rhs, [refractionRatio, cosi, sqrtK](T i, T n) {return i * refractionRatio + n * (refractionRatio * cosi - sqrtK);});
     }
@@ -585,7 +585,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     *          normalized, use `refract_in_place_safe()` instead.
     */
     template <typename U = VectorH>
-    /* TODO: make constexpr*/ VectorH& refract_in_place(meta::const_pass_t<U> rhs, T n1, T n2) noexcept {
+    constexpr VectorH& refract_in_place(meta::const_pass_t<U> rhs, T n1, T n2) noexcept {
         assert(!w() && !rhs.w() && "refract requires two direction vectors");
         T refractionRatio = n1 / n2;
         T cosi = -(dot(rhs));
@@ -594,7 +594,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
             std::fill(begin(),end(),T{0});
             return *this;
         }       
-        T sqrtK = std::sqrt(k);
+        T sqrtK = ES::math::sqrt(k);
         return zip_in_place(rhs, [refractionRatio, cosi, sqrtK](T i, T n) {return i * refractionRatio + n * (refractionRatio * cosi - sqrtK);});
     }
 
@@ -612,7 +612,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     * @return A refracted VectorN, or a zero vector if no valid refracted direction exists.
     */
     template <typename U = VectorH>
-    [[nodiscard]] /* TODO: make constexpr*/ VectorH refract_safe(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {
+    [[nodiscard]] constexpr VectorH refract_safe(meta::const_pass_t<U> rhs, T n1, T n2) const noexcept {
         assert(!w() && !rhs.w() && "refract requires two direction vectors");  
         VectorH thisUnit = normalize();
         VectorH rhsUnit = rhs.normalize();
@@ -627,7 +627,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
             return tempVec;
         }
 
-        T sqrtK = std::sqrt(k);
+        T sqrtK = ES::math::sqrt(k);
         return thisUnit.zip(rhsUnit, [refractionRatio, cosi, sqrtK](T i, T n) {return i * refractionRatio + n * (refractionRatio * cosi - sqrtK);});
     }
 
@@ -646,7 +646,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
     * @return A reference to this vector after modification.
     */
     template <typename U = VectorH>
-    /* TODO: make constexpr*/ VectorH& refract_in_place_safe(meta::const_pass_t<U> rhs, T n1, T n2)noexcept {
+    constexpr VectorH& refract_in_place_safe(meta::const_pass_t<U> rhs, T n1, T n2)noexcept {
         assert(!w() && !rhs.w() && "refract requires two direction vectors");
         *this = normalize();
         VectorH rhsUnit = rhs.normalize();
@@ -659,7 +659,7 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
             std::fill(begin(),end(),T{0});
             return *this;
         }
-        T sqrtK = std::sqrt(k);
+        T sqrtK = ES::math::sqrt(k);
         return zip_in_place(rhsUnit, [refractionRatio, cosi, sqrtK](T i, T n) {return i * refractionRatio + n * (refractionRatio * cosi - sqrtK);});
     }
 

@@ -1,18 +1,23 @@
 //Michael Effinger
 //Ryan Seavey
+module;
 
-#pragma once
 #include <cstddef>
 #include <type_traits>
 #include <array>
 #include <cassert>
 #include <algorithm>
-#include "ES_concepts.hpp"
-#include "ES_math.hpp"
-#include "ES_meta.hpp"
 
+export module ES.ContainerN;
 
-namespace ES{
+import ES.concepts;
+import ES.meta;
+import ES_math;
+
+export using std::operator<=>;
+export using std::operator==;
+
+export namespace ES{
     //hmmmmm. this is curious 
     template<class Child, typename T, std::size_t N>
     class ContainerN{
@@ -188,7 +193,7 @@ namespace ES{
         template <typename U = Child>
         [[nodiscard]] constexpr bool almost_equal(meta::const_pass_t<U> rhs, T epsilon = ES::math::default_epsilon<T>::value) const noexcept{
             for (std::size_t i = 0; i < N; ++i) {
-            if (!math::approx_equal(data_[i], rhs[i], epsilon))
+            if (!ES::math::approx_equal(data_[i], rhs[i], epsilon))
                 return false;
             }
             return true;

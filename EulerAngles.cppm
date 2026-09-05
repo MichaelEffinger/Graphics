@@ -1,9 +1,15 @@
-#pragma once
-#include "Angle.hpp"
-#include "ContainerN.hpp"
-#include "ArithmeticOpsMixin.hpp"
+module;
+#include <utility>
+#include <algorithm>
+#include <cassert>
+export module ES.EulerAngles;
 
-namespace ES{
+import ES.ContainerN;
+import ES.ArithmeticOpsMixin;
+import ES.Angle;
+import ES_math;
+
+export namespace ES{
     template <ES::radian_or_degree Unit, typename T>
     class EulerAngles : public ContainerN<EulerAngles<Unit,T>,Angle<Unit,T>,3>, public ArithmeticOpsMixin<EulerAngles<Unit,T>, Angle<Unit,T>,3>{
         
@@ -110,22 +116,22 @@ namespace ES{
         }
 
         [[nodiscard]] /* c++ 26 constexpr*/ T sin_yaw()  const noexcept{
-            return std::sin(yaw().get());
+            return ES::math::sin(yaw().get());
         }
         [[nodiscard]] /* c++ 26 constexpr*/ T cos_yaw()  const noexcept{
-            return std::cos(yaw().get());
+            return ES::math::cos(yaw().get());
         }
         [[nodiscard]] /* c++ 26 constexpr*/ T sin_pitch() const noexcept {
-            return std::sin(pitch().get());
+            return ES::math::sin(pitch().get());
         }
         [[nodiscard]] /* c++ 26 constexpr*/ T cos_pitch() const noexcept {
-            return std::cos(pitch().get());
+            return ES::math::cos(pitch().get());
         }
         [[nodiscard]] /* c++ 26 constexpr*/ T sin_roll() const noexcept{
-            return std::sin(roll().get());
+            return ES::math::sin(roll().get());
         }
         [[nodiscard]] /* c++ 26 constexpr*/ T cos_roll() const noexcept{
-            return std::cos(roll().get());
+            return ES::math::cos(roll().get());
         }
 
 

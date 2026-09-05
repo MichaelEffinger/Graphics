@@ -1,14 +1,18 @@
+module;
+
 #include <type_traits>
 #include <cassert>
 #include <functional>
-#include "ES_math.hpp"
-#include "VectorN.hpp"
-#include "ContainerN.hpp"
 
-#pragma once
+export module ES.PointN;
 
+import ES_math;
+import ES.meta;
+import ES.ContainerN;
+import ES.ArithmeticOpsMixin;
+import ES.VectorN;
 
-namespace ES {
+export namespace ES {
     template <typename T, std::size_t N> requires(std::is_arithmetic_v<T>)
     class PointN: public ContainerN<PointN<T,N>,T,N>, public ArithmeticOpsMixin<PointN<T,N>,T,N>  {
     
@@ -165,8 +169,8 @@ namespace ES {
         * @param rhs the other position to mesure distance to
         * @return Scalar distance between the two positions
         */
-        [[nodiscard]] /* TODO: make constexpr*/ T distance(const PointN& rhs) const noexcept {
-             return std::sqrt(zip_reduce(rhs, T{0}, [](T accum, T l, T r){T d = l - r; return accum + d*d;}));
+        [[nodiscard]] constexpr T distance(const PointN& rhs) const noexcept {
+             return ES::math::sqrt(zip_reduce(rhs, T{0}, [](T accum, T l, T r){T d = l - r; return accum + d*d;}));
         }
 
         /**

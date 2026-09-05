@@ -1,9 +1,10 @@
 #include <catch2/catch_test_macros.hpp>
-#include "../ES_math.hpp"
-#include "../PointN.hpp"
 #include <iostream>
 
+import ES_math;
+import ES.PointN;
 using namespace ES;
+
 
 TEST_CASE("PointN accessors") {
     PointN<double, 3> pos{1.0, 2.0, 3.0};

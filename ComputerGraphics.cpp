@@ -74,7 +74,7 @@ int main()
     {
         // Update
         //----------------------------------------------------------------------------------
-        // TODO: Update your variables here
+        // Update your variables here
         //----------------------------------------------------------------------------------
         camera.Update(CAMERA_CUSTOM);
 

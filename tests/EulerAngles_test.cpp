@@ -1,7 +1,9 @@
 #include <catch2/catch_test_macros.hpp>
-#include "../ES_math.hpp"
-#include "../Angle.hpp"
-#include "../EulerAngles.hpp"
+
+import ES_math;
+import ES.Angle;
+import ES.EulerAngles;
+
 
 using namespace ES;
 

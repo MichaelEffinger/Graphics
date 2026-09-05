@@ -1,6 +1,7 @@
 #include "constexpr_require.hpp"
-#include "../ES_math.hpp"
-#include "../VectorN.hpp"
+
+import ES_math;
+import ES.VectorN;
 
 using namespace ES;
 

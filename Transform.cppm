@@ -1,7 +1,12 @@
-#pragma once
-#include "Matrix.hpp"
-#include "VectorN.hpp"
-namespace ES{
+module;
+#include <cstddef>
+#include <algorithm>
+export module ES.Transform;
+
+import ES.VectorN;
+import ES.Matrix;
+
+export namespace ES{
 
     template <typename T, std::size_t N>
     class Transform{

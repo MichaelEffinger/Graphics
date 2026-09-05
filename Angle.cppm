@@ -1,12 +1,13 @@
-#ifndef COMPUTERGRAPHICS_ES_ANGLE_HPP
-#define COMPUTERGRAPHICS_ES_ANGLE_HPP
+module;
+
 #include <type_traits>
 #include <numbers>
 #include <utility>
 
-#include "ES_math.hpp"
+export module ES.Angle;
+import ES_math;
 
-namespace ES {
+export namespace ES {
     namespace Secret {
         class radian{};
         class degree{};
@@ -84,7 +85,7 @@ public:
 
     constexpr Angle<Unit,V>& wrap_to_in_place(V lower, V upper) noexcept {
         V range = upper - lower;
-        angle_ = std::fmod(angle_ - lower, range);
+        angle_ = ES::math::modulo(angle_ - lower, range);
         if (angle_ < V(0)) angle_ += range;
         angle_ += lower;
         return *this;
@@ -175,5 +176,3 @@ template <typename T> [[nodiscard]] constexpr T ES::Secret::normalize_angle_coef
     }
     return x;
 }
-
-#endif //COMPUTERGRAPHICS_ES_ANGLE_HPP

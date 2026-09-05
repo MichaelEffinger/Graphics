@@ -1,7 +1,10 @@
 #include "constexpr_require.hpp"
-#include "../ES_math.hpp"
-#include "../VectorH.hpp"
-#include "../VectorN.hpp"
+
+import ES_math;
+import ES.VectorN;
+import ES.PointN;
+import ES.VectorH;
+
 
 using namespace ES;
 
@@ -218,7 +221,6 @@ constexpr bool test_magnitude_normalize() {
     not constexpr yet
     static_assert(test_magnitude_normalize());
 
-*/
 constexpr bool test_homogenize() {
     VectorH<float> point{2.0f, 4.0f, 6.0f, 2.0f};
 

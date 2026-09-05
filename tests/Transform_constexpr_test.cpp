@@ -1,8 +1,9 @@
 #include "constexpr_require.hpp"
-#include "../ES_math.hpp"
-#include "../Matrix.hpp"
-#include "../VectorN.hpp"
-#include "../Transform.hpp"
+
+import ES_math;
+import ES.VectorN;
+import ES.Transform;
+import ES.Matrix;
 
 using namespace ES;
 
@@ -519,4 +520,5 @@ constexpr bool test_normal_matrix() {
 
     make constexpr someday
     static_assert(test_normal_matrix());
+
 */

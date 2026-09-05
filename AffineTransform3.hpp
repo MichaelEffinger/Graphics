@@ -1,8 +1,7 @@
 #pragma once
 
-#include "Matrix.hpp"
-#include "VectorN.hpp"
-
+import ES.VectorN;
+import ES.Matrix;
 
 namespace ES{
     template <typename T>
@@ -29,7 +28,7 @@ namespace ES{
         [[nodiscard]] static constexpr AffineTransform3 from_scale(const VectorN<T,3> scale) noexcept{
             AffineTransform3 temp_affine;
             temp_affine.translation = {0,0,0};
-            std::fill(temp_affine.linear.begin(),temp_affine.linear.end(),0);
+            std::fill(temp_affine.linear.begin(),temp_affine.linear.end(),T{0});
             temp_affine.linear(0,0) = scale[0];
             temp_affine.linear(1,1) = scale[1];
             temp_affine.linear(2,2) = scale[2];
@@ -82,10 +81,11 @@ namespace ES{
             return scale;
         }
         [[nodiscard]] constexpr Matrix<T,4> to_matrix4() const noexcept{
-            Matrix<T,4> temp;
-            std::fill(temp.begin(),temp.end(),0);
+            Matrix<T,4> temp{};
+            //std::fill(temp.begin(),temp.end(),0);
             for(std::size_t i =0; i<3;i++){
-                memcpy(&temp(0,i),&linear(0,i),sizeof(T)*3);
+                //memcpy(&temp(0,i),&linear(0,i),sizeof(T)*3); This is actually the worst code I've ever had the misfortune of working on
+                std::copy(linear.begin() + 0*linear.size() + i, linear.begin() + 0*linear.size() + i + 3, temp.begin() + 0* temp.size() + i);
             }
             temp(0,3) = translation[0];
             temp(1,3) = translation[1];

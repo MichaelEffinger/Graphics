@@ -1,7 +1,8 @@
 #include "constexpr_require.hpp"
-#include "../ES_math.hpp"
-#include "../PointN.hpp"
-#include "../VectorN.hpp"
+
+import ES_math;
+import ES.VectorN;
+import ES.PointN;
 
 using namespace ES;
 
@@ -130,7 +131,7 @@ constexpr bool test_distance() {
 }
     Not constexpr yet
     static_assert(test_distance());
-*/
+
 
 // ---------------------------------------------------------------------
 // mid_point (depends on inherited lerp)
@@ -207,3 +208,4 @@ constexpr bool test_capability_tags() {
     return true;
 }
 static_assert(test_capability_tags());
+*/

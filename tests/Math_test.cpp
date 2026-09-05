@@ -1,7 +1,8 @@
 #include <catch2/catch_test_macros.hpp>
 
 #include "ES_test_util.hpp"
-#include "../ES_math.hpp"
+
+import ES_math;
 
 constexpr float FLIMIT = 1 << 23;
 constexpr double DLIMIT = 1LL << 52;
