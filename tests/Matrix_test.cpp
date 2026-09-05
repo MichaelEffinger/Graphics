@@ -3,7 +3,7 @@
 import ES_math;
 import ES.VectorN;
 import ES.PointN;
-import ES.Matrix
+import ES.Matrix;
 
 using namespace ES;
 

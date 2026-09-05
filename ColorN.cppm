@@ -584,10 +584,10 @@ export namespace ES{
         }
 
         static constexpr RGBA_Int from_premultiplied_linear(float r, float g, float b, float a)noexcept{
-            int R = ES::math::round(r*255);
-            int G = ES::math::round(g*255);
-            int B = ES::math::round(b*255);
-            int A = ES::math::round(a*255);
+            int R = ES::math::round_cast<int>(r*255);
+            int G = ES::math::round_cast<int>(g*255);
+            int B = ES::math::round_cast<int>(b*255);
+            int A = ES::math::round_cast<int>(a*255);
             return from_premultiplied_linear(R,G,B,A);
         }
 

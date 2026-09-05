@@ -464,7 +464,7 @@ static_assert(test_identity());
 // ---------------------------------------------------------------------
 // orthonormalize
 // ---------------------------------------------------------------------
-/* TODO 
+/* TODO: EXTREMELY BORKED, BE WARNED!!!!!
 constexpr bool test_orthonormalize() {
     Matrix<float, 2, 2> m(Vector2<float>{2.0f, 0.0f}, Vector2<float>{0.0f, 4.0f});
     auto ortho = m.orthonormalize();

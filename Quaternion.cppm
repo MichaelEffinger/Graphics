@@ -1,11 +1,12 @@
 module;
 
-#include <bits/stl_algo.h>
+#include <algorithm>
 #include <assert.h>
+
 
 export module ES.Quaternion;
 
-imoprt ES.math;
+import ES_math;
 import ES.meta;
 import ES.Angle;
 import ES.ContainerN;
@@ -74,8 +75,8 @@ export namespace ES{
         /*c++ 26 constexpr*/ Quaternion(meta::const_pass_t<VectorN<T,3>> axis, Angle<in_radians,T> angle) noexcept{
             VectorN<T,3> normalized = axis.normalize();
             T angle_half = angle.get() * T{0.5};
-            T sine = std::sin(angle_half);
-            w() = std::cos(angle_half);
+            T sine = ES::math::sin(angle_half);
+            w() = ES::math::cos(angle_half);
             x() = normalized.x()*sine;
             y() = normalized.y()*sine;
             z() = normalized.z()*sine; 
@@ -120,21 +121,21 @@ export namespace ES{
             return *this;
         }
 
-        [[nodiscard]] /*TODO make constexpr*/ T length() const noexcept{
-            return std::sqrt(length_squared());
+        [[nodiscard]] constexpr T length() const /*noexcept -- until you properly enforce invariants, Mikey, noexcept is not a promise that can be guaranteed, at least not with MY sqrt.*/{
+            return ES::math::sqrt(length_squared());
         }
         [[nodiscard]] constexpr T length_squared() const noexcept{
             return (x()*x() + y()*y() + z()*z() + w()*w());
         }
 
-        [[nodiscard]] /*TODO make constexpr*/ Quaternion normalize() const noexcept{
+        [[nodiscard]] constexpr Quaternion normalize() const noexcept{
             T len = length();
             assert(len != T{0} && "Zero length quaternion divide in normalize");
             if(len == T{0}) return Quaternion(T{0},T{0},T{0},T{0});
             return Quaternion(w()/len,x()/len,y()/len,z()/len);
         }
 
-        /*TODO make constexpr*/ Quaternion& normalize_in_place() noexcept{
+        constexpr  Quaternion& normalize_in_place() noexcept{
             T len = length();
             assert(len != T{0} && "Zero length quaternion divide is normalize_in_place");
             if(len == T{0}){
@@ -228,10 +229,10 @@ export namespace ES{
                 return nlerp(temp, t);
             }
 
-            T theta = std::acos(dotv);
-            T sin_theta = std::sin(theta);
+            T theta = ES::math::acos(dotv);
+            T sin_theta = ES::math::sin(theta);
 
-            return (std::sin((T(1) - t) * theta) / sin_theta) * (*this) + (std::sin(t * theta) / sin_theta) * temp;
+            return (ES::math::sin((T(1) - t) * theta) / sin_theta) * (*this) + (ES::math::sin(t * theta) / sin_theta) * temp;
         }
 
        

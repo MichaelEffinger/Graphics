@@ -1,5 +1,6 @@
 module;
-
+#include <cstddef>
+#include <algorithm>
 export module ES.Transform;
 
 import ES.VectorN;

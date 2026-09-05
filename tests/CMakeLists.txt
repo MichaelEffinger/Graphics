@@ -19,6 +19,22 @@ add_executable(ComputerGraphics_Tests
         Quaternion_constexpr_test.cpp
         Random_test.cpp
         ES_math_module_test.cpp
+        ${CMAKE_SOURCE_DIR}/ES_math.ixx
+        ${CMAKE_SOURCE_DIR}/ContainerN.cppm
+        ${CMAKE_SOURCE_DIR}/ArithmeticOpsMixin.cppm
+        ${CMAKE_SOURCE_DIR}/VectorN.cppm
+        ${CMAKE_SOURCE_DIR}/VectorH.cppm
+        ${CMAKE_SOURCE_DIR}/ES_concepts.cppm
+        ${CMAKE_SOURCE_DIR}/PointN.cppm
+        ${CMAKE_SOURCE_DIR}/Matrix.cppm
+        ${CMAKE_SOURCE_DIR}/Transform.cppm
+        ${CMAKE_SOURCE_DIR}/Quaternion.cppm
+        ${CMAKE_SOURCE_DIR}/EulerAngles.cppm
+        ${CMAKE_SOURCE_DIR}/ES_meta.cppm
+        ${CMAKE_SOURCE_DIR}/ColorN.cppm
+        ${CMAKE_SOURCE_DIR}/Angle.cppm
+        ${CMAKE_SOURCE_DIR}/ES_except.ixx
+        ${CMAKE_SOURCE_DIR}/ES_easy.ixx
 )
 
 if(NOT MSVC) #more MSVC cutouts!
@@ -28,21 +44,22 @@ target_sources(ComputerGraphics_Tests
     BASE_DIRS
       ${CMAKE_SOURCE_DIR}      # the common root, e.g. /home/Michael/Graphics
     FILES
-      ${CMAKE_SOURCE_DIR}/ES_math.ixx
-      ${CMAKE_SOURCE_DIR}/ContainerN.cppm
-      ${CMAKE_SOURCE_DIR}/ArithmeticOpsMixin.cppm
-      ${CMAKE_SOURCE_DIR}/VectorN.cppm
-      ${CMAKE_SOURCE_DIR}/VectorH.cppm
-      ${CMAKE_SOURCE_DIR}/ES_concepts.cppm
-      ${CMAKE_SOURCE_DIR}/PointN.cppm
-      ${CMAKE_SOURCE_DIR}/Matrix.cppm
-      ${CMAKE_SOURCE_DIR}/Transform.cppm
-      ${CMAKE_SOURCE_DIR}/Quaternion.cppm
-      ${CMAKE_SOURCE_DIR}/EulerAngles.cppm
-      ${CMAKE_SOURCE_DIR}/ES_random.cppm
-      ${CMAKE_SOURCE_DIR}/ES_meta.cppm
-      ${CMAKE_SOURCE_DIR}/ColorN.cppm
-      ${CMAKE_SOURCE_DIR}/Angle.cppm
+        ${CMAKE_SOURCE_DIR}/ES_math.ixx
+        ${CMAKE_SOURCE_DIR}/ContainerN.cppm
+        ${CMAKE_SOURCE_DIR}/ArithmeticOpsMixin.cppm
+        ${CMAKE_SOURCE_DIR}/VectorN.cppm
+        ${CMAKE_SOURCE_DIR}/VectorH.cppm
+        ${CMAKE_SOURCE_DIR}/ES_concepts.cppm
+        ${CMAKE_SOURCE_DIR}/PointN.cppm
+        ${CMAKE_SOURCE_DIR}/Matrix.cppm
+        ${CMAKE_SOURCE_DIR}/Transform.cppm
+        ${CMAKE_SOURCE_DIR}/Quaternion.cppm
+        ${CMAKE_SOURCE_DIR}/EulerAngles.cppm
+        ${CMAKE_SOURCE_DIR}/ES_meta.cppm
+        ${CMAKE_SOURCE_DIR}/ColorN.cppm
+        ${CMAKE_SOURCE_DIR}/Angle.cppm
+        ${CMAKE_SOURCE_DIR}/ES_except.ixx
+        ${CMAKE_SOURCE_DIR}/ES_easy.ixx
 
 )
 endif ()
@@ -55,4 +72,6 @@ enable_testing()
 include(CTest)
 list(APPEND CMAKE_MODULE_PATH ${catch2_SOURCE_DIR}/extras)
 include(Catch)
-catch_discover_tests(ComputerGraphics_Tests)
+#catch_discover_tests(ComputerGraphics_Tests
+#        DISCOVERY_MODE PRE_TEST #works better with modules, allegedly.
+#)

@@ -1,7 +1,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <iostream>
 
-import ES.math;
+import ES_math;
 import ES.PointN;
 using namespace ES;
 

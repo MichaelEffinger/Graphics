@@ -352,7 +352,7 @@ TEST_CASE("Quaternion slerp", "[Quaternion]"){
     
     auto result = q1.slerp(q2, 0.5f);
     
-    REQUIRE(math::approx_equal(result.length(), 1.0f, 0.001f));
+    CHECK(math::approx_equal(result.length(), 1.0f, 0.001f));
 }
 
 TEST_CASE("Quaternion slerp at t=0", "[Quaternion]"){
