@@ -67,6 +67,7 @@ endif ()
 target_compile_definitions(ComputerGraphics_Tests PRIVATE NDEBUG)
 target_link_libraries(ComputerGraphics_Tests PRIVATE Catch2::Catch2WithMain)
 ES_enable_CXX26_for_project(ComputerGraphics_Tests)
+ES_create_WE_HAVE_IMPORT_STD_macro_for_project(ComputerGraphics_Tests)
 
 enable_testing()
 include(CTest)

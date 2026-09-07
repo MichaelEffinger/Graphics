@@ -1,7 +1,14 @@
 module;
+#if WE_LACK_IMPORT_STD
 #include <concepts>
+#endif
 
 export module ES.concepts;
+
+#if WE_HAVE_IMPORT_STD
+import std;
+#endif
+
 
 export namespace ES::concepts{
 

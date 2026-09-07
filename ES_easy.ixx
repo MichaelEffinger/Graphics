@@ -1,5 +1,5 @@
 module;
-
+#if WE_LACK_IMPORT_STD
 #include <random>
 #include <numeric>
 #include <ranges>
@@ -7,10 +7,14 @@ module;
 #include <stacktrace>
 #include <chrono>
 #include <string>
+#endif
 
 export module ES_easy;
 
-// import std; maybe... one day...
+#if WE_HAVE_IMPORT_STD
+import std;
+#endif
+
 
 #define NDCR [[nodiscard]] constexpr
 #define NDAO [[nodiscard]] auto
