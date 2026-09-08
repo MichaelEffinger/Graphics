@@ -19,6 +19,7 @@ add_executable(ComputerGraphics_Tests
         Quaternion_constexpr_test.cpp
         Random_test.cpp
         ES_math_module_test.cpp
+        Easy_test.cpp
         ${CMAKE_SOURCE_DIR}/ES_math.ixx
         ${CMAKE_SOURCE_DIR}/ContainerN.cppm
         ${CMAKE_SOURCE_DIR}/ArithmeticOpsMixin.cppm

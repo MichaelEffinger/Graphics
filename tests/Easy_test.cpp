@@ -84,6 +84,11 @@ TEST_CASE("ES::easy::trim_whitespace","[trim_whitespace]") {
         CHECK(ES::easy::trim_whitespace_in_place(str) == "neat!    e    \t\t\t\v\t\n\n         w");
     }
 
+}
 
+TEST_CASE("ES::easy::where_am_I, Where in the world...","[ES::easy::where_am_I][filesystem][diskio]") {
+    auto const you_give_love_a_bad_name = ES::easy::where_am_I().string();
+
+    CHECK(you_give_love_a_bad_name.contains("cmake"));
 
 }
