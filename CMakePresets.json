@@ -2,40 +2,41 @@
     "version": 3,
 
     "configurePresets": [
-
-        {
-            "name": "linux-base",
-            "hidden": true,
-            "generator": "Ninja",
-            "binaryDir": "${presetName}",
-            "installDir": "${presetName}",
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "gcc",
-                "CMAKE_CXX_COMPILER": "g++"
-            },
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+    {
+        "name": "linux-base",
+        "hidden": true,
+        "generator": "Ninja",
+        "binaryDir": "${presetName}",
+        "installDir": "${presetName}",
+        "cacheVariables": {
+            "CMAKE_C_COMPILER": "gcc",
+            "CMAKE_CXX_COMPILER": "g++",
+            "CMAKE_TOOLCHAIN_FILE": "/home/Michael/vcpkg/scripts/buildsystems/vcpkg.cmake"
         },
+        "condition": {
+            "type": "equals",
+            "lhs": "${hostSystemName}",
+            "rhs": "Linux"
+        }
+    },
 
-        {
-            "name": "linux-clang-base",
-            "hidden": true,
-            "generator": "Ninja",
-            "binaryDir": "${presetName}",
-            "installDir": "${presetName}",
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "clang",
-                "CMAKE_CXX_COMPILER": "clang++"
-            },
-            "condition": {
-                "type": "equals",
-                "lhs": "${hostSystemName}",
-                "rhs": "Linux"
-            }
+    {
+        "name": "linux-clang-base",
+        "hidden": true,
+        "generator": "Ninja",
+        "binaryDir": "${presetName}",
+        "installDir": "${presetName}",
+        "cacheVariables": {
+            "CMAKE_C_COMPILER": "clang",
+            "CMAKE_CXX_COMPILER": "clang++",
+            "CMAKE_TOOLCHAIN_FILE": "/home/Michael/vcpkg/scripts/buildsystems/vcpkg.cmake"
         },
+        "condition": {
+            "type": "equals",
+            "lhs": "${hostSystemName}",
+            "rhs": "Linux"
+        }
+    },
 
         {
             "name": "x64-debug",

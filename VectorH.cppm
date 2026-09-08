@@ -3,6 +3,7 @@ module;
 #include <cmath>
 #include <algorithm>
 #include <cassert>
+#include <functional>
 
 export module ES.VectorH;
 
