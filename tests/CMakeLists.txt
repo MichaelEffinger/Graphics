@@ -37,7 +37,7 @@ add_executable(ComputerGraphics_Tests
         ${CMAKE_SOURCE_DIR}/ES_easy.ixx
 )
 
-if(NOT MSVC) #more MSVC cutouts!
+if(CMAKE_GENERATOR STREQUAL "Ninja") #more MSVC cutouts! Or maybe a Ninja cut-in?
 target_sources(ComputerGraphics_Tests
   PUBLIC
     FILE_SET CXX_MODULES
