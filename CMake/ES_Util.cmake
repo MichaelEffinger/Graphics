@@ -36,3 +36,10 @@ function(ES_create_WE_HAVE_IMPORT_STD_macro_for_project target_name)
             WE_LACK_IMPORT_STD=$<IF:$<BOOL:${well_do_we}>,0,1>
     )
 endfunction()
+
+#I'll chalk up the difference between hooking and creating a macro to whether or not it actually stores a usable value, where hooking does.
+function(ES_hook_ES_GAME_ROOT_DIR_macro_for_debug_builds target_name)
+    target_compile_definitions(${target_name} PRIVATE
+            ES_GAME_ROOT_DIR="${CMAKE_SOURCE_DIR}"
+    )
+endfunction()
