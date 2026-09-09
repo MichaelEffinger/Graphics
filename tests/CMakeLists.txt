@@ -20,6 +20,7 @@ add_executable(ComputerGraphics_Tests
         Random_test.cpp
         ES_math_module_test.cpp
         Easy_test.cpp
+        Flyweight_Test.cpp
         ${CMAKE_SOURCE_DIR}/ES_math.ixx
         ${CMAKE_SOURCE_DIR}/ContainerN.cppm
         ${CMAKE_SOURCE_DIR}/ArithmeticOpsMixin.cppm
@@ -37,6 +38,7 @@ add_executable(ComputerGraphics_Tests
         ${CMAKE_SOURCE_DIR}/ES_except.ixx
         ${CMAKE_SOURCE_DIR}/ES_easy.ixx
         ${CMAKE_SOURCE_DIR}/ES_game.ixx
+        ${CMAKE_SOURCE_DIR}/ES_flyweight.ixx
 )
 
 if(CMAKE_GENERATOR STREQUAL "Ninja") #more MSVC cutouts! Or maybe a Ninja cut-in?
@@ -63,6 +65,7 @@ target_sources(ComputerGraphics_Tests
         ${CMAKE_SOURCE_DIR}/ES_except.ixx
         ${CMAKE_SOURCE_DIR}/ES_easy.ixx
         ${CMAKE_SOURCE_DIR}/ES_game.ixx
+        ${CMAKE_SOURCE_DIR}/ES_flyweight.ixx
 )
 endif ()
 
