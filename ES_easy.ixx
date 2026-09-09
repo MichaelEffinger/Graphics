@@ -1,5 +1,5 @@
 module;
-
+#if WE_LACK_IMPORT_STD
 #include <random>
 #include <numeric>
 #include <ranges>
@@ -8,10 +8,14 @@ module;
 #include <chrono>
 #include <string>
 #include <algorithm>
+#endif
 
 export module ES_easy;
 
-// import std; maybe... one day...
+#if WE_HAVE_IMPORT_STD
+import std;
+#endif
+
 
 #define NDCR [[nodiscard]] constexpr
 #define NDAO [[nodiscard]] auto
@@ -75,6 +79,8 @@ export namespace ES::easy {
 
 //------------------ DEBUG ----------------
     void snap_stacktrace(std::ostream &where_to_print = std::cerr, const std::stacktrace& trace = std::stacktrace::current());
+
+    bool enforce_stacktrace(const bool cond, std::string_view const msg) noexcept;
 
     /**
      * Easy timer that takes a function and returns how many seconds it took.
@@ -185,7 +191,16 @@ constexpr auto ES::easy::min_max(R &r) {
 
 
 void ES::easy::snap_stacktrace(std::ostream &where_to_print, const std::stacktrace& trace) {
-    where_to_print << std::to_string(trace);
+    where_to_print << std::to_string(trace) << std::endl;
+}
+
+bool ES::easy::enforce_stacktrace(const bool cond, std::string_view const msg) noexcept {
+    if (cond) return cond;
+    std::cerr <<
+        "Owie! An ES::easy::enforce_stacktrace() was tripped!\n"
+        "msg: " << msg << std::endl;
+    snap_stacktrace(std::cerr, std::stacktrace::current(1));
+    std::abort();
 }
 
 template<std::ranges::range R>

@@ -2,11 +2,15 @@
 // Created by Ryan Seavey on 8/29/2026.
 //
 module;
-
+#if WE_LACK_IMPORT_STD
 #include <stdexcept>
-
-
+#endif
 export module ES_except;
+
+#if WE_HAVE_IMPORT_STD
+import std;
+#endif
+
 
 
 export namespace ES{
