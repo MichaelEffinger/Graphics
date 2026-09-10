@@ -83,6 +83,9 @@ export namespace ES::easy {
     template<std::ranges::range R>
     NDCRAO min_max(R &r);
 
+    template <typename PosIter, typename BeginIter, typename EndIter>
+    class cyclical_iterator;
+
 //------------------ DEBUG ----------------
     void snap_stacktrace(std::ostream &where_to_print = std::cerr, const std::stacktrace& trace = std::stacktrace::current());
 
@@ -207,6 +210,72 @@ constexpr auto ES::easy::min_max(R &r) {
     if (std::ranges::empty(r)) throw std::out_of_range("ES::easy::min_max(), range must not be empty!");
     const auto retval = std::ranges::minmax_element(r);
     return std::pair{*retval.min, *retval.max};
+}
+
+template <typename PosIter, typename BeginIter, typename EndIter>
+class ES::easy::cyclical_iterator{
+public:
+    using iterator_category = std::conditional_t<
+    std::bidirectional_iterator<PosIter>,
+    std::bidirectional_iterator_tag,
+    std::forward_iterator_tag>;
+    using value_type        = PosIter::value_type;
+    using difference_type   = std::ptrdiff_t;
+    using pointer           = PosIter::pointer;
+    using reference          = PosIter::reference;
+
+private:
+    PosIter pos_;
+    BeginIter begin_;
+    EndIter end_;
+
+public:
+
+    cyclical_iterator() = default;
+
+    explicit cyclical_iterator(PosIter Start, BeginIter Begin, EndIter End) :
+    pos_(Start),
+    begin_(Begin),
+    end_(End)
+    {}
+
+
+    template<std::ranges::range R>
+    explicit cyclical_iterator(PosIter Start, R&& range) :
+    cyclical_iterator(Start, std::ranges::begin(range), std::ranges::end(range))
+    {}
+
+
+
+    template<std::ranges::range R>
+    explicit cyclical_iterator(R&& range) :
+    cyclical_iterator(std::ranges::begin(range), range)
+    {}
+
+
+    reference operator*() const { return *pos_; }
+    [[nodiscard]] pointer operator->() const { return std::addressof(*pos_); }
+
+
+    cyclical_iterator& operator++() { ++pos_; if (pos_ == end_) pos_ = begin_; return *this; }
+    cyclical_iterator  operator++(int) { auto tmp = *this; ++*this; return tmp; }
+
+    friend [[nodiscard]] bool operator==(const cyclical_iterator& rhs, const cyclical_iterator& lhs){
+        return rhs.pos_ == lhs.pos_;
+    }
+
+    cyclical_iterator& operator--() requires std::bidirectional_iterator<PosIter> {
+        if (pos_ == begin_) pos_ = end_; --pos_; return *this;
+    }
+    cyclical_iterator operator--(int) requires std::bidirectional_iterator<PosIter> {
+        auto tmp = *this; --*this; return tmp;
+    }
+
+
+};
+namespace ES::easy{
+    template<std::ranges::range R>
+    cyclical_iterator(R&& range) -> cyclical_iterator<std::invoke_result_t<decltype(std::ranges::begin), R>, std::invoke_result_t<decltype(std::ranges::begin), R>, std::invoke_result_t<decltype(std::ranges::end), R>>;
 }
 
 
