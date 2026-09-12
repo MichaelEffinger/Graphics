@@ -127,6 +127,8 @@ export namespace ES::easy {
     //An STL-conformant hash functor for when you do not want std::string reallocating every hash.
     struct string_hash;
 
+    struct empty_t{};
+
     /**
      * Since C++ staggeringly lacks a way to find where the executable is...
      * @return The path of where the program lives.
@@ -215,10 +217,17 @@ constexpr auto ES::easy::min_max(R &r) {
 template <typename PosIter, typename BeginIter, typename EndIter>
 class ES::easy::cyclical_iterator{
 public:
-    using iterator_category = std::conditional_t<
-    std::bidirectional_iterator<PosIter>,
-    std::bidirectional_iterator_tag,
-    std::forward_iterator_tag>;
+    using iterator_category =
+        std::conditional_t<
+            std::contiguous_iterator<PosIter>,
+            std::contiguous_iterator_tag,
+            std::conditional_t<
+                std::random_access_iterator<PosIter>,
+                std::random_access_iterator_tag,
+                std::conditional_t<
+                    std::bidirectional_iterator<PosIter>,
+                    std::bidirectional_iterator_tag,
+                    std::forward_iterator_tag>>>;
     using value_type        = PosIter::value_type;
     using difference_type   = std::ptrdiff_t;
     using pointer           = PosIter::pointer;
@@ -228,7 +237,14 @@ private:
     PosIter pos_;
     BeginIter begin_;
     EndIter end_;
+    static constexpr bool HAS_DISTANCE{std::random_access_iterator<PosIter>};
+    [[no_unique_address]] std::conditional_t<HAS_DISTANCE, difference_type, empty_t> distance_from_begin_{};
 
+    [[nodiscard]] difference_type secret_modulo_helper(difference_type const N) const requires(HAS_DISTANCE){
+        difference_type const size = std::distance(begin_, end_);
+        //difference_type const offset = std::distance(begin_, pos_);
+        return (N % size + size) % size;
+    }
 public:
 
     cyclical_iterator() = default;
@@ -237,7 +253,7 @@ public:
     pos_(Start),
     begin_(Begin),
     end_(End)
-    {}
+    {if constexpr (HAS_DISTANCE) distance_from_begin_ = std::distance(begin_, pos_);};
 
 
     template<std::ranges::range R>
@@ -257,25 +273,80 @@ public:
     [[nodiscard]] pointer operator->() const { return std::addressof(*pos_); }
 
 
-    cyclical_iterator& operator++() { ++pos_; if (pos_ == end_) pos_ = begin_; return *this; }
+    cyclical_iterator& operator++() {if constexpr (HAS_DISTANCE) ++distance_from_begin_; ++pos_; if (pos_ == end_) pos_ = begin_; return *this; }
     cyclical_iterator  operator++(int) { auto tmp = *this; ++*this; return tmp; }
 
     friend [[nodiscard]] bool operator==(const cyclical_iterator& rhs, const cyclical_iterator& lhs){
-        return rhs.pos_ == lhs.pos_;
+        if constexpr (HAS_DISTANCE)
+            return rhs.distance_from_begin_ == lhs.distance_from_begin_;
+        else
+            return rhs.pos_ == lhs.pos_;
     }
 
+    //------------------   BIDIRECTIONAL FUNCTIONS ---------------------
+
     cyclical_iterator& operator--() requires std::bidirectional_iterator<PosIter> {
+        if constexpr (HAS_DISTANCE) --distance_from_begin_;
         if (pos_ == begin_) pos_ = end_; --pos_; return *this;
     }
     cyclical_iterator operator--(int) requires std::bidirectional_iterator<PosIter> {
         auto tmp = *this; --*this; return tmp;
     }
 
+    //----------------------- RANDOM ACCESS FUNCTIONS ------------------
+    [[nodiscard]] reference operator[](difference_type const N) const requires std::random_access_iterator<PosIter> {
+        return pos_[secret_modulo_helper(N)];
+    }
+
+    cyclical_iterator& operator+=(difference_type const rhs) requires std::random_access_iterator<PosIter> {
+        if constexpr (HAS_DISTANCE) distance_from_begin_ += rhs;
+        pos_ += secret_modulo_helper(rhs);
+        return *this;
+    }
+
+    cyclical_iterator& operator-=(difference_type const rhs) requires std::random_access_iterator<PosIter> {
+        if constexpr (HAS_DISTANCE) distance_from_begin_ -= rhs;
+        pos_ -= secret_modulo_helper(rhs);
+        return *this;
+    }
+
+    [[nodiscard]] friend cyclical_iterator operator+(cyclical_iterator const& lhs, difference_type const rhs) requires std::random_access_iterator<PosIter> {
+        auto tmp{lhs};
+        return tmp += rhs;
+    }
+
+    [[nodiscard]] friend cyclical_iterator operator+(difference_type const rhs, cyclical_iterator const& lhs) requires std::random_access_iterator<PosIter> {
+        return operator+(lhs, rhs);
+    }
+
+    [[nodiscard]] friend cyclical_iterator operator-(cyclical_iterator const& lhs, difference_type const rhs) requires std::random_access_iterator<PosIter> {
+        auto tmp{lhs};
+        return tmp -= rhs;
+    }
+
+    [[nodiscard]] friend difference_type operator-(cyclical_iterator const& lhs, cyclical_iterator const& rhs) requires std::random_access_iterator<PosIter> {
+        return lhs.distance_from_begin_ - rhs.distance_from_begin_;
+    }
+
+
+    friend auto operator<=>(const cyclical_iterator & lhs, const cyclical_iterator & rhs) {
+        if constexpr (HAS_DISTANCE)
+            return lhs.distance_from_begin_ <=> rhs.distance_from_begin_;
+        else
+            return lhs.pos_ <=> rhs.pos_;
+    }
+
+
 
 };
 namespace ES::easy{
     template<std::ranges::range R>
     cyclical_iterator(R&& range) -> cyclical_iterator<std::invoke_result_t<decltype(std::ranges::begin), R>, std::invoke_result_t<decltype(std::ranges::begin), R>, std::invoke_result_t<decltype(std::ranges::end), R>>;
+
+    template<std::ranges::range R, typename Iter>
+    cyclical_iterator(Iter&&, R&& range) -> cyclical_iterator<Iter, std::invoke_result_t<decltype(std::ranges::begin), R>, std::invoke_result_t<decltype(std::ranges::end), R>>;
+
+
 }
 
 

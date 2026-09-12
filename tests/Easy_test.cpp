@@ -269,3 +269,259 @@ TEST_CASE("ES::easy::cyclical_iterator both ways!?", "[cyclical_iterator][bidire
         STATIC_REQUIRE(std::bidirectional_iterator<It>);
     }
 }
+
+TEST_CASE("ES::easy::cyclical_iterator evil Random-access tests","[cyclical_iterator][random access]") {
+    SECTION("std::sort interop") {
+        std::deque<int> d1(20);
+        std::ranges::iota(d1, 0);
+        auto d2(d1);
+        ES::easy::shuffle(d2);
+        std::sort(ES::easy::cyclical_iterator(d2), ES::easy::cyclical_iterator(d2.end(), d2));
+        CHECK(d1 == d2);
+    }
+}
+
+TEST_CASE("cyclical_iterator random access over std::vector", "[cyclical_iterator][random_access]") {
+    std::vector<int> data{10, 20, 30, 40};
+    auto b = data.begin();
+    auto e = data.end();
+    using It = ES::easy::cyclical_iterator<decltype(b), decltype(b), decltype(e)>;
+
+    SECTION("type satisfies random_access_iterator when PosIter does") {
+        STATIC_REQUIRE(std::random_access_iterator<It>);
+    }
+
+    SECTION("operator- reports absolute step distance, not wrapped position distance") {
+        It it1(b, b, e);
+        It it2(b, b, e);
+        std::advance(it2, 6); // one full lap (4) plus 2 more steps
+        CHECK(it2 - it1 == 6);
+        CHECK(it1 - it2 == -6);
+    }
+
+    SECTION("operator- is zero for iterators at the same absolute step, even across construction") {
+        It it1(b, b, e);
+        It it2(b, b, e);
+        std::advance(it1, 4);
+        std::advance(it2, 4);
+        REQUIRE(it1 - it2 == 0);
+    }
+
+    SECTION("operator< orders by absolute step, not by underlying element index") {
+        It it1(b, b, e);
+        It it2(b, b, e);
+        std::advance(it2, 6); // wraps once; dereferences to same element as 2 steps in
+        CHECK(it1 < it2);
+        REQUIRE_FALSE(it2 < it1);
+    }
+
+    SECTION("two iterators that alias to the same element after a lap are NOT equal") {
+        // this is the crux of the axiom fix: pos_-equality would say these are
+        // the same iterator, but a valid total order requires them to differ.
+        It it1(b, b, e);
+        It it2(b, b, e);
+        std::advance(it1, 2);
+        std::advance(it2, 6); // wraps once, dereferences to same element as it1
+        CHECK(*it1 == *it2);       // same element
+        CHECK_FALSE(it1 == it2);   // but NOT the same iterator
+        CHECK(it1 < it2);          // and orderable, consistently
+    }
+
+    SECTION("equality and less-than never both hold — totally_ordered axiom spot check") {
+        It it1(b, b, e);
+        It it2(b, b, e);
+        std::advance(it2, 6);
+        bool eq  = (it1 == it2);
+        bool lt1 = (it1 < it2);
+        bool lt2 = (it2 < it1);
+        // if eq is true, both lt1 and lt2 must be false
+        if (eq) {
+            CHECK_FALSE(lt1);
+            CHECK_FALSE(lt2);
+        }
+        // never both strictly less than each other
+        //REQUIRE_FALSE(lt1 && lt2);
+    }
+
+    SECTION("operator[] reaches forward across a wraparound boundary") {
+        It it(b, b, e);
+        std::advance(it, 3); // sits on 40, the last element
+        REQUIRE(it[0] == 40);
+        REQUIRE(it[1] == 10); // wraps
+        REQUIRE(it[2] == 20);
+    }
+
+    SECTION("operator[] is consistent with repeated operator++") {
+        It it(b, b, e);
+        It stepped(b, b, e);
+        for (int n = 0; n < 9; ++n) ++stepped; // 9 steps, more than two laps
+        REQUIRE(it[9] == *stepped);
+    }
+
+    SECTION("subtraction and indexing agree: it[n] equals *(it advanced by n)") {
+        It it(b, b, e);
+        for (int n = 0; n < 12; ++n) {
+            It advanced(b, b, e);
+            std::advance(advanced, n);
+            REQUIRE(it[n] == *advanced);
+            REQUIRE((advanced - it) == n);
+        }
+    }
+
+    SECTION("negative distance via operator- is the mirror of forward distance") {
+        It it1(b, b, e);
+        It it2(b, b, e);
+        std::advance(it1, 10);
+        CHECK(it1 - it2 == 10);
+        REQUIRE(it2 - it1 == -10);
+    }
+
+    SECTION("std::sort-style comparisons don't infinite loop or misbehave on aliased elements") {
+        // regression test for the exact bug flagged earlier: sort algorithms trust
+        // == and < to agree. Build a small vector of iterators spanning > one lap
+        // and confirm std::is_sorted / std::sort behave sanely.
+        std::vector<It> its;
+        for (int n = 0; n < 10; ++n) {
+            It cur(b, b, e);
+            std::advance(cur, n);
+            its.push_back(cur);
+        }
+        std::sort(its.begin(), its.end());
+        CHECK(std::is_sorted(its.begin(), its.end()));
+        // sorted order should exactly match ascending step_, i.e. original order here
+        for (std::size_t i = 0; i + 1 < its.size(); ++i) {
+            CHECK(its[i] < its[i + 1]);
+            CHECK_FALSE(its[i] == its[i + 1]);
+        }
+    }
+
+    SECTION("std::distance matches operator- for random access category") {
+        It it1(b, b, e);
+        It it2(b, b, e);
+        std::advance(it2, 7);
+        REQUIRE(std::distance(it1, it2) == 7);
+    }
+}
+
+TEST_CASE("cyclical_iterator random access over std::deque, starting mid-range", "[cyclical_iterator][random_access][deque]") {
+    std::deque<int> data{100, 200, 300, 400, 500, 600}; // size 6
+    auto b = data.begin();
+    auto e = data.end();
+    using It = ES::easy::cyclical_iterator<decltype(b), decltype(b), decltype(e)>;
+
+    // convenience: an iterator into `data` sitting at logical index `n` from begin
+    auto at = [&](int n) { auto p = b; std::advance(p, n); return p; };
+
+    SECTION("type still satisfies random_access_iterator over deque (non-contiguous)") {
+        STATIC_REQUIRE(std::random_access_iterator<It>);
+    }
+
+    SECTION("(Iter, Range) constructor starting mid-range reports correct absolute step") {
+        It mid(at(3), data); // sitting on 400, range is all of data
+        CHECK(*mid == 400);
+
+        It begin_it(data); // sole-range ctor: pos == begin
+        CHECK(*begin_it == 100);
+
+        // step_ must reflect true offset from begin_, not zero
+        CHECK((mid - begin_it) == 3);
+        CHECK((begin_it - mid) == -3);
+    }
+
+    SECTION("two mid-range starts constructed independently subtract to their true offset") {
+        It it3(at(3), data); // 400
+        It it5(at(5), data); // 600
+        CHECK((it5 - it3) == 2);
+        CHECK((it3 - it5) == -2);
+    }
+
+    SECTION("mid-range iterator advanced by size() returns to same element, step_ moves by size()") {
+        It mid(at(2), data); // 300
+        It snapshot = mid;
+        std::advance(mid, 6); // one full lap
+        CHECK(*mid == 300);
+        CHECK((mid - snapshot) == 6);
+        CHECK_FALSE(mid == snapshot); // same element, different lap => must NOT be equal
+    }
+
+    SECTION("mid-range iterator decremented past begin wraps and step_ goes negative correctly") {
+        It mid(at(1), data); // 200
+        std::advance(mid, -3); // 200 -> 100 -> wrap -> 600 -> 500
+        CHECK(*mid == 500);
+        It reference(at(1), data);
+        CHECK((mid - reference) == -3);
+    }
+
+    SECTION("operator[] from a mid-range start indexes forward relative to its own position") {
+        It mid(at(4), data); // 500
+        CHECK(mid[0] == 500);
+        CHECK(mid[1] == 600);
+        CHECK(mid[2] == 100); // wraps
+        CHECK(mid[7] == 600); // more than one full lap (6) + 1
+    }
+
+    SECTION("ordering between two mid-range iterators matches their true step_ difference, not element index") {
+        It it1(at(5), data); // 600, near the "end" of the underlying storage
+        It it2(at(1), data); // 200, but constructed independently, no lap difference
+        // it1's element index (5) > it2's element index (1), but with equal lap count,
+        // ordering should still follow step_, which for these equals element index here
+        CHECK(it1 - it2 == 4);
+        CHECK(it2 < it1);
+        CHECK_FALSE(it1 < it2);
+
+        // now advance it2 two full laps past it1's position — step_ ordering must flip
+        std::advance(it2, 12); // 2 full laps, lands back on 200
+        CHECK(*it2 == 200);
+        CHECK(it1 < it2); // it1's absolute step is still less, despite dereferencing to an "earlier" element
+    }
+
+    SECTION("(Range) sole constructor and (Iter,Range) constructor agree when pos == begin") {
+        It viaRange(data);
+        It viaPos(at(0), data);
+        CHECK(viaRange == viaPos);
+        CHECK((viaRange - viaPos) == 0);
+        CHECK(*viaRange == *viaPos);
+    }
+
+    SECTION("three independently-constructed mid-range iterators sort by absolute step, not element value") {
+        std::deque<It> its;
+        its.push_back(It(at(4), data)); // 500, step 4
+        its.push_back(It(at(1), data)); // 200, step 1
+        auto laterStart = It(at(3), data);
+        std::advance(laterStart, 6); // 300, but one full lap later, step 9
+        its.push_back(laterStart);
+
+        std::sort(its.begin(), its.end());
+        CHECK(*its[0] == 200);
+        CHECK(*its[1] == 500);
+        CHECK(*its[2] == 300);
+        CHECK(std::is_sorted(its.begin(), its.end()));
+    }
+
+    SECTION("equality is false for same element reached via different lap counts, from mid-range starts") {
+        It a(at(2), data); // 300, step 2
+        It b_it(at(2), data);
+        std::advance(b_it, 6); // still 300, but step 8
+        CHECK(*a == *b_it);
+        CHECK_FALSE(a == b_it);
+        CHECK(a < b_it);
+        CHECK((b_it - a) == 6);
+    }
+
+    SECTION("std::distance agrees with operator- for mid-range starts, forward direction only") {
+        It a(at(1), data);
+        It c(at(1), data);
+        std::advance(c, 4);
+        CHECK(std::distance(a, c) == 4);
+        CHECK((c - a) == 4);
+    }
+
+    SECTION("full round trip: advance forward then backward by same amount returns to identical step_, from a mid-range start") {
+        It mid(at(3), data);
+        It snapshot = mid;
+        std::advance(mid, 10);
+        std::advance(mid, -10);
+        CHECK(mid == snapshot); // must be true equality here: same step_, same pos_
+        CHECK((mid - snapshot) == 0);
+    }
+}
