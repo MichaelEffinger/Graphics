@@ -270,7 +270,7 @@ TEST_CASE("ES::easy::cyclical_iterator both ways!?", "[cyclical_iterator][bidire
     }
 }
 
-TEST_CASE("ES::easy::cyclical_iterator evil Random-access tests","[cyclical_iterator][random access]") {
+TEST_CASE("ES::easy::cyclical_iterator evil Random-access tests","[cyclical_iterator][random_access]") {
     SECTION("std::sort interop") {
         std::deque<int> d1(20);
         std::ranges::iota(d1, 0);
@@ -487,7 +487,7 @@ TEST_CASE("cyclical_iterator random access over std::deque, starting mid-range",
         std::deque<It> its;
         its.push_back(It(at(4), data)); // 500, step 4
         its.push_back(It(at(1), data)); // 200, step 1
-        auto laterStart = It(at(3), data);
+        auto laterStart = It(at(2), data);
         std::advance(laterStart, 6); // 300, but one full lap later, step 9
         its.push_back(laterStart);
 

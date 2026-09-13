@@ -240,10 +240,12 @@ private:
     static constexpr bool HAS_DISTANCE{std::random_access_iterator<PosIter>};
     [[no_unique_address]] std::conditional_t<HAS_DISTANCE, difference_type, empty_t> distance_from_begin_{};
 
-    [[nodiscard]] difference_type secret_modulo_helper(difference_type const N) const requires(HAS_DISTANCE){
+    [[nodiscard]] difference_type secret_modulo_helper(difference_type N) const requires(HAS_DISTANCE){
         difference_type const size = std::distance(begin_, end_);
-        //difference_type const offset = std::distance(begin_, pos_);
-        return (N % size + size) % size;
+        difference_type const fin = std::distance(pos_, end_);
+        N = (N % size + size) % size;
+        if (N < fin) return N;
+        return N - size;
     }
 public:
 
