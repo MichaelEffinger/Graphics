@@ -525,3 +525,170 @@ TEST_CASE("cyclical_iterator random access over std::deque, starting mid-range",
         CHECK((mid - snapshot) == 0);
     }
 }
+
+TEST_CASE("cyclical_iterator comparisons across mismatched or differing ranges","[cyclical_iterator][comparison][random_access]") {
+    std::deque<int> data{0, 1, 2, 3, 4, 5, 6, 7}; // size 8
+    auto full_b = data.begin();
+    auto full_e = data.end();
+
+    auto at = [&](int n) { auto p = full_b; std::advance(p, n); return p; };
+
+    // a genuine SUB-range: [begin+2, begin+6) => logical contents {2,3,4,5}
+    auto sub_b = at(2);
+    auto sub_e = at(6);
+
+    using It = ES::easy::cyclical_iterator<decltype(full_b), decltype(full_b), decltype(full_e)>;
+
+    SECTION("same pos_, same step_ from own begin_, but different logical ranges: are they really 'equal'?") {
+        // full-range iterator sitting at element 2, step_ == 2 (relative to full_b)
+        It full_it(at(2), full_b, full_e);
+        // sub-range iterator ALSO sitting at element 2, ALSO step_ == 0 relative to sub_b...
+        // wait: step_ is relative to each one's own begin_, so these are NOT the same step_ at all.
+        It sub_it(sub_b, sub_b, sub_e); // pos_ == element 2, step_ == 0 (relative to sub_b)
+
+        CHECK(*full_it == *sub_it); // both dereference to element value 2 -- same underlying element
+        // The real question: does operator== conflate "same element, same pos_" with "same iterator"?
+        // If == only compares pos_ (or only step_, coincidentally both could differ here), this line
+        // documents whatever your current answer is -- and if it's `true`, that's the bug to fix,
+        // because these two iterators do NOT walk the same cycle: full_it wraps over 8 elements,
+        // sub_it wraps over 4. They will diverge on the very next ++.
+        INFO("full_it and sub_it point at the same element but iterate DIFFERENT ranges");
+        CHECK_FALSE(full_it == sub_it); // <-- if this fails, == is not range-aware
+    }
+
+    SECTION("same pos_, deliberately matched step_, still different ranges -> next ++ proves they were never comparable") {
+        It full_it(at(2), full_b, full_e); // step_ = 2
+        It sub_it(sub_b, sub_b, sub_e);     // step_ = 0
+        // force step_ parity by advancing sub_it by 2 so both step_ == 2, if your == uses step_
+        std::advance(sub_it, 2); // sub range size 4: pos now at element 4 (index 2 within sub-range)
+
+        // now diverge them and see if they behave as "the same iterator" would have to
+        auto full_copy = full_it;
+        auto sub_copy = sub_it;
+        std::advance(full_copy, 6); // full range size 8: wraps partially
+        std::advance(sub_copy, 6);  // sub range size 4: wraps one full lap + 2
+
+        CHECK(*full_copy != *sub_copy); // <-- if these were truly "equal" iterators, this should never happen after equal advances
+    }
+
+    SECTION("full-range iterator vs a second full-range iterator over the SAME bounds: comparisons must be trustworthy") {
+        // sanity control case: identical begin_/end_, this MUST behave correctly,
+        // contrasting against the mismatched-range cases above
+        It it1(at(3), full_b, full_e);
+        It it2(at(3), full_b, full_e);
+        CHECK(it1 == it2);
+        CHECK_FALSE(it1 < it2);
+        CHECK((it1 - it2) == 0);
+    }
+
+    SECTION("constructing pos_ outside [begin_, end_) entirely -- garbage bounds, documenting current (mis)behavior") {
+        CHECK_THROWS_AS(It (at(0), sub_b, sub_e), std::invalid_argument);
+    }
+
+    SECTION("two full-range iterators built from DIFFERENT calls to begin()/end() but identical logical range") {
+        // paranoia check: begin()/end() called twice on the same container should yield
+        // iterators that compare == to each other even though they're different objects
+        It it1(at(5), data.begin(), data.end());
+        It it2(at(5), data.begin(), data.end());
+        CHECK(it1 == it2);
+        CHECK((it1 - it2) == 0);
+    }
+}
+
+TEST_CASE("cyclical_iterator equality and ordering across disgusting subranges","[cyclical_iterator][random_access][subrange]") {
+    std::array<char, 26> alphabet{};
+    std::ranges::iota(alphabet, 'A');
+
+    auto ab = alphabet.begin();
+    auto ae = alphabet.end();
+    auto at = [&](int n) { auto p = ab; std::advance(p, n); return p; };
+    using It = ES::easy::cyclical_iterator<decltype(ab), decltype(ab), decltype(ae)>;
+
+    SECTION("two disjoint subranges, coincidentally equal distance_from_begin_, must not be equal") {
+        It front(at(0), at(0), at(5));
+        It back(at(20), at(20), at(25));
+        CHECK(*front == 'A');
+        CHECK(*back == 'U');
+        CHECK_FALSE(front == back);
+        CHECK_FALSE(front == back);
+        std::advance(front, 3);
+        std::advance(back, 3);
+        CHECK(*front == 'D');
+        CHECK(*back == 'X');
+        CHECK_FALSE(front == back);
+    }
+
+    SECTION("partially overlapping subranges sharing an element still differ as iterators") {
+        It left(at(2), at(0), at(6));
+        It right(at(2), at(2), at(10));
+        CHECK(*left == 'C');
+        CHECK(*right == 'C');
+        CHECK_FALSE(left == right);
+        std::advance(left, 14);
+        std::advance(right, 14);
+        CHECK((*left) != (*right));
+    }
+
+    SECTION("nested subrange fully inside a larger range, same starting element") {
+        It outer(at(5), at(0), at(20));
+        It inner(at(5), at(5), at(9));
+        CHECK(*outer == 'F');
+        CHECK(*inner == 'F');
+        CHECK_FALSE(outer == inner);
+        std::advance(outer, 30);
+        std::advance(inner, 30);
+        CHECK((*outer) != (*inner));
+    }
+
+    SECTION("identical subrange bounds constructed independently must compare equal") {
+        It s1(at(6), at(6), at(12));
+        It s2(at(6), at(6), at(12));
+        CHECK(s1 == s2);
+        std::advance(s1, 15);
+        std::advance(s2, 15);
+        CHECK(s1 == s2);
+        CHECK(*s1 == *s2);
+    }
+
+    SECTION("operator<=> across disjoint ranges with matched distance_from_begin_ should not silently order") {
+        It front(at(0), at(0), at(4));
+        It back(at(10), at(10), at(14));
+        CHECK_THROWS(front < back);
+        CHECK_THROWS(back < front);
+        CHECK_FALSE(front == back);
+    }
+
+    SECTION("full range and its own strict subrange, same current element, diverge after one lap") {
+        It full(at(3), ab, ae);
+        It sub(at(3), at(3), at(9));
+        CHECK(*full == 'D');
+        CHECK(*sub == 'D');
+        CHECK_FALSE(full == sub);
+        std::advance(full, 26);
+        std::advance(sub, 6);
+        CHECK(*full == 'D');
+        CHECK(*sub == 'D');
+        CHECK_FALSE(full == sub);
+    }
+
+    SECTION("two subranges of equal length, disjoint, advanced through several laps, never alias") {
+        It r1(at(0), at(0), at(5));
+        It r2(at(15), at(15), at(20));
+        for (int n = 0; n < 23; ++n) {
+            CHECK_FALSE(r1 == r2);
+            ++r1;
+            ++r2;
+        }
+    }
+
+    SECTION("reordering by operator<=> must not mix iterators from different ranges as if comparable") {
+        It a(at(0), at(0), at(4));
+        It b(at(1), at(0), at(4));
+        It c(at(10), at(10), at(14));
+        CHECK(a < b);
+        CHECK_FALSE(a == c);
+        CHECK_FALSE(b == c);
+        CHECK_THROWS(a < c);
+        CHECK_THROWS(c < a);
+    }
+}

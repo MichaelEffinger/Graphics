@@ -247,15 +247,25 @@ private:
         if (N < fin) return N;
         return N - size;
     }
+
+    [[nodiscard]] static bool secret_dissonance_test(cyclical_iterator const& lhs, cyclical_iterator const& rhs){
+        return lhs.begin_ == rhs.begin_ && lhs.end_ == rhs.end_;
+    }
+
 public:
 
     cyclical_iterator() = default;
 
     explicit cyclical_iterator(PosIter Start, BeginIter Begin, EndIter End) :
-    pos_(Start),
-    begin_(Begin),
-    end_(End)
-    {if constexpr (HAS_DISTANCE) distance_from_begin_ = std::distance(begin_, pos_);};
+    pos_(Start), begin_(Begin), end_(End)
+    {
+        if constexpr (HAS_DISTANCE) {
+            distance_from_begin_ = std::distance(begin_, pos_);
+            if (not (begin_ <= pos_ && pos_ <= end_)) throw std::invalid_argument("ES::easy::cyclical_iterator(), iterators given do not represent a valid range!");
+        }
+    }
+
+    explicit cyclical_iterator(BeginIter Begin, EndIter End) : cyclical_iterator(Begin, Begin, End) {}
 
 
     template<std::ranges::range R>
@@ -278,11 +288,12 @@ public:
     cyclical_iterator& operator++() {if constexpr (HAS_DISTANCE) ++distance_from_begin_; ++pos_; if (pos_ == end_) pos_ = begin_; return *this; }
     cyclical_iterator  operator++(int) { auto tmp = *this; ++*this; return tmp; }
 
-    friend [[nodiscard]] bool operator==(const cyclical_iterator& rhs, const cyclical_iterator& lhs){
+    friend [[nodiscard]] bool operator==(const cyclical_iterator& lhs, const cyclical_iterator& rhs) noexcept {
+        if (not secret_dissonance_test(lhs, rhs)) return false;
         if constexpr (HAS_DISTANCE)
-            return rhs.distance_from_begin_ == lhs.distance_from_begin_;
+            return lhs.distance_from_begin_ == rhs.distance_from_begin_;
         else
-            return rhs.pos_ == lhs.pos_;
+            return lhs.pos_ == rhs.pos_;
     }
 
     //------------------   BIDIRECTIONAL FUNCTIONS ---------------------
@@ -331,11 +342,9 @@ public:
     }
 
 
-    friend auto operator<=>(const cyclical_iterator & lhs, const cyclical_iterator & rhs) {
-        if constexpr (HAS_DISTANCE)
-            return lhs.distance_from_begin_ <=> rhs.distance_from_begin_;
-        else
-            return lhs.pos_ <=> rhs.pos_;
+    friend auto operator<=>(const cyclical_iterator & lhs, const cyclical_iterator & rhs) requires (HAS_DISTANCE) {
+        if (not secret_dissonance_test(lhs, rhs)) throw std::domain_error("ES::easy::cyclical_iterator::operator<=>(), begin_ and end_ of both iterators must agree.");
+        return lhs.distance_from_begin_ <=> rhs.distance_from_begin_;
     }
 
 
@@ -373,7 +382,7 @@ void ES::easy::shuffle(R && arr) {
 template<std::ranges::range R>
 decltype(auto) ES::easy::raffle(R &r) {
     if constexpr (std::ranges::random_access_range<R>){
-        if (std::ranges::empty(r)) throw std::out_of_range("ES::easy::raffle(), we can't throw a raffle with an empty range!");
+        if (std::ranges::empty(r)) throw std::out_of_range("ES::easy::raffle(), we can't host a raffle with an empty range!");
         const auto size = std::ranges::distance(r);
         return r[ES::easy::random(size - decltype(size){1})];
     } else {
