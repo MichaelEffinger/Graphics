@@ -17,6 +17,7 @@ set_property(CACHE DESIRED_BACKEND PROPERTY STRINGS "WebGPU" "Raylib")
 if(BUILD_ENGINE)
     add_executable(ComputerGraphics)
     ES_enable_CXX26_for_project(ComputerGraphics)
+    ES_create_WE_HAVE_IMPORT_STD_macro_for_project(ComputerGraphics)
 endif()
 
 #########################################

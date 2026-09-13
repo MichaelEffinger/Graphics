@@ -1,20 +1,20 @@
 module; 
-//
-// Created by Ryan Seavey on 8/27/2026.
-// Other code scrapped out of original header made by Michael Effinger & Ryan Seavey throughout the year
-//
-
+#if WE_LACK_IMPORT_STD
 #include <type_traits>
 #include <compare>
 #include <stdexcept>
 #include <numbers>
 #include <cmath>
-#include <limits> //TODO: in house? To what end? I cry.
+#include <limits>
+#endif
 
 export module ES_math;
 
-import ES.concepts;
+#if WE_HAVE_IMPORT_STD
+import std;
+#endif
 
+import ES.concepts;
 import ES_except;
 
 #define NDCR [[nodiscard]] constexpr

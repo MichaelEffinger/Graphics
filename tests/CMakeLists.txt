@@ -77,6 +77,7 @@ else()
 endif()
 
 ES_enable_CXX26_for_project(ComputerGraphics_Tests)
+ES_create_WE_HAVE_IMPORT_STD_macro_for_project(ComputerGraphics_Tests)
 
 enable_testing()
 include(CTest)

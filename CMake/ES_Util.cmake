@@ -14,3 +14,25 @@ function(ES_enable_CXX26_for_project target_name)
         target_compile_features(${target_name} PRIVATE cxx_std_26) #purportedly better than setting CXX_STANDARD as 26, because this instead enforces a minimum version
     endif ()
 endfunction()
+
+#[[
+Creates a macro named WE_HAVE_IMPORT_STD with the value one or zero for the given target.
+0 means absolutely not.
+1 means maybe, hopefully, but still is not a guarantee in and of itself.
+]]
+function(ES_create_WE_HAVE_IMPORT_STD_macro_for_project target_name)
+
+    #that'll be the day...
+    set(we_have_converted_all_modules_to_use_the_guards FALSE)
+
+    if(we_have_converted_all_modules_to_use_the_guards AND CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+        set(we_might 1)
+    else ()
+        set(we_might 0)
+    endif ()
+
+    target_compile_definitions(${target_name} PRIVATE
+            WE_HAVE_IMPORT_STD=${we_might}
+            WE_LACK_IMPORT_STD=$<IF:$<BOOL:${well_do_we}>,0,1>
+    )
+endfunction()
