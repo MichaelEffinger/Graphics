@@ -248,8 +248,8 @@ private:
         return N - size;
     }
 
-    [[nodiscard]] static bool secret_dissonance_test(cyclical_iterator const& lhs, cyclical_iterator const& rhs){
-        return lhs.begin_ == rhs.begin_ && lhs.end_ == rhs.end_;
+    [[nodiscard]] static bool these_are_dissonant(cyclical_iterator const& lhs, cyclical_iterator const& rhs){
+        return not (lhs.begin_ == rhs.begin_ && lhs.end_ == rhs.end_);
     }
 
 public:
@@ -289,7 +289,7 @@ public:
     cyclical_iterator  operator++(int) { auto tmp = *this; ++*this; return tmp; }
 
     friend [[nodiscard]] bool operator==(const cyclical_iterator& lhs, const cyclical_iterator& rhs) noexcept {
-        if (not secret_dissonance_test(lhs, rhs)) return false;
+        if (these_are_dissonant(lhs, rhs)) return false;
         if constexpr (HAS_DISTANCE)
             return lhs.distance_from_begin_ == rhs.distance_from_begin_;
         else
@@ -338,12 +338,13 @@ public:
     }
 
     [[nodiscard]] friend difference_type operator-(cyclical_iterator const& lhs, cyclical_iterator const& rhs) requires std::random_access_iterator<PosIter> {
+        if (these_are_dissonant(lhs, rhs)) throw std::domain_error("ES::easy::cyclical_iterator::operator-(), begin_ and end_ of both iterators must agree.");
         return lhs.distance_from_begin_ - rhs.distance_from_begin_;
     }
 
 
     friend auto operator<=>(const cyclical_iterator & lhs, const cyclical_iterator & rhs) requires (HAS_DISTANCE) {
-        if (not secret_dissonance_test(lhs, rhs)) throw std::domain_error("ES::easy::cyclical_iterator::operator<=>(), begin_ and end_ of both iterators must agree.");
+        if (these_are_dissonant(lhs, rhs)) throw std::domain_error("ES::easy::cyclical_iterator::operator<=>(), begin_ and end_ of both iterators must agree.");
         return lhs.distance_from_begin_ <=> rhs.distance_from_begin_;
     }
 
