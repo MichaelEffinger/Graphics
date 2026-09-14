@@ -1,8 +1,10 @@
 #include <catch2/catch_test_macros.hpp>
 #include <iostream>
+#include <cmath>
 
 import ES_math;
 import ES.PointN;
+import ES.VectorN;
 using namespace ES;
 
 

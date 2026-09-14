@@ -8,7 +8,7 @@ module;
 #include <chrono>
 #include <string>
 #include <filesystem>
-
+#include <algorithm>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -45,7 +45,7 @@ export namespace ES::easy {
     template<typename L>
     [[nodiscard]] L random(L High);
 
-    template<std::floating_point F, std::size_t Bits>
+    template<std::floating_point F, std::size_t Bits = std::numeric_limits<F>::digits>
     [[nodiscard]] F random();
 
     template<typename  L, typename R>
@@ -54,7 +54,7 @@ export namespace ES::easy {
     template<typename  L>
     [[nodiscard]] auto random_seeded_callable(std::uint32_t, L);
 
-    template<std::floating_point F, std::size_t Bits>
+    template<std::floating_point F = float, std::size_t Bits = std::numeric_limits<F>::digits>
     [[nodiscard]] auto random_seeded_callable(std::uint32_t);
 
     template<typename T>
@@ -167,7 +167,7 @@ L ES::easy::random(const L High) {
     return random(L{0}, High);
 }
 
-template<std::floating_point F = float, std::size_t Bits = std::numeric_limits<F>::digits>
+template<std::floating_point F = float, std::size_t Bits>
 F ES::easy::random() {
     return std::generate_canonical<F, Bits>(Secret::get_quick_engine());
 }
@@ -187,7 +187,7 @@ auto ES::easy::random_seeded_callable(std::uint32_t seed, L max) {
     return random_seeded_callable(seed, L{0}, max);
 }
 
-template<std::floating_point F = float, std::size_t Bits = std::numeric_limits<F>::digits>
+template<std::floating_point F , std::size_t Bits>
 auto ES::easy::random_seeded_callable(std::uint32_t seed) {
     return [
                 eng = Secret::quick_engine(seed)

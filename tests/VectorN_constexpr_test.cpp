@@ -1,5 +1,6 @@
 #include "constexpr_require.hpp"
-
+#include <compare>
+#include <array>
 import ES_math;
 import ES.VectorN;
 
