@@ -2,16 +2,22 @@
     "version": 3,
 
     "configurePresets": [
-    {
-        "name": "linux-base",
-        "hidden": true,
-        "generator": "Ninja",
-        "binaryDir": "${presetName}",
-        "installDir": "${presetName}",
-        "cacheVariables": {
-            "CMAKE_C_COMPILER": "gcc",
-            "CMAKE_CXX_COMPILER": "g++",
-            "CMAKE_TOOLCHAIN_FILE": "/home/Michael/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        {
+            "name": "linux-base",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${presetName}",
+            "installDir": "${presetName}",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc",
+                "CMAKE_CXX_COMPILER": "g++",
+                "CMAKE_TOOLCHAIN_FILE": "$env{ES_VCPKG_PATH}"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
         },
         "condition": {
             "type": "equals",
@@ -20,16 +26,22 @@
         }
     },
 
-    {
-        "name": "linux-clang-base",
-        "hidden": true,
-        "generator": "Ninja",
-        "binaryDir": "${presetName}",
-        "installDir": "${presetName}",
-        "cacheVariables": {
-            "CMAKE_C_COMPILER": "clang",
-            "CMAKE_CXX_COMPILER": "clang++",
-            "CMAKE_TOOLCHAIN_FILE": "/home/Michael/vcpkg/scripts/buildsystems/vcpkg.cmake"
+        {
+            "name": "linux-clang-base",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${presetName}",
+            "installDir": "${presetName}",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_TOOLCHAIN_FILE": "$env{ES_VCPKG_PATH}"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
         },
         "condition": {
             "type": "equals",
@@ -47,7 +59,8 @@
                 "strategy": "external"
             },
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "ES_USE_STDCXXEXP": "ON"
             }
         },
 
@@ -60,7 +73,8 @@
                 "strategy": "external"
             },
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "ES_USE_STDCXXEXP": "ON"
             }
         },
 
@@ -74,26 +88,21 @@
         },
 
         {
-            "name": "x86-debug",
-            "displayName": "x86 Debug",
-            "inherits": "linux-base",
-            "architecture": {
-                "value": "i386",
-                "strategy": "external"
+            "name": "msvc-x64-debug",
+            "displayName": "MSVC x64 Debug",
+            "generator": "Visual Studio 17 2022",
+            "architecture": "x64",
+            "binaryDir": "${presetName}",
+            "installDir": "${presetName}",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{ES_VCPKG_PATH}",
+                "ES_USE_STDCXXEXP": "OFF"
             },
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-
-        {
-            "name": "x86-release",
-            "displayName": "x86 Release",
-            "inherits": "x86-debug",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
             }
         }
-
     ]
 }
