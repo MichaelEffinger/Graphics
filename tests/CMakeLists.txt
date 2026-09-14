@@ -39,6 +39,7 @@ add_executable(ComputerGraphics_Tests
         ${CMAKE_SOURCE_DIR}/ES_easy.ixx
         ${CMAKE_SOURCE_DIR}/ES_game.ixx
         ${CMAKE_SOURCE_DIR}/ES_flyweight.ixx
+        ${CMAKE_SOURCE_DIR}/ES_cyclical_iterator.ixx
 )
 
 if(CMAKE_GENERATOR STREQUAL "Ninja") #more MSVC cutouts! Or maybe a Ninja cut-in?
@@ -66,6 +67,7 @@ target_sources(ComputerGraphics_Tests
         ${CMAKE_SOURCE_DIR}/ES_easy.ixx
         ${CMAKE_SOURCE_DIR}/ES_game.ixx
         ${CMAKE_SOURCE_DIR}/ES_flyweight.ixx
+        ${CMAKE_SOURCE_DIR}/ES_cyclical_iterator.ixx
 )
 endif ()
 

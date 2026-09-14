@@ -12,6 +12,7 @@
 #include "ES_test_util.hpp"
 
 import ES_easy;
+import ES_cyclical_iterator;
 
 
 
@@ -96,8 +97,8 @@ TEST_CASE("ES::easy::where_am_I, Where in the world...","[ES::easy::where_am_I][
 
 }
 
-TEST_CASE("ES::easy::cyclical_iterator on std::forward_list", "[cyclical_iterator][forward]") {
-    using ES::easy::cyclical_iterator;
+TEST_CASE("ES::cyclical_iterator on std::forward_list", "[cyclical_iterator][forward]") {
+    using ES::cyclical_iterator;
     std::forward_list<int> data{10, 20, 30, 40};
     auto b = data.begin();
     auto e = data.end();
@@ -181,8 +182,8 @@ TEST_CASE("ES::easy::cyclical_iterator on std::forward_list", "[cyclical_iterato
     }
 }
 
-TEST_CASE("ES::easy::cyclical_iterator both ways!?", "[cyclical_iterator][bidirectional]") {
-    using ES::easy::cyclical_iterator;
+TEST_CASE("ES::cyclical_iterator both ways!?", "[cyclical_iterator][bidirectional]") {
+    using ES::cyclical_iterator;
     std::list<int> data{10, 20, 30, 40};
     auto b = data.begin();
     auto e = data.end();
@@ -270,13 +271,13 @@ TEST_CASE("ES::easy::cyclical_iterator both ways!?", "[cyclical_iterator][bidire
     }
 }
 
-TEST_CASE("ES::easy::cyclical_iterator evil Random-access tests","[cyclical_iterator][random_access]") {
+TEST_CASE("ES::cyclical_iterator evil Random-access tests","[cyclical_iterator][random_access]") {
     SECTION("std::sort interop") {
         std::deque<int> d1(20);
         std::ranges::iota(d1, 0);
         auto d2(d1);
         ES::easy::shuffle(d2);
-        std::sort(ES::easy::cyclical_iterator(d2), ES::easy::cyclical_iterator(d2.end(), d2));
+        std::sort(ES::cyclical_iterator(d2), ES::cyclical_iterator(d2.end(), d2));
         CHECK(d1 == d2);
     }
 }
@@ -285,7 +286,7 @@ TEST_CASE("cyclical_iterator random access over std::vector", "[cyclical_iterato
     std::vector<int> data{10, 20, 30, 40};
     auto b = data.begin();
     auto e = data.end();
-    using It = ES::easy::cyclical_iterator<decltype(b), decltype(b), decltype(e)>;
+    using It = ES::cyclical_iterator<decltype(b), decltype(b), decltype(e)>;
 
     SECTION("type satisfies random_access_iterator when PosIter does") {
         STATIC_REQUIRE(std::random_access_iterator<It>);
@@ -407,7 +408,7 @@ TEST_CASE("cyclical_iterator random access over std::deque, starting mid-range",
     std::deque<int> data{100, 200, 300, 400, 500, 600}; // size 6
     auto b = data.begin();
     auto e = data.end();
-    using It = ES::easy::cyclical_iterator<decltype(b), decltype(b), decltype(e)>;
+    using It = ES::cyclical_iterator<decltype(b), decltype(b), decltype(e)>;
 
     // convenience: an iterator into `data` sitting at logical index `n` from begin
     auto at = [&](int n) { auto p = b; std::advance(p, n); return p; };
@@ -537,7 +538,7 @@ TEST_CASE("cyclical_iterator comparisons across mismatched or differing ranges",
     auto sub_b = at(2);
     auto sub_e = at(6);
 
-    using It = ES::easy::cyclical_iterator<decltype(full_b), decltype(full_b), decltype(full_e)>;
+    using It = ES::cyclical_iterator<decltype(full_b), decltype(full_b), decltype(full_e)>;
 
     SECTION("same pos_, same step_ from own begin_, but different logical ranges: are they really 'equal'?") {
         // full-range iterator sitting at element 2, step_ == 2 (relative to full_b)
@@ -602,7 +603,7 @@ TEST_CASE("cyclical_iterator equality and ordering across disgusting subranges",
     auto ab = alphabet.begin();
     auto ae = alphabet.end();
     auto at = [&](int n) { auto p = ab; std::advance(p, n); return p; };
-    using It = ES::easy::cyclical_iterator<decltype(ab), decltype(ab), decltype(ae)>;
+    using It = ES::cyclical_iterator<decltype(ab), decltype(ab), decltype(ae)>;
 
     SECTION("two disjoint subranges, coincidentally equal distance_from_begin_, must not be equal") {
         It front(at(0), at(0), at(5));
