@@ -7,13 +7,15 @@ module;
 export module ES.Angle;
 import ES_math;
 
-export namespace ES {
-    namespace Secret {
-        class radian{};
-        class degree{};
 
-        template <typename T> [[nodiscard]] constexpr T normalize_angle_coeff(T, T) noexcept;
-    }
+namespace ES::Secret {
+    class radian{};
+    class degree{};
+    
+    template <typename T> [[nodiscard]] constexpr T normalize_angle_coeff(T, T) noexcept;
+}
+
+export namespace ES {
 
     template<typename Unit> concept radian_or_degree = std::same_as<Unit,Secret::degree> || std::same_as<Unit,Secret::radian>;
     template<typename T, typename U> concept not_same_as = not std::same_as<T,U>;
@@ -28,7 +30,7 @@ export namespace ES {
     using AngleRad = Angle<in_radians>;
 }
 
-namespace ES::math {
+export namespace ES::math {
     template <std::floating_point T> [[nodiscard]] constexpr T c_deg_to_rad(T) noexcept;
     template <std::floating_point T> [[nodiscard]] constexpr T c_rad_to_deg(T) noexcept;
 
@@ -135,7 +137,7 @@ public:
     }
 };
 
-namespace ES::math::angle_literals {
+export namespace ES::math::angle_literals {
     constexpr Angle<in_radians, long double> operator""_radl(long double z) {
         return Angle<Secret::radian, long double>{z};
     }

@@ -10,6 +10,7 @@ module;
 export module ES.VectorN;
 
 import ES.meta;
+import ES.concepts;
 import ES.Angle;
 import ES.ContainerN;
 import ES.ArithmeticOpsMixin;

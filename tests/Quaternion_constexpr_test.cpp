@@ -135,13 +135,9 @@ constexpr bool test_length() {
 
     return true;
 }
-<<<<<<< HEAD
 make constexpr
-=======
-
->>>>>>> constexpr_math
 static_assert(test_length());
-
+*/
 
 // ---------------------------------------------------------------------
 // normalize / normalize_in_place

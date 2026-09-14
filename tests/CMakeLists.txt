@@ -65,7 +65,17 @@ target_sources(ComputerGraphics_Tests
 endif ()
 
 target_compile_definitions(ComputerGraphics_Tests PRIVATE NDEBUG)
-target_link_libraries(ComputerGraphics_Tests PRIVATE Catch2::Catch2WithMain)
+
+if (ES_USE_STDCXXEXP)
+    target_link_libraries(ComputerGraphics_Tests
+        PRIVATE Catch2::Catch2WithMain stdc++exp
+    )
+else()
+    target_link_libraries(ComputerGraphics_Tests
+        PRIVATE Catch2::Catch2WithMain
+    )
+endif()
+
 ES_enable_CXX26_for_project(ComputerGraphics_Tests)
 ES_create_WE_HAVE_IMPORT_STD_macro_for_project(ComputerGraphics_Tests)
 
