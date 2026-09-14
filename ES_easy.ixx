@@ -288,7 +288,7 @@ public:
     cyclical_iterator& operator++() {if constexpr (HAS_DISTANCE) ++distance_from_begin_; ++pos_; if (pos_ == end_) pos_ = begin_; return *this; }
     cyclical_iterator  operator++(int) { auto tmp = *this; ++*this; return tmp; }
 
-    friend [[nodiscard]] bool operator==(const cyclical_iterator& lhs, const cyclical_iterator& rhs) noexcept {
+    [[nodiscard]] friend bool operator==(const cyclical_iterator& lhs, const cyclical_iterator& rhs) noexcept {
         if (these_are_dissonant(lhs, rhs)) return false;
         if constexpr (HAS_DISTANCE)
             return lhs.distance_from_begin_ == rhs.distance_from_begin_;
@@ -343,7 +343,7 @@ public:
     }
 
 
-    friend auto operator<=>(const cyclical_iterator & lhs, const cyclical_iterator & rhs) requires (HAS_DISTANCE) {
+    [[nodiscard]] friend auto operator<=>(const cyclical_iterator & lhs, const cyclical_iterator & rhs) requires (HAS_DISTANCE) {
         if (these_are_dissonant(lhs, rhs)) throw std::domain_error("ES::easy::cyclical_iterator::operator<=>(), begin_ and end_ of both iterators must agree.");
         return lhs.distance_from_begin_ <=> rhs.distance_from_begin_;
     }
