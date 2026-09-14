@@ -58,14 +58,20 @@ export namespace ES{
 
 
         template<class... Args>
-        constexpr Matrix(Args... columns) requires(sizeof...(Args) == M && (std::is_same_v<Args, VectorN<T,N>> && ...)){
+        constexpr Matrix(Args... columns) requires(sizeof...(Args) == M && (std::convertible_to<Args, VectorN<T,N>> && ...)){
             std::size_t col = 0; 
             ((std::copy_n(columns.begin(), N, &data_[col * N]), col++), ...);
         }
 
+        // row first, for more standard c++ accessing
         constexpr auto&& operator()(this auto&& self, std::size_t row, std::size_t column) noexcept{
             return std::forward_like<decltype(self)>(self[(column*N+row)]);
         }
+        // column first for anyone who prefers acessing that way, multi dimensional
+        constexpr auto&& operator[](this auto&& self, std::size_t column, std::size_t row) noexcept{
+            return std::forward_like<decltype(self)>(self[(column*N+row)]);
+        }
+
 
         [[nodiscard]] constexpr Matrix swap_rows(std::size_t first, std::size_t second) const noexcept {
             Matrix temp((*this));

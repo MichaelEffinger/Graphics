@@ -711,6 +711,13 @@ class VectorH : public ContainerN<VectorH<T>,T,4>, public ArithmeticOpsMixin<Vec
         return tempVec;
     }
 
+    /** @brief Converts this homogeneous vector to a VectorN<T, 4>. */
+    constexpr operator VectorN<T, 4>() const noexcept {
+        VectorN<T, 4> result;
+        std::copy(cbegin(), cend(), result.begin());
+        return result;
+    }
+
 };
 
 }
