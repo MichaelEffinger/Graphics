@@ -18,8 +18,8 @@ jobs:
           sudo apt-get install -y \
             cmake \
             ninja-build \
-            gcc-15 \
-            g++-15 \
+            gcc-14 \
+            g++-14 \
             libx11-dev \
             libxrandr-dev \
             libxinerama-dev \
