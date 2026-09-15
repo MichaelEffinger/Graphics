@@ -19,12 +19,6 @@
                 "rhs": "Linux"
             }
         },
-        "condition": {
-            "type": "equals",
-            "lhs": "${hostSystemName}",
-            "rhs": "Linux"
-        }
-    },
 
         {
             "name": "linux-clang-base",
@@ -43,12 +37,6 @@
                 "rhs": "Linux"
             }
         },
-        "condition": {
-            "type": "equals",
-            "lhs": "${hostSystemName}",
-            "rhs": "Linux"
-        }
-    },
 
         {
             "name": "x64-debug",
