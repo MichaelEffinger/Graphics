@@ -18,10 +18,10 @@ export namespace ES {
     class cyclical_iterator;
 
     template<std::ranges::range R>
-    cyclical_iterator(R&& range) -> cyclical_iterator<std::invoke_result_t<decltype(std::ranges::begin), R>, std::invoke_result_t<decltype(std::ranges::begin), R>, std::invoke_result_t<decltype(std::ranges::end), R>>;
+    cyclical_iterator(R&& range) -> cyclical_iterator<decltype(std::ranges::begin(range)), decltype(std::ranges::begin(range)), decltype(std::ranges::end(range))>;
 
     template<std::ranges::range R, typename Iter>
-    cyclical_iterator(Iter&&, R&& range) -> cyclical_iterator<Iter, std::invoke_result_t<decltype(std::ranges::begin), R>, std::invoke_result_t<decltype(std::ranges::end), R>>;
+    cyclical_iterator(Iter, R&& range) -> cyclical_iterator<Iter, decltype(std::ranges::begin(range)), decltype(std::ranges::end(range))>;
 
 }
 
