@@ -17,6 +17,10 @@ export namespace ES {
     template <typename PosIter, typename BeginIter, typename EndIter>
     class cyclical_iterator;
 
+    template<typename PosIter, typename BeginIter, typename EndIter>
+    cyclical_iterator(PosIter, BeginIter, EndIter) -> cyclical_iterator<PosIter, BeginIter, EndIter>;
+
+
     template<std::ranges::range R>
     cyclical_iterator(R&& range) -> cyclical_iterator<decltype(std::ranges::begin(range)), decltype(std::ranges::begin(range)), decltype(std::ranges::end(range))>;
 
