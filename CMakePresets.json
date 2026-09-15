@@ -92,14 +92,14 @@
                 "rhs": "Windows"
             }
         },
-        
+
         {
             "name": "ci-gcc-x64-debug",
             "displayName": "CI GCC x64 Debug",
             "inherits": "x64-debug",
             "cacheVariables": {
-                "CMAKE_C_COMPILER": "gcc-14",
-                "CMAKE_CXX_COMPILER": "g++-14"
+                "CMAKE_C_COMPILER": "gcc-15",
+                "CMAKE_CXX_COMPILER": "g++-15"
             }
         }
     ]

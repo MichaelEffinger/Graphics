@@ -6,7 +6,7 @@ on:
 
 jobs:
   gcc:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
       - name: Checkout
@@ -18,8 +18,8 @@ jobs:
           sudo apt-get install -y \
             cmake \
             ninja-build \
-            gcc-14 \
-            g++-14 \
+            gcc-15 \
+            g++-15 \
             libx11-dev \
             libxrandr-dev \
             libxinerama-dev \
@@ -42,4 +42,3 @@ jobs:
 
       - name: Test
         run: ctest --test-dir ci-gcc-x64-debug --output-on-failure
-
