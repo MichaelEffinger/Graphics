@@ -16,11 +16,16 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            cmake \
-            ninja-build \
-            gcc \
-            g++
-
+              cmake \
+              ninja-build \
+              gcc \
+              g++ \
+              libx11-dev \
+              libxrandr-dev \
+              libxinerama-dev \
+              libxcursor-dev \
+              libxi-dev
+                      
       - name: Setup vcpkg
         run: |
           git clone https://github.com/microsoft/vcpkg.git "$RUNNER_TEMP/vcpkg"
