@@ -34,6 +34,8 @@ jobs:
       - name: Configure
         run: cmake --preset x64-debug
         env:
+          CC: gcc-14
+          CXX: g++-14
           ES_VCPKG_PATH: ${{ runner.temp }}/vcpkg/scripts/buildsystems/vcpkg.cmake
 
       - name: Build
