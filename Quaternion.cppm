@@ -2,6 +2,7 @@ module;
 
 #include <algorithm>
 #include <assert.h>
+#include <utility>
 
 
 export module ES.Quaternion;
