@@ -101,6 +101,17 @@
                 "CMAKE_C_COMPILER": "gcc-15",
                 "CMAKE_CXX_COMPILER": "g++-15"
             }
+        },
+
+        {
+            "name": "ci-clang-x64-debug",
+            "displayName": "CI Clang x64 Debug",
+            "inherits": "clang-x64-debug",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang-22",
+                "CMAKE_CXX_COMPILER": "clang++-22"
+            }
         }
+        
     ]
 }
