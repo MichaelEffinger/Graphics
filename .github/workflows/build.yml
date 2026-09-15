@@ -25,23 +25,20 @@ jobs:
             libxinerama-dev \
             libxcursor-dev \
             libxi-dev
-                      
+
       - name: Setup vcpkg
         run: |
           git clone https://github.com/microsoft/vcpkg.git "$RUNNER_TEMP/vcpkg"
           "$RUNNER_TEMP/vcpkg/bootstrap-vcpkg.sh"
 
       - name: Configure
-        run: cmake --preset x64-debug \
-            -DCMAKE_C_COMPILER=gcc-14 \
-            -DCMAKE_CXX_COMPILER=g++-14
+        run: cmake --preset ci-gcc-x64-debug
         env:
-          CC: gcc-14
-          CXX: g++-14
           ES_VCPKG_PATH: ${{ runner.temp }}/vcpkg/scripts/buildsystems/vcpkg.cmake
 
       - name: Build
-        run: cmake --build x64-debug
+        run: cmake --build ci-gcc-x64-debug
 
       - name: Test
-        run: ctest --test-dir x64-debug --output-on-failure
+        run: ctest --test-dir ci-gcc-x64-debug --output-on-failure
+
