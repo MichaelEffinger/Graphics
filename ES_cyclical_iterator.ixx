@@ -42,10 +42,10 @@ public:
                     std::bidirectional_iterator<PosIter>,
                     std::bidirectional_iterator_tag,
                     std::forward_iterator_tag>>>;
-    using value_type        = PosIter::value_type;
+    using value_type        = typename std::iterator_traits<PosIter>::value_type;
     using difference_type   = std::ptrdiff_t;
-    using pointer           = PosIter::pointer;
-    using reference          = PosIter::reference;
+    using pointer           = typename std::iterator_traits<PosIter>::pointer;
+    using reference          = typename std::iterator_traits<PosIter>::reference;
 
 private:
     PosIter pos_;
