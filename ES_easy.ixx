@@ -7,7 +7,13 @@ module;
 #include <stacktrace>
 #include <chrono>
 #include <string>
+#include <filesystem>
 #include <algorithm>
+
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #endif
 
 export module ES_easy;
@@ -77,6 +83,9 @@ export namespace ES::easy {
     template<std::ranges::range R>
     NDCRAO min_max(R &r);
 
+    template <typename PosIter, typename BeginIter, typename EndIter>
+    class cyclical_iterator;
+
 //------------------ DEBUG ----------------
     void snap_stacktrace(std::ostream &where_to_print = std::cerr, const std::stacktrace& trace = std::stacktrace::current());
 
@@ -109,6 +118,22 @@ export namespace ES::easy {
 
     template<std::ranges::range R>
     constexpr R& trim_whitespace_in_place(R&);
+
+
+
+
+    // --------------- miscellaneous -----------------
+
+    //An STL-conformant hash functor for when you do not want std::string reallocating every hash.
+    struct string_hash;
+
+    struct empty_t{};
+
+    /**
+     * Since C++ staggeringly lacks a way to find where the executable is...
+     * @return The path of where the program lives.
+     */
+    std::filesystem::path where_am_I();
 
 
 }
@@ -211,7 +236,7 @@ void ES::easy::shuffle(R && arr) {
 template<std::ranges::range R>
 decltype(auto) ES::easy::raffle(R &r) {
     if constexpr (std::ranges::random_access_range<R>){
-        if (std::ranges::empty(r)) throw std::out_of_range("ES::easy::raffle(), we can't throw a raffle with an empty range!");
+        if (std::ranges::empty(r)) throw std::out_of_range("ES::easy::raffle(), we can't host a raffle with an empty range!");
         const auto size = std::ranges::distance(r);
         return r[ES::easy::random(size - decltype(size){1})];
     } else {
@@ -293,3 +318,27 @@ constexpr R & ES::easy::trim_whitespace_in_place(R & r) {
     return r = ES::easy::trim_whitespace(std::move(r));
 }
 
+struct ES::easy::string_hash {
+    using is_transparent = void;
+
+    std::size_t operator()(char const* txt) const {
+        return std::hash<std::string_view>{}(txt);
+    }
+    std::size_t operator()(std::string_view txt) const {
+        return std::hash<std::string_view>{}(txt);
+    }
+    std::size_t operator()(std::string const& txt) const {
+        return std::hash<std::string_view>{}(txt);
+    }
+};
+
+
+std::filesystem::path ES::easy::where_am_I() {
+#ifdef _WIN32
+    wchar_t hideous_windows_buffer[MAX_PATH];
+    GetModuleFileNameW(nullptr, hideous_windows_buffer, MAX_PATH);
+    return std::filesystem::path(hideous_windows_buffer).parent_path();
+#else
+    return std::filesystem::canonical("/proc/self/exe").parent_path();
+#endif
+}

@@ -19,6 +19,8 @@ add_executable(ComputerGraphics_Tests
         Quaternion_constexpr_test.cpp
         Random_test.cpp
         ES_math_module_test.cpp
+        Easy_test.cpp
+        Flyweight_Test.cpp
         ${CMAKE_SOURCE_DIR}/ES_math.ixx
         ${CMAKE_SOURCE_DIR}/ContainerN.cppm
         ${CMAKE_SOURCE_DIR}/ArithmeticOpsMixin.cppm
@@ -35,9 +37,12 @@ add_executable(ComputerGraphics_Tests
         ${CMAKE_SOURCE_DIR}/Angle.cppm
         ${CMAKE_SOURCE_DIR}/ES_except.ixx
         ${CMAKE_SOURCE_DIR}/ES_easy.ixx
+        ${CMAKE_SOURCE_DIR}/ES_game.ixx
+        ${CMAKE_SOURCE_DIR}/ES_flyweight.ixx
+        ${CMAKE_SOURCE_DIR}/ES_cyclical_iterator.ixx
 )
 
-if(NOT MSVC) #more MSVC cutouts!
+if(CMAKE_GENERATOR STREQUAL "Ninja") #more MSVC cutouts! Or maybe a Ninja cut-in?
 target_sources(ComputerGraphics_Tests
   PUBLIC
     FILE_SET CXX_MODULES
@@ -60,7 +65,9 @@ target_sources(ComputerGraphics_Tests
         ${CMAKE_SOURCE_DIR}/Angle.cppm
         ${CMAKE_SOURCE_DIR}/ES_except.ixx
         ${CMAKE_SOURCE_DIR}/ES_easy.ixx
-
+        ${CMAKE_SOURCE_DIR}/ES_game.ixx
+        ${CMAKE_SOURCE_DIR}/ES_flyweight.ixx
+        ${CMAKE_SOURCE_DIR}/ES_cyclical_iterator.ixx
 )
 endif ()
 
@@ -78,6 +85,7 @@ endif()
 
 ES_enable_CXX26_for_project(ComputerGraphics_Tests)
 ES_create_WE_HAVE_IMPORT_STD_macro_for_project(ComputerGraphics_Tests)
+ES_hook_ES_GAME_ROOT_DIR_macro_for_debug_builds(ComputerGraphics_Tests)
 
 enable_testing()
 include(CTest)
