@@ -210,7 +210,7 @@ void ES::easy::snap_stacktrace(std::ostream &where_to_print) {
 
 bool ES::easy::enforce_stacktrace(const bool cond, std::string_view const msg) noexcept {
     if (cond) return cond;
-    std::cerr 
+    std::cerr <<
         "Owie! An ES::easy::enforce_stacktrace() was tripped!\n"
         "msg: " << msg << std::endl;
 #ifndef WERE_MISSING_STACKTRACE
