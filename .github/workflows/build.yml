@@ -24,7 +24,8 @@ jobs:
             libxrandr-dev \
             libxinerama-dev \
             libxcursor-dev \
-            libxi-dev
+            libxi-dev \
+            libgl-dev
 
       - name: Setup vcpkg
         run: |
