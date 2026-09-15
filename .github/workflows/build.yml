@@ -1,0 +1,38 @@
+name: GCC Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  gcc:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake \
+            ninja-build \
+            gcc \
+            g++
+
+      - name: Setup vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git "$RUNNER_TEMP/vcpkg"
+          "$RUNNER_TEMP/vcpkg/bootstrap-vcpkg.sh"
+
+      - name: Configure
+        run: cmake --preset x64-debug
+        env:
+          ES_VCPKG_PATH: ${{ runner.temp }}/vcpkg/scripts/buildsystems/vcpkg.cmake
+
+      - name: Build
+        run: cmake --build x64-debug
+
+      - name: Test
+        run: ctest --test-dir x64-debug --output-on-failure
