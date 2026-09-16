@@ -1,6 +1,7 @@
 module;
 #if WE_LACK_IMPORT_STD
 #include <concepts>
+#include <type_traits>
 #endif
 
 export module ES.concepts;

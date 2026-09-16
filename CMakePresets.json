@@ -19,12 +19,6 @@
                 "rhs": "Linux"
             }
         },
-        "condition": {
-            "type": "equals",
-            "lhs": "${hostSystemName}",
-            "rhs": "Linux"
-        }
-    },
 
         {
             "name": "linux-clang-base",
@@ -43,12 +37,6 @@
                 "rhs": "Linux"
             }
         },
-        "condition": {
-            "type": "equals",
-            "lhs": "${hostSystemName}",
-            "rhs": "Linux"
-        }
-    },
 
         {
             "name": "x64-debug",
@@ -103,6 +91,67 @@
                 "lhs": "${hostSystemName}",
                 "rhs": "Windows"
             }
+        },
+
+        {
+            "name": "ci-gcc-x64-debug",
+            "displayName": "CI GCC x64 Debug",
+            "inherits": "x64-debug",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc-15",
+                "CMAKE_CXX_COMPILER": "g++-15"
+            }
+        },
+
+        {
+            "name": "ci-clang-x64-debug",
+            "displayName": "CI Clang x64 Debug",
+            "inherits": "clang-x64-debug",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang-22",
+                "CMAKE_CXX_COMPILER": "clang++-22"
+            }
+        },
+
+        {
+            "name": "ci-clang-libcxx-x64-debug",
+            "displayName": "CI Clang libc++ x64 Debug",
+            "inherits": "clang-x64-debug",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang-22",
+                "CMAKE_CXX_COMPILER": "clang++-22",
+                "CMAKE_CXX_FLAGS": "-stdlib=libc++",
+                "CMAKE_EXE_LINKER_FLAGS": "-stdlib=libc++",
+                "CMAKE_SHARED_LINKER_FLAGS": "-stdlib=libc++",
+                "VCPKG_TARGET_TRIPLET": "x64-linux-libcxx",
+                "VCPKG_OVERLAY_TRIPLETS": "${sourceDir}/triplets"
+            },
+            "environment": {
+            "CC": "clang-22",
+            "CXX": "clang++-22"
+            }
+        }, 
+
+        {
+            "name": "ci-msvc-x64-debug",
+            "displayName": "CI MSVC x64 Debug",
+            "generator": "Visual Studio 18 2026",
+            "architecture": "x64",
+            "binaryDir": "${presetName}",
+            "installDir": "${presetName}",
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{ES_VCPKG_PATH}",
+                "ES_USE_STDCXXEXP": "OFF"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
         }
+            
+
+
+
     ]
 }

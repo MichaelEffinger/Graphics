@@ -3,6 +3,7 @@ module;
 #include <type_traits>
 #include <cassert>
 #include <functional>
+#include <utility>
 
 export module ES.PointN;
 

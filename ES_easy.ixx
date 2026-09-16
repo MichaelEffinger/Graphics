@@ -4,7 +4,6 @@ module;
 #include <numeric>
 #include <ranges>
 #include <iostream>
-#include <stacktrace>
 #include <chrono>
 #include <string>
 #include <filesystem>
@@ -14,6 +13,11 @@ module;
 #include <windows.h>
 #endif
 
+    #if !__has_include(<stacktrace>)
+        #define WERE_MISSING_STACKTRACE 1
+    #else
+        #include <stacktrace>
+    #endif
 #endif
 
 export module ES_easy;
@@ -87,7 +91,11 @@ export namespace ES::easy {
     class cyclical_iterator;
 
 //------------------ DEBUG ----------------
-    void snap_stacktrace(std::ostream &where_to_print = std::cerr, const std::stacktrace& trace = std::stacktrace::current());
+    #ifndef WERE_MISSING_STACKTRACE
+        void snap_stacktrace(std::ostream &where_to_print = std::cerr, const std::stacktrace& trace = std::stacktrace::current());
+    #else
+        void snap_stacktrace(std::ostream &where_to_print = std::cerr);
+    #endif
 
     bool enforce_stacktrace(const bool cond, std::string_view const msg) noexcept;
 
@@ -215,16 +223,26 @@ constexpr auto ES::easy::min_max(R &r) {
 }
 
 
+#ifndef WERE_MISSING_STACKTRACE
 void ES::easy::snap_stacktrace(std::ostream &where_to_print, const std::stacktrace& trace) {
     where_to_print << std::to_string(trace) << std::endl;
 }
+#else
+void ES::easy::snap_stacktrace(std::ostream &where_to_print) {
+    where_to_print << "[stacktrace unavailable on this compiler]" << std::endl;
+}
+#endif
 
 bool ES::easy::enforce_stacktrace(const bool cond, std::string_view const msg) noexcept {
     if (cond) return cond;
     std::cerr <<
         "Owie! An ES::easy::enforce_stacktrace() was tripped!\n"
         "msg: " << msg << std::endl;
+#ifndef WERE_MISSING_STACKTRACE
     snap_stacktrace(std::cerr, std::stacktrace::current(1));
+#else
+    snap_stacktrace(std::cerr);
+#endif
     std::abort();
 }
 
