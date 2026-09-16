@@ -130,8 +130,28 @@
             "CC": "clang-22",
             "CXX": "clang++-22"
             }
-        }   
-    
+        }, 
+
+        {
+            "name": "ci-msvc-x64-debug",
+            "displayName": "CI MSVC x64 Debug (Ninja)",
+            "generator": "Ninja",
+            "binaryDir": "${presetName}",
+            "installDir": "${presetName}",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "cl",
+                "CMAKE_CXX_COMPILER": "cl",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_TOOLCHAIN_FILE": "$env{ES_VCPKG_PATH}",
+                "ES_USE_STDCXXEXP": "OFF"
+            },
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        }
+            
 
 
 
