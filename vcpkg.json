@@ -4,6 +4,8 @@
   "builtin-baseline": "97bbb13b57ea5ae4e9edd851601f36a1acb3868a",
   "dependencies": [
     "catch2",
-    "glfw3"
+    "glfw3",
+    "vulkan-headers",
+    "vulkan-loader"
   ]
 }
