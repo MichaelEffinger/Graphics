@@ -1,0 +1,29 @@
+name: MSVC Build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  msvc:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git "$env:RUNNER_TEMP/vcpkg"
+          & "$env:RUNNER_TEMP/vcpkg/bootstrap-vcpkg.bat"
+
+      - name: Configure
+        run: cmake --preset msvc-x64-debug
+        env:
+          ES_VCPKG_PATH: ${{ runner.temp }}/vcpkg/scripts/buildsystems/vcpkg.cmake
+
+      - name: Build
+        run: cmake --build msvc-x64-debug --config Debug
+
+      - name: Test
+        run: ctest --test-dir msvc-x64-debug --build-config Debug --output-on-failure
