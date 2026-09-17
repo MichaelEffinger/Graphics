@@ -75,8 +75,10 @@ function(graphics_and_window_set_up)
 
     # GLFW path
     message("Chosen window library: GLFW3")
+    message("Chosen backend library: Vulkan")
 
     find_package(glfw3 QUIET)
+    find_package(VulkanHeaders QUIET CONFIG)
 
     if(NOT glfw3_FOUND AND FETCH_GLFW)
         message(NOTICE "GLFW3 not found locally, fetching...")
@@ -102,11 +104,20 @@ function(graphics_and_window_set_up)
         return()
     endif()
 
+
+
     # Only add sources once we know GLFW is available
     target_sources(ComputerGraphics PUBLIC main_webgpu.cpp)
     target_link_libraries(ComputerGraphics PRIVATE glfw)
     target_compile_definitions(ComputerGraphics PRIVATE ES_GLFW)
     message("Successfully found and linked GLFW3!")
+
+    if(NOT VulkanHeaders_FOUND)
+        message(WARNING "Vulkan not found! :(")
+    else ()
+        target_link_libraries(ComputerGraphics PRIVATE Vulkan::Headers)
+        message("Successfully found and linked Vulkan!")
+    endif ()
 
 endfunction()
 
