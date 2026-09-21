@@ -1,10 +1,13 @@
 module;
 
+#include <cmath>
 
 export module ES.vk.rendering_transforms;
 
-import ES.Matrix;
 import ES.Angle;
+import ES.VectorN;
+import ES.PointN;
+import ES.Matrix;
 
 
 namespace ES::vk{
@@ -42,9 +45,9 @@ namespace ES::vk{
         const Vector3<float> y_axis = z_axis.cross(x_axis);
 
         return Matrix<float, 4>::from_rows(
-            Vector4<float>{x_axis, -dot(x_axis, eye) },
-            Vector4<float>{y_axis, -dot(y_axis, eye) },
-            Vector4<float>{z_axis, -dot(z_axis, eye) },
+            Vector4<float>{x_axis, -x_axis.dot(eye.to_vector()) },
+            Vector4<float>{y_axis, -y_axis.dot(eye.to_vector()) },
+            Vector4<float>{z_axis, -z_axis.dot(eye.to_vector()) },
             Vector4<float>{ 0.0f,0.0f,0.0f,1.0f}
         );
     }
