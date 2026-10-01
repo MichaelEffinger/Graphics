@@ -58,12 +58,31 @@ export namespace ES{
 
 
         template<class... Args>
-        constexpr Matrix(Args... columns) requires(sizeof...(Args) == M && (std::is_same_v<Args, VectorN<T,N>> && ...)){
+        constexpr Matrix(Args... columns) requires(sizeof...(Args) == M && (M>1 || N > 1) && (std::convertible_to<Args, VectorN<T,N>> && ...)){
             std::size_t col = 0; 
             ((std::copy_n(columns.begin(), N, &data_[col * N]), col++), ...);
+        } 
+
+        template<class... Args>
+        static constexpr Matrix from_rows(Args&&... rows) requires(sizeof...(Args) == N && (std::convertible_to<Args, VectorN<T, M>> && ...)) {
+            Matrix result{};
+            std::size_t row = 0;
+            
+            (([&](const VectorN<T, M>& r) { 
+                for(std::size_t col = 0; col < M; ++col) { 
+                    result.data_[col * N + row] = r[col];
+                }
+            }
+            (static_cast<VectorN<T, M>>(rows)), ++row), ...);
+
+            return result;
         }
 
         constexpr auto&& operator()(this auto&& self, std::size_t row, std::size_t column) noexcept{
+            return std::forward_like<decltype(self)>(self[(column*N+row)]);
+        }
+
+        constexpr auto&& operator[](this auto&& self, std::size_t column, std::size_t row) noexcept{
             return std::forward_like<decltype(self)>(self[(column*N+row)]);
         }
 

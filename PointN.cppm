@@ -218,4 +218,8 @@ export namespace ES {
         }
 
     };
+
+
+    template <typename T> using Point2 = PointN<T, 2>;
+    template <typename T> using Point3 = PointN<T, 3>;
 }  

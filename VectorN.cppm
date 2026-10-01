@@ -161,10 +161,10 @@ class VectorN: public ContainerN<VectorN<T,N>,T,N>, public ArithmeticOpsMixin<Ve
     */
 
     template <typename U = VectorN>
-    [[nodiscard]] constexpr T dot(meta::const_pass_t<U> rhs) const noexcept{
+    [[nodiscard]] constexpr T dot(meta::const_pass_t<U> rhs)const noexcept {
         return zip_reduce(rhs, 0,[](T accum, T l, T r){return accum+(l*r);});
     }
-    
+
 
     /**
      * @brief Computers the cross product of this vector with another
