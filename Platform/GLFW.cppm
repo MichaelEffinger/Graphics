@@ -5,6 +5,7 @@ module;
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <optional>
 
 export module ES.GLFW;
 
@@ -15,7 +16,6 @@ import ES.WindowMode;
 
 export namespace ES{
     using GLFWwindow = ::GLFWwindow;
-    using ErrorCallback           = void(*)(int code, std::string description);
     using FramebufferSizeCallback = void(*)(GLFWwindow*, int width, int height);
     using WindowSizeCallback      = void(*)(GLFWwindow*, int width, int height);
     using WindowCloseCallback     = void(*)(GLFWwindow*);
@@ -27,31 +27,72 @@ export namespace ES{
     using ScrollCallback          = void(*)(GLFWwindow*, double x_offset, double y_offset);
     using JoystickCallback        = void(*)(int joystick, int event);
 
+    class PlatformError : public std::runtime_error {
+    public:
+        using std::runtime_error::runtime_error;
+    };
+
+    class PlatformInitError : public PlatformError {
+    public:
+        using PlatformError::PlatformError;
+    };
+
+    class WindowCreationError : public PlatformError {
+    public:
+        using PlatformError::PlatformError;
+    };
+
+
 }
 
 namespace ES{
-    struct GLFWState {
-        ErrorCallback error_callback = nullptr;
 
+    inline std::string to_message(const char* description) {
+        return description ? description : "unknown GLFW error";
+    }
+
+    [[noreturn]] inline void throw_translated(int code, const std::string& msg) {
+        switch (code) {
+            case GLFW_NOT_INITIALIZED:
+            case GLFW_INVALID_ENUM:
+            case GLFW_INVALID_VALUE:
+            case GLFW_NO_CURRENT_CONTEXT:
+            case GLFW_NO_WINDOW_CONTEXT:
+                throw std::logic_error(msg);
+            default:
+                throw PlatformError(msg);
+        }
+    }
+
+    inline void check() {
+        const char* description = nullptr;
+        int code = glfwGetError(&description);
+        if (code == GLFW_NO_ERROR ||
+            code == GLFW_FEATURE_UNAVAILABLE ||
+            code == GLFW_FEATURE_UNIMPLEMENTED) return;
+        throw_translated(code, to_message(description));
+    }
+
+    inline bool unsupported() {
+        const char* description = nullptr;
+        int code = glfwGetError(&description);
+        if (code == GLFW_NO_ERROR) return false;
+        if (code == GLFW_FEATURE_UNAVAILABLE || code == GLFW_FEATURE_UNIMPLEMENTED) return true;
+        throw_translated(code, to_message(description));
+    }
+
+    struct GLFWState {
         GLFWState() {
-            if(!glfwInit()){
-                throw std::runtime_error("Failed to initialize GLFW");
+            if (!glfwInit()) {
+                const char* description = nullptr;
+                glfwGetError(&description);
+                throw PlatformInitError(to_message(description));
             }
-            active_state = this;
-            glfwSetErrorCallback(error_callback_adapter);
         }
 
         ~GLFWState() {
-            active_state = nullptr;
             glfwTerminate();
         }
-        static void error_callback_adapter(int code, const char* description) {
-            if(active_state && active_state->error_callback) {
-                active_state->error_callback(code, std::string(description));
-            }
-        }
-
-        inline static GLFWState* active_state = nullptr;
     };
 }
 
@@ -69,14 +110,22 @@ export namespace ES {
             }
         }
 
-        GLFWwindow* make_window(int width, int height, const char* title, WindowMode mode) const{
+        GLFWwindow* make_window(int width, int height, const char* title, WindowMode mode) const {
             GLFWmonitor* monitor = nullptr;
 
-            if(mode == WindowMode::fullscreen){
+            if (mode == WindowMode::fullscreen) {
                 monitor = glfwGetPrimaryMonitor();
             }
 
-            return glfwCreateWindow(width,height,title,monitor,nullptr);
+            glfwGetError(nullptr);
+            GLFWwindow* w = glfwCreateWindow(width, height, title, monitor, nullptr);
+
+            if (!w) {
+                const char* description = nullptr;
+                glfwGetError(&description);
+                throw WindowCreationError(to_message(description));
+            }
+            return w;
         }
 
         void destroy_window(GLFWwindow* window) const{
@@ -117,9 +166,11 @@ export namespace ES {
             glfwSetWindowShouldClose(window, value);
         }
 
-        PointN<int, 2> get_window_position(GLFWwindow* window) const {
+        std::optional<PointN<int, 2>> get_window_position(GLFWwindow* window) const {
+            glfwGetError(nullptr);
             PointN<int, 2> result;
             glfwGetWindowPos(window, &result.x(), &result.y());
+            if (unsupported()) return std::nullopt;
             return result;
         }
 
@@ -132,13 +183,11 @@ export namespace ES {
         }
 
         void set_window_x(GLFWwindow* window, int x) const {
-            int y = get_window_position(window).y();
-            glfwSetWindowPos(window, x, y);
+            if (auto p = get_window_position(window)) glfwSetWindowPos(window, x, p->y());
         }
 
         void set_window_y(GLFWwindow* window, int y) const {
-            int x = get_window_position(window).x();
-            glfwSetWindowPos(window, x, y);
+            if (auto p = get_window_position(window)) glfwSetWindowPos(window, p->x(), y);
         }
 
         void set_window_size_limits(GLFWwindow* window, int min_width,int min_height, int max_width, int max_height) const {
@@ -245,11 +294,6 @@ export namespace ES {
 
         bool raw_mouse_motion_supported() const {
             return glfwRawMouseMotionSupported();
-        }
-
-        void set_error_callback(ErrorCallback cb) const {
-            state_->error_callback = cb;
-            glfwSetErrorCallback(GLFWState::error_callback_adapter);
         }
 
         void set_framebuffer_size_callback(GLFWwindow* window, FramebufferSizeCallback cb) const {

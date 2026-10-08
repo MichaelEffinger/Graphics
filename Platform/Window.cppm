@@ -2,6 +2,7 @@ module;
 
 #include <string>
 #include <stdexcept>
+#include <optional>
 
 export module ES.Window;
 
@@ -21,7 +22,6 @@ export namespace ES{
         std::string title;
 
         Size window_size;
-        PointN<int,2> position;
         Size frame_buffer_size;
         bool focused = true;
 
@@ -62,15 +62,10 @@ export namespace ES{
         }
 
 
-        public:
+    public:
 
-
-        Window(int w, int h, const char* t, WindowMode mode = WindowMode::windowed): glfw(), title(t), window_size(w,h) {
-            handle = glfw.make_window(w, h, t, mode);
-            if (!handle) throw std::runtime_error("Failed to create window");
-
-            position = glfw.get_window_position(handle);
-
+        Window(int w, int h, const char* t, WindowMode mode = WindowMode::windowed): title(t), window_size(w, h){
+            handle = glfw.make_window(w, h, t, mode);   // throws with the real reason
             frame_buffer_size = glfw.get_framebuffer_size(handle);
 
             install_callbacks();
@@ -84,7 +79,9 @@ export namespace ES{
 
         bool should_close() const { return glfw.should_close(handle); }
         void poll_events() const { glfw.poll_events(); }
-
+        std::optional<PointN<int, 2>> get_position() const {
+            return glfw.get_window_position(handle);
+        }
 
 
         Window(const Window&) = delete;
