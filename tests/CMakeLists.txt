@@ -40,6 +40,7 @@ add_executable(ComputerGraphics_Tests
         ${CMAKE_SOURCE_DIR}/ES_game.ixx
         ${CMAKE_SOURCE_DIR}/ES_flyweight.ixx
         ${CMAKE_SOURCE_DIR}/ES_cyclical_iterator.ixx
+        ${CMAKE_SOURCE_DIR}/Size.cppm
         ${CMAKE_SOURCE_DIR}/ES_vulkan_rendering_transforms.cppm
 )
 
@@ -69,6 +70,7 @@ target_sources(ComputerGraphics_Tests
         ${CMAKE_SOURCE_DIR}/ES_game.ixx
         ${CMAKE_SOURCE_DIR}/ES_flyweight.ixx
         ${CMAKE_SOURCE_DIR}/ES_cyclical_iterator.ixx
+        ${CMAKE_SOURCE_DIR}/Size.cppm
         ${CMAKE_SOURCE_DIR}/ES_vulkan_rendering_transforms.cppm
 )
 endif ()
